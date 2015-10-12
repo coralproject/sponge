@@ -1,0 +1,15 @@
+publisher: New York Times
+
+strategy:
+  - type: mysql
+    tables:
+    - name: nyt_comments
+    anonymize": false
+
+credentials:
+  database:  coral
+  username:  gaba
+  password:  gabita
+  host:      localhost
+  port:      5432
+  adapter:   mysql

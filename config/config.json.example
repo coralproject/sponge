@@ -1,0 +1,18 @@
+{
+	"Name": "Publisher",
+	"Strategy": {
+		"type": "mysql",
+		"tables": ["comments"],
+		"anonymize": false
+},
+
+	"Credentials": {
+		"database":  "",
+		"username":  "",
+		"password":  "",
+		"host":      "localhost",
+		"port":     5432,
+		"adapter":  ""
+	}
+
+}
