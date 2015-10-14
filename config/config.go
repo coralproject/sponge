@@ -2,9 +2,11 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 
 	"github.com/coralproject/core/log"
+	"github.com/fatih/structs"
 )
 
 /*
@@ -17,7 +19,7 @@ Package config handles the loading and distribution of configuration related wit
 		"type": "mysql", //To Do: look for a better Name
 		"tables": ["comments"],
 		"anonymize": false
-},
+	},
 
 	"Credentials": {
 		"database":  "",
@@ -91,6 +93,18 @@ func Get() *Config {
 }
 
 // GetCredentials returns the credentials for connection with the external source
-func GetCredentials() Credentials {
-	return config.Credentials
+func GetCredentials() (Credentials, error) {
+	dict := structs.Map(config)
+	_, ok := dict["Credentials"]
+	if ok {
+		err := errors.New("No Credentials option in the Configuration file.")
+		return Credentials{}, err
+	}
+	return config.Credentials, nil
+}
+
+// GetStrategy returns the strategy
+// To Do: Needs to manage errors
+func GetStrategy() (Strategy, error) {
+	return config.Strategy, nil
 }
