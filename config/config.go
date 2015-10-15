@@ -2,11 +2,9 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 
 	"github.com/coralproject/core/log"
-	"github.com/fatih/structs"
 )
 
 /*
@@ -40,7 +38,7 @@ type Strategy struct {
 }
 
 // Credentials has the information to connect to the external source.
-type Credentials struct {
+type Credential struct {
 	Database string `json:"database"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -53,7 +51,7 @@ type Credentials struct {
 type Config struct {
 	Name        string
 	Strategy    Strategy
-	Credentials Credentials
+	Credentials []Credential
 }
 
 // Pointer to the master config record
@@ -93,13 +91,10 @@ func Get() *Config {
 }
 
 // GetCredentials returns the credentials for connection with the external source
-func GetCredentials() (Credentials, error) {
-	dict := structs.Map(config)
-	_, ok := dict["Credentials"]
-	if ok {
-		err := errors.New("No Credentials option in the Configuration file.")
-		return Credentials{}, err
-	}
+func GetCredentials() ([]Credential, error) {
+
+	config := readFile("config/config.json")
+
 	return config.Credentials, nil
 }
 

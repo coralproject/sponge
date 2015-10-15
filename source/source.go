@@ -14,8 +14,8 @@ import "database/sql"
 
 // Data is a struct that has all the db rows and error field
 type Data struct {
-	rows  *sql.Rows // Move into appropiate structure
-	error error
+	Rows  *sql.Rows // Move into appropiate structure
+	Error error
 }
 
 // Source is where the data is coming from (mysql, api)
