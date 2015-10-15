@@ -41,15 +41,21 @@ This program imports data from a _foreign_ source into a local mongo database.  
 
 
 ### Synchronization Loop
-The main loop that keeps the data up to date.  Each time through the loop:
+The main loop that keeps the data up to date.  Gets _slices_ of records based on _updated_at_ timestamps to account for changing records.
 
-* Look at the _log collection_ to determine which slice of data to request next
+For each table or api in the strategy:
+
+* Ensure maximum rate limit is not met
+* Determine which slice of data to get next
+	* Find the last updated timestamp in the _log collection_ (or the collection itself?)
 * Use the strategy to request the slice (either db query or api call)
+	* Update the rate limit counter
 * For each record returned
 	* Check to ensure the document isn't already added 
-	* If not, add the document
-	* If it's there, log a sync error
-* Update the _log collection_ 
+	* If not, add the document and kick off _import actions_
+	* If it's there, update the document
+	* Update the _log collection_ 
+
 
 ### Application States
 
@@ -61,3 +67,18 @@ The main loop that keeps the data up to date.  Each time through the loop:
 #### Synchronization Phase 
 
 * Kick off the _synchronization loop_ at the _synchronization frequency_
+
+### Import Actions
+
+Actions performed on each document inserted
+
+* Insert node(s) vertice(s) into neo4j
+* Run data through data science pipelines
+
+### Rate Limit Counter
+
+A routine that keep as sliding count of how many requests were made in the past time frame based on the strategy.  
+
+Exposes isOkToQuery() to determine if we are currently at the limit.
+
+Each request sends a message to this routine each time a request is made.
