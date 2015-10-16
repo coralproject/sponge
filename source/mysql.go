@@ -1,5 +1,5 @@
 /*
-Package source implements a way to get data from external sources.
+Package source implements a way to get data from external MySQL sources.
 
 External possible sources:
 * MySQL
@@ -14,7 +14,7 @@ import (
 	"log"
 
 	"github.com/coralproject/mod-data-import/config"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blak. To Do.
 )
 
 /* Implementing the Sources */
@@ -46,6 +46,7 @@ func mysqlConnection(credentials []config.Credential) (string, error) {
 
 ////// Exported Functions //////
 
+// NewSource returns a new connection
 func NewSource() (*MySQL, error) {
 
 	c, err := config.GetCredentials()
@@ -88,17 +89,16 @@ func (m MySQL) Close(db *sql.DB) error {
 }
 
 // Reader returns the data needed from mysql db
-func (m MySQL) Reader(db *sql.DB) Data {
-
-	var data Data
+func (m MySQL) Reader(db *sql.DB) *sql.Rows {
 
 	// LOOK INTO config.Strategy to see which is the strategy to follow
-	data.Rows, data.Error = db.Query("SELECT * from nyt_comments LIMIT 1")
-	if data.Error != nil {
-		log.Fatal("Error when quering the DB ", data.Error)
+	d, err := db.Query("SELECT * from nyt_comments LIMIT 1")
+	if err != nil {
+		log.Fatal("Error when quering the DB ", err)
 	}
 
-	return data
+	// To Do: it needs to return DATA type
+	return d
 }
 
 // ExampleMySQL on how to use the MySQL
@@ -116,15 +116,16 @@ func ExampleMySQL() {
 	defer m.Close(db)
 
 	d := m.Reader(db)
-	for d.Rows.Next() {
+	for d.Next() {
 		var comment string
-		if d.Rows.Scan(&comment); err != nil {
+		if d.Scan(&comment); err != nil {
 			log.Fatal(err)
 		}
 		fmt.Printf("The comment is '%s'.", comment)
 	}
 }
 
+// GetConnection returns the connection string
 func (m MySQL) GetConnection() string {
 	return m.connection
 }
@@ -133,18 +134,3 @@ func (m MySQL) GetConnection() string {
 // - TimeOutReader
 // - WrongConnection
 // - DataErrorReader
-
-// # Source
-// # commentID: comment's identifier. Numeric. - YES
-// # assetID: Numeric. Article's identifier. - YES
-// # statusID: Numeric. Options: [2, 3]  - moderated(1), rejected(2), flagged(3) - YES (ModerationStatus)
-// # commentBody: String. Maybe NULL - YES (Content)
-// # userID: user that commented. Numeric.  (registration id) - YES
-// # createDate: TimeDate   - YES (sourceCreatedDate)
-// # updateDate: TimeDate   - YES
-// # approveDate: TimeDate  - YES
-// # editorsSelection: Boolean  - nyt picks - YES (this is a BooleanAction)
-// # recommendationCount: Numeric  - how many people recommended the comment  - YES
-// # userDisplayName: The user's name. String.  Deprecated. - YES (into User model)
-// # userLocation: City. String. Deprecated. - YES (into User model - json list.. )
-// # parentID: The id of the parent's comment. - YES
