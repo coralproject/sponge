@@ -7,13 +7,14 @@ The import layer will contain strategies for pulling data from existing systems 
 
 type: user, item, boolAction, associationAction, externalReference
 
-Schema
-```{
-  database: nyt,
+#### Schema
 
-  "comment": {
-      type: item,
-      table: {
+```
+{
+  database: nyt,
+  comment: {
+  	type: item,
+    table: {
         foreign: comments,
         local: comments
       },
@@ -23,23 +24,20 @@ Schema
           type: int,
           primaryKey: true,
           local: id,
-
-          relation: 'self',
+          relation: ,
           model: Comment
         },
         {
           name: statusID,
           type: int,
           local: ModerationStatus,
-
-          relation: 'self',
+          relation: self,
           model: Comment
         },
         {
           name: commentBody
           type: []byte,
           local: Content,
-
           relation: 'self',
           model: Comment
         },
@@ -47,62 +45,52 @@ Schema
           name: createDate,
           type: TimeDate,
           local: sourceCreateDate,
-
-          relation: 'self',
+          relation: self,
           model: Comment
         },
         {
           name: updateDate,
           type: TimeDate,
           local: sourceUpdateDate,
-
-          relation: 'self',
+          relation: self,
           model: Comment
         },
         {
           name: approveDate,
           type: TimeDate,
           local: sourceApproveDate,
-
-          relation: 'self',
+          relation: self,
           model: Comment
         },
         {
           name: recommendationCount,
           type: int
-
           ????
         },
         {
           name: ParentID,
           type: int,
           local: ParentId,
-
           relation: 'hasMany',
           model: Comment
         },
-
         {
           name: UserID,
           type: int,
           local: id,
-
-          relation: 'belongsTo',
+          relation: belongsTo,
           model: User
         },
-
         {
           name: AssetId,
           type: []byte,
           local: AssetId,
-
-          relation: 'belongsTo',
+          relation: belongsTo,
           model: Asset
         }.
       ],    
     },
-
-  "user": {
+  user: {
     type: item,
     table: {
       foreign: comments,
@@ -114,29 +102,27 @@ Schema
         type: int,
         primaryKey: true,
         local: id,
-
-        relation: 'self',
+        relation: self,
         model: User
       },
       {
         name: UserDisplayName,
         type: string
         local: Name,
-
-        relation: 'self',
+        relation: self,
         model: User
       },
       {
         name: UserLocation,
         type: string
         local: Location,
-
-        relation: 'self',
+        relation: self,
         model: User
       }
     ]
   }
-}```
+}
+```
 
 #### NYT Comment's fields
 
