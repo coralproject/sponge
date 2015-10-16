@@ -124,7 +124,7 @@ type: user, item, boolAction, associationAction, externalReference
 }
 ```
 
-#### NYT Comment's fields
+#### NYT Comment's Table's Fields
 
 1. commentID: comment's identifier. Numeric. - YES
 2. assetID: Numeric. Article's identifier. - YES
