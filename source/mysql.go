@@ -63,6 +63,46 @@ func NewSource() (*MySQL, error) {
 	return &MySQL{connection: connection}, err
 }
 
+// GetNewData returns the data requested
+func (m MySQL) GetNewData() Data {
+	var d Data
+
+	db, err := m.Open()
+	if err != nil {
+		log.Fatal("Error when connection to database with ", m.connection, err)
+	}
+	defer m.Close(db)
+
+	sd, err := db.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments where commentID=10")
+	if err != nil {
+		log.Fatal("Error when quering the DB ", err)
+	}
+
+	var comment Comment
+
+	for sd.Next() {
+		if sd.Scan(&comment.commentID, &comment.assetID, &comment.statusID, &comment.commentTitle, &comment.commentBody, &comment.userID, &comment.createDate, &comment.updateDate, &comment.approveDate, &comment.commentExcerpt, &comment.editorsSelection, &comment.recommendationCount, &comment.replyCount, &comment.isReply, comment.commentSequence, &comment.userDisplayName, &comment.userReply, &comment.userTitle, &comment.userLocation, comment.showCommentExcerpt, &comment.hideRegisteredUserName, &comment.commentType, &comment.parentID); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	n := len(d.Comments)
+	if len(d.Comments) == cap(d.Comments) {
+		// Comments is full and we must expand
+		// Double the size and add 1
+		newComments := make([]Comment, len(d.Comments), 2*len(d.Comments)+1)
+		copy(newComments, d.Comments)
+		d.Comments = newComments
+	}
+
+	d.Comments = d.Comments[0 : n+1]
+	d.Comments[n] = comment
+
+	return d
+}
+
+// Other functions, not from the Source interface
+
 // Open gives back a pointer to the DB
 func (m MySQL) Open() (*sql.DB, error) {
 
@@ -88,11 +128,11 @@ func (m MySQL) Close(db *sql.DB) error {
 	return db.Close()
 }
 
-// Reader returns the data needed from mysql db
-func (m MySQL) Reader(db *sql.DB) *sql.Rows {
+// Get returns data from the query to the db
+func (m MySQL) Get(db *sql.DB, query string) *sql.Rows {
 
 	// LOOK INTO config.Strategy to see which is the strategy to follow
-	d, err := db.Query("SELECT * from nyt_comments LIMIT 1")
+	d, err := db.Query(query)
 	if err != nil {
 		log.Fatal("Error when quering the DB ", err)
 	}
@@ -115,7 +155,7 @@ func ExampleMySQL() {
 	}
 	defer m.Close(db)
 
-	d := m.Reader(db)
+	d := m.Get(db, "SELECT * FROM nyt_comments LIMIT 1")
 	for d.Next() {
 		var comment string
 		if d.Scan(&comment); err != nil {

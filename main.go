@@ -7,9 +7,10 @@ Import source database into mongodb
 package main
 
 import (
-	"database/sql"
+	"database/sql" // It is only being used when defining the NullStrings in the struct
+
 	"fmt"
-	"log"
+	"log" // It should be our logger
 
 	"github.com/coralproject/mod-data-import/source"
 )
@@ -51,22 +52,36 @@ func main() {
 		log.Fatal("Error when creating new source ", err)
 	}
 
-	db, err := m.Open()
-	if err != nil {
-		log.Fatal("Error when connection to database. ", err)
-	}
-	defer m.Close(db)
+	var d source.Data
 
-	var comment Comment
-	stmt, err := db.Prepare("select * from nyt_comments where commentID = ?")
-	if err != nil {
-		log.Fatal(err)
+	// Get the last data from external source
+	d = m.GetNewData()
+	if d.Error != nil {
+		log.Fatal("Error when querying the external database", d.Error)
 	}
-	err = stmt.QueryRow(13471611).Scan(&comment.commentID, &comment.assetID, &comment.statusID, &comment.commentTitle, &comment.commentBody, &comment.userID, &comment.createDate, &comment.updateDate, &comment.approveDate, &comment.commentExcerpt, &comment.editorsSelection, &comment.recommendationCount, &comment.replyCount, &comment.isReply, &comment.commentSequence, &comment.userDisplayName, &comment.userReply, &comment.userTitle, &comment.userLocation, &comment.showCommentExcerpt, &comment.hideRegisteredUserName, &comment.commentType, &comment.parentID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%+v", comment)
+
+	fmt.Println(d.Comments[0])
+
+	// Get that comment into a MongoDB collection called "Comments"
+
+	//////////////////// FIRST TEST ///////
+
+	// db, err := m.Open()
+	// if err != nil {
+	// 	log.Fatal("Error when connection to database. ", err)
+	// }
+	// defer m.Close(db)
+	//
+	// var comment Comment
+	// stmt, err := db.Prepare("select * from nyt_comments where commentID = ?")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// err = stmt.QueryRow(13471611).Scan(&comment.commentID, &comment.assetID, &comment.statusID, &comment.commentTitle, &comment.commentBody, &comment.userID, &comment.createDate, &comment.updateDate, &comment.approveDate, &comment.commentExcerpt, &comment.editorsSelection, &comment.recommendationCount, &comment.replyCount, &comment.isReply, &comment.commentSequence, &comment.userDisplayName, &comment.userReply, &comment.userTitle, &comment.userLocation, &comment.showCommentExcerpt, &comment.hideRegisteredUserName, &comment.commentType, &comment.parentID)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Printf("%+v", comment)
 
 	// Get that comment into a MongoDB collection called "Comments"
 }

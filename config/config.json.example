@@ -6,13 +6,13 @@
 		"anonymize": false
 },
 
-	"Credentials": {
+	"Credentials": [{
 		"database":  "",
 		"username":  "",
 		"password":  "",
 		"host":      "localhost",
-		"port":     5432,
-		"adapter":  ""
-	}
+		"port":     "5432",
+		"adapter":  "mysql"
+	}]
 
 }
