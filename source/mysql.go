@@ -14,7 +14,8 @@ import (
 	"log"
 
 	"github.com/coralproject/mod-data-import/config"
-	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blak. To Do.
+	"github.com/coralproject/mod-data-import/models"
+	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
 )
 
 /* Implementing the Sources */
@@ -78,10 +79,10 @@ func (m MySQL) GetNewData() Data {
 		log.Fatal("Error when quering the DB ", err)
 	}
 
-	var comment Comment
+	var comment models.Comment
 
 	for sd.Next() {
-		if sd.Scan(&comment.commentID, &comment.assetID, &comment.statusID, &comment.commentTitle, &comment.commentBody, &comment.userID, &comment.createDate, &comment.updateDate, &comment.approveDate, &comment.commentExcerpt, &comment.editorsSelection, &comment.recommendationCount, &comment.replyCount, &comment.isReply, comment.commentSequence, &comment.userDisplayName, &comment.userReply, &comment.userTitle, &comment.userLocation, comment.showCommentExcerpt, &comment.hideRegisteredUserName, &comment.commentType, &comment.parentID); err != nil {
+		if sd.Scan(&comment.CommentID, &comment.AssetID, &comment.StatusID, &comment.CommentTitle, &comment.CommentBody, &comment.UserID, &comment.CreateDate, &comment.UpdateDate, &comment.ApproveDate, &comment.CommentExcerpt, &comment.EditorsSelection, &comment.RecommendationCount, &comment.ReplyCount, &comment.IsReply, comment.CommentSequence, &comment.UserDisplayName, &comment.UserReply, &comment.UserTitle, &comment.UserLocation, comment.ShowCommentExcerpt, &comment.HideRegisteredUserName, &comment.CommentType, &comment.ParentID); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -90,7 +91,7 @@ func (m MySQL) GetNewData() Data {
 	if len(d.Comments) == cap(d.Comments) {
 		// Comments is full and we must expand
 		// Double the size and add 1
-		newComments := make([]Comment, len(d.Comments), 2*len(d.Comments)+1)
+		newComments := make([]models.Comment, len(d.Comments), 2*len(d.Comments)+1)
 		copy(newComments, d.Comments)
 		d.Comments = newComments
 	}

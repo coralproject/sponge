@@ -1,5 +1,5 @@
 /*
-Package localDB implements a way to get data into our local database.
+Package localDB implements a way to get data into our local mongo database.
 
 Possible local databases:
 * MongoDB
