@@ -112,35 +112,35 @@ type: user, item, boolAction, associationAction, externalReference
           name: statusID,
           type: int,
           local: ModerationStatus,
-          relation: self,
+          relation: '',
           model: Comment
         },
         {
           name: commentBody
           type: []byte,
           local: Content,
-          relation: 'self',
+          relation: '',
           model: Comment
         },
         {
           name: createDate,
           type: TimeDate,
           local: sourceCreateDate,
-          relation: self,
+          relation: '',
           model: Comment
         },
         {
           name: updateDate,
           type: TimeDate,
           local: sourceUpdateDate,
-          relation: self,
+          relation: '',
           model: Comment
         },
         {
           name: approveDate,
           type: TimeDate,
           local: sourceApproveDate,
-          relation: self,
+          relation: '',
           model: Comment
         },
         {
@@ -183,21 +183,21 @@ type: user, item, boolAction, associationAction, externalReference
         type: int,
         primaryKey: true,
         local: id,
-        relation: self,
+        relation: '',
         model: User
       },
       {
         name: UserDisplayName,
         type: string
         local: Name,
-        relation: self,
+        relation: '',
         model: User
       },
       {
         name: UserLocation,
         type: string
         local: Location,
-        relation: self,
+        relation: '',
         model: User
       }
     ]

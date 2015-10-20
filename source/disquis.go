@@ -8,6 +8,8 @@ External possible sources:
 */
 package source
 
+import "github.com/coralproject/mod-data-import/utils"
+
 /* Implementing the Sources */
 
 //////////// Disquis API SOURCE ////////////
@@ -18,8 +20,8 @@ type DisquisAPI struct {
 }
 
 // Reader on the API brings back the data needed from the API
-func (a DisquisAPI) Reader() Data {
-	var d Data
+func (a DisquisAPI) Reader() utils.Data {
+	var d utils.Data
 	return d
 }
 

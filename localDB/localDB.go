@@ -7,18 +7,12 @@ Possible local databases:
 */
 package localDB
 
-import "github.com/coralproject/mod-data-import/models"
+import "github.com/coralproject/mod-data-import/utils"
 
 ////// Structures  //////
-
-// Data is where we are pushing the data to
-type Data struct {
-	Comments []models.Comment // Look for some kind of structure where to put this data into
-	error    error
-}
 
 // LocalDB is an interface to the different local databases available
 type LocalDB interface {
 	NewLocalDB() (*LocalDB, error)
-	Add(Data) error
+	Add(utils.Data) error // Data is where we are pushing the data to
 }

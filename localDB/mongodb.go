@@ -4,14 +4,23 @@ Package localDB implements a way to get data into our local mongo database.
 Possible local databases:
 * MongoDB
 
+Code Principles
+
+Check list at ...
+
+* Secure. For MongoDB look at security checklist: https://docs.mongodb.org/master/administration/security-checklist/
+* Intentional
+
 */
 package localDB
 
 import (
 	"fmt"
-	"log"
+	"log" // To Do. It needs to use our logging system.
 
 	"github.com/coralproject/mod-data-import/config"
+	"github.com/coralproject/mod-data-import/utils"
+	"gopkg.in/mgo.v2"
 )
 
 /* Implementing the Local DB Connections */
@@ -21,7 +30,7 @@ import (
 // MongoDB has the connection and db to local database
 type MongoDB struct {
 	connection string
-	//database   *bson
+	session    *mgo.Session
 }
 
 ////// Not exported functions //////
@@ -63,7 +72,54 @@ func NewLocalDB() (*MongoDB, error) {
 	return &MongoDB{connection: connection}, err
 }
 
-// Push imports data into the database
-func Push(Data) error {
+// Open a connection to the mongodb
+func (m MongoDB) Open() (*mgo.Session, error) {
+	session, err := mgo.Dial(m.connection)
+	if err != nil {
+		log.Fatal("Error when trying to connect to the mongo database. ", err)
+		return nil, err
+	}
+
+	m.session = session
+
+	return session, nil
+}
+
+// Close closes the db
+func (m MongoDB) Close(session *mgo.Session) error {
+	session.Close()
+	return nil
+}
+
+// Add imports data into the database
+func (m MongoDB) Add(d utils.Data) error {
+
+	session, err := m.Open()
+	if err != nil {
+		log.Fatal("Error when connecting to MongoDB.", err)
+		return err
+	}
+	defer session.Close()
+
+	db := session.DB("coral")
+
+	fmt.Println(db.CollectionNames())
+
+	errLogin := db.Login("gaba", "gabita")
+	if errLogin != nil {
+		log.Fatal("Error when authenticating the database. ", errLogin)
+		return errLogin
+	}
+	defer db.Logout()
+
+	commentsCollection := db.C("Comments")
+
+	//commentsCollection.Create(info * mgo.CollectionInfo)
+	errInsert := commentsCollection.Insert(d)
+	if errInsert != nil {
+		log.Fatal("Error when inserting data into the new collection. ", errInsert)
+		return errInsert
+	}
+
 	return nil
 }

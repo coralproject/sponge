@@ -15,6 +15,7 @@ import (
 
 	"github.com/coralproject/mod-data-import/config"
 	"github.com/coralproject/mod-data-import/models"
+	"github.com/coralproject/mod-data-import/utils"
 	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
 )
 
@@ -65,8 +66,8 @@ func NewSource() (*MySQL, error) {
 }
 
 // GetNewData returns the data requested
-func (m MySQL) GetNewData() Data {
-	var d Data
+func (m MySQL) GetNewData() utils.Data {
+	var d utils.Data
 
 	db, err := m.Open()
 	if err != nil {
