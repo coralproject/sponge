@@ -45,4 +45,7 @@ func main() {
 	}
 
 	errMo = mongo.Add(d)
+	if errMo != nil {
+		log.Fatal("Error when inserting data into local db. ", errMo)
+	}
 }

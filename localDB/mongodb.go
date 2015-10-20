@@ -103,8 +103,6 @@ func (m MongoDB) Add(d utils.Data) error {
 
 	db := session.DB("coral")
 
-	fmt.Println(db.CollectionNames())
-
 	errLogin := db.Login("gaba", "gabita")
 	if errLogin != nil {
 		log.Fatal("Error when authenticating the database. ", errLogin)
