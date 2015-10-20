@@ -114,7 +114,6 @@ func (m MongoDB) Add(d utils.Data) error {
 
 	commentsCollection := db.C("Comments")
 
-	//commentsCollection.Create(info * mgo.CollectionInfo)
 	errInsert := commentsCollection.Insert(d)
 	if errInsert != nil {
 		log.Fatal("Error when inserting data into the new collection. ", errInsert)

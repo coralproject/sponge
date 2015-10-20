@@ -75,7 +75,7 @@ func (m MySQL) GetNewData() utils.Data {
 	}
 	defer m.Close(db)
 
-	sd, err := db.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments where commentID=10")
+	sd, err := db.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments")
 	if err != nil {
 		log.Fatal("Error when quering the DB ", err)
 	}
@@ -171,8 +171,3 @@ func ExampleMySQL() {
 func (m MySQL) GetConnection() string {
 	return m.connection
 }
-
-// Possible Errors
-// - TimeOutReader
-// - WrongConnection
-// - DataErrorReader
