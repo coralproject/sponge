@@ -18,7 +18,14 @@ import (
 )
 
 func main() {
-	// Connects into mysql database and retrieve one row
+
+	// To Do: Get Strategy with configuration's fields for this phase 1 (tier 1)
+
+	/* Syncronization Loop */
+
+	// To Do. 1. Needs to ensure maximum rate limit is not reached
+
+	// Connects into mysql database and retrieve all row
 	var mysql *source.MySQL
 	var errMy error
 
@@ -27,25 +34,36 @@ func main() {
 		log.Fatal("Error when creating new source ", errMy)
 	}
 
+	fmt.Println("Connecting to external source to get updated data: ...")
+
+	// To Do 2. Determine which slice of data to get next
+	// To Do 3. Use the strategy to request the slice (either db query or api call)
+
 	var d utils.Data
 
-	// Get the last data from external source
+	// Get the last data from external source (right now is getting all the data from table comments on external source, it needs to look at the strategy to know which table to bring in)
 	d = mysql.GetNewData()
 	if d.Error != nil {
 		log.Fatal("Error when querying the external database", d.Error)
 	}
 
-	fmt.Println("Pull out this comment from the external source: \n ", d.Comments[0])
+	fmt.Printf("Got %d rows from external source. \n", len(d.Comments))
 
-	// Get that comment into a MongoDB collection called "Comments"
+	// Connects into mongo database and inserts everything
+	fmt.Println("Connecting to local database to insert data: ... ")
 
 	mongo, errMo := localDB.NewLocalDB()
 	if errMo != nil {
 		log.Fatal("Error when creating new local db. ", errMo)
 	}
 
+	// Inserts all the documents into the collection Comments
+
+	fmt.Printf("Inserting %d comments...\n", len(d.Comments))
 	errMo = mongo.Add(d)
 	if errMo != nil {
 		log.Fatal("Error when inserting data into local db. ", errMo)
 	}
+
+	fmt.Println("Done.")
 }
