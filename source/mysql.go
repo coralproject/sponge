@@ -86,19 +86,18 @@ func (m MySQL) GetNewData() utils.Data {
 		if sd.Scan(&comment.CommentID, &comment.AssetID, &comment.StatusID, &comment.CommentTitle, &comment.CommentBody, &comment.UserID, &comment.CreateDate, &comment.UpdateDate, &comment.ApproveDate, &comment.CommentExcerpt, &comment.EditorsSelection, &comment.RecommendationCount, &comment.ReplyCount, &comment.IsReply, comment.CommentSequence, &comment.UserDisplayName, &comment.UserReply, &comment.UserTitle, &comment.UserLocation, comment.ShowCommentExcerpt, &comment.HideRegisteredUserName, &comment.CommentType, &comment.ParentID); err != nil {
 			log.Fatal(err)
 		}
-	}
+		n := len(d.Comments)
+		if len(d.Comments) == cap(d.Comments) {
+			// Comments is full and we must expand
+			// Double the size and add 1
+			newComments := make([]models.Comment, len(d.Comments), 2*len(d.Comments)+1)
+			copy(newComments, d.Comments)
+			d.Comments = newComments
+		}
 
-	n := len(d.Comments)
-	if len(d.Comments) == cap(d.Comments) {
-		// Comments is full and we must expand
-		// Double the size and add 1
-		newComments := make([]models.Comment, len(d.Comments), 2*len(d.Comments)+1)
-		copy(newComments, d.Comments)
-		d.Comments = newComments
+		d.Comments = d.Comments[0 : n+1]
+		d.Comments[n] = comment
 	}
-
-	d.Comments = d.Comments[0 : n+1]
-	d.Comments[n] = comment
 
 	return d
 }
