@@ -110,9 +110,21 @@ func (m MongoDB) Add(d utils.Data) error {
 	}
 	defer db.Logout()
 
-	commentsCollection := db.C("Comments")
+	valComments := make([]interface{}, len(d.Comments))
+	for i, v := range d.Comments {
+		valComments[i] = v
+	}
 
-	errInsert := commentsCollection.Insert(d)
+	// To Do . For each record returned
+	//     Check to ensure the document isn't already added
+	//     If not, add the document and kick off import actions
+	//     If it's there, update the document
+	//     Update the log collection
+
+	// We are going to import d into one collection (Get the name of the collection from the strategy configuration file)
+	// It has to be batch insert to be efficient
+	errInsert := db.C("comments").Insert(valComments...)
+
 	if errInsert != nil {
 		log.Fatal("Error when inserting data into the new collection. ", errInsert)
 		return errInsert
