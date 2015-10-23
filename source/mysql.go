@@ -3,7 +3,7 @@ Package source implements a way to get data from external MySQL sources.
 
 External possible sources:
 * MySQL
-* API?
+* API
 
 */
 package source
@@ -21,34 +21,16 @@ import (
 
 /* Implementing the Sources */
 
-//////////// MYSQL SOURCE ////////////
-
 // MySQL is the struct that has the connection string to the external mysql database
 type MySQL struct {
-	connection string
-	database   *sql.DB
+	Connection string
+	Database   *sql.DB
 }
 
-////// Not exported functions //////
-
-func mysqlConnection(credentials []config.Credential) (string, error) {
-	// look at the credentials related to mysql
-	for i := 0; i < len(credentials); i++ {
-		if credentials[i].Adapter == "mysql" {
-			c := credentials[i]
-			connection := c.Username + ":" + c.Password + "@" + "/" + c.Database
-			return connection, nil
-		}
-	}
-
-	err := fmt.Errorf("Error when trying to get the connection string for mysql.")
-
-	return "", err
-}
-
-////// Exported Functions //////
+/* Exported Functions */
 
 // NewSource returns a new connection
+// Method required by source.Interface
 func NewSource() (*MySQL, error) {
 
 	c, err := config.GetCredentials()
@@ -62,22 +44,28 @@ func NewSource() (*MySQL, error) {
 	}
 
 	// Get MySQL connection string
-	return &MySQL{connection: connection}, err
+	return &MySQL{Connection: connection, Database: nil}, err
 }
 
 // GetNewData returns the data requested
+// Method required by source.Interface
 func (m MySQL) GetNewData() utils.Data {
 	var d utils.Data
 
-	db, err := m.Open()
+	db, err := m.open()
 	if err != nil {
-		log.Fatal("Error when connection to database with ", m.connection, err)
+		log.Fatal("Error when connection to database with ", m.Connection, err)
+		d.Error = err
 	}
-	defer m.Close(db)
 
-	sd, err := db.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments")
+	m.Database = db // To Do: m.Database turns nil outside m.Open, not sure why #FixBug
+
+	defer m.close(db)
+
+	sd, err := m.Database.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments")
 	if err != nil {
 		log.Fatal("Error when quering the DB ", err)
+		d.Error = err
 	}
 
 	var comment models.Comment
@@ -98,39 +86,55 @@ func (m MySQL) GetNewData() utils.Data {
 		d.Comments = d.Comments[0 : n+1]
 		d.Comments[n] = comment
 	}
+	d.Error = nil
 
 	return d
 }
 
-// Other functions, not from the Source interface
+/* Not exported functions */
+
+// Returns the connection string
+func mysqlConnection(credentials []config.Credential) (string, error) {
+	// look at the credentials related to mysql
+	for i := 0; i < len(credentials); i++ {
+		if credentials[i].Adapter == "mysql" {
+			c := credentials[i]
+			connection := c.Username + ":" + c.Password + "@" + "/" + c.Database
+			return connection, nil
+		}
+	}
+
+	err := fmt.Errorf("Error when trying to get the connection string for mysql.")
+
+	return "", err
+}
 
 // Open gives back a pointer to the DB
-func (m MySQL) Open() (*sql.DB, error) {
+func (m MySQL) open() (*sql.DB, error) {
 
-	db, err := sql.Open("mysql", m.connection)
+	var err error
+	m.Database, err = sql.Open("mysql", m.Connection)
 	if err != nil {
-		log.Fatal("Could not connect to MySQL database with ", m.connection, err)
+		log.Fatal("Could not connect to MySQL database with ", m.Connection, err)
 		return nil, err
 	}
 
-	err = db.Ping()
+	err = m.Database.Ping()
 	if err != nil {
-		log.Fatal("Could not connect to the database with ", m.connection, err)
+		log.Fatal("Could not connect to the database with ", m.Connection, err)
 		return nil, err
 	}
 
-	m.database = db
-
-	return db, nil
+	return m.Database, nil
 }
 
 // Close closes the db
-func (m MySQL) Close(db *sql.DB) error {
+func (m MySQL) close(db *sql.DB) error {
 	return db.Close()
 }
 
 // Get returns data from the query to the db
-func (m MySQL) Get(db *sql.DB, query string) *sql.Rows {
+func (m MySQL) get(db *sql.DB, query string) *sql.Rows {
 
 	// LOOK INTO config.Strategy to see which is the strategy to follow
 	d, err := db.Query(query)
@@ -140,33 +144,4 @@ func (m MySQL) Get(db *sql.DB, query string) *sql.Rows {
 
 	// To Do: it needs to return DATA type
 	return d
-}
-
-// ExampleMySQL on how to use the MySQL
-func ExampleMySQL() {
-
-	m, err := NewSource()
-	if err != nil {
-		log.Fatal("Error when creating new source ", err)
-	}
-
-	db, err := m.Open()
-	if err != nil {
-		log.Fatal("Error when connection to database with ", m.connection, err)
-	}
-	defer m.Close(db)
-
-	d := m.Get(db, "SELECT * FROM nyt_comments LIMIT 1")
-	for d.Next() {
-		var comment string
-		if d.Scan(&comment); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("The comment is '%s'.", comment)
-	}
-}
-
-// GetConnection returns the connection string
-func (m MySQL) GetConnection() string {
-	return m.connection
 }

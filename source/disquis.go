@@ -3,7 +3,7 @@ Package source implements a way to get data from external sources.
 
 External possible sources:
 * MySQL
-* API?
+* API
 
 */
 package source
@@ -24,8 +24,3 @@ func (a DisquisAPI) Reader() utils.Data {
 	var d utils.Data
 	return d
 }
-
-// Possible Errors
-// - TimeOutReader
-// - WrongConnection
-// - DataErrorReader
