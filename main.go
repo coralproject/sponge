@@ -11,6 +11,7 @@ import (
 
 	"fmt"
 	"log" // It should be our logger
+	"os"
 
 	"github.com/coralproject/mod-data-import/localDB"
 	"github.com/coralproject/mod-data-import/source"
@@ -19,14 +20,21 @@ import (
 
 func main() {
 
+	// I want to be able to run the program dry (no insert into local db)
+	dry := (os.Args[1] == "--dry")
+	if dry {
+		fmt.Println("Running dry...")
+	}
+
 	// To Do: Get Strategy with configuration's fields for this phase 1 (tier 1)
+
+	// Connects into mysql database and retrieve all row
+	var mysql *source.MySQL
 
 	/* Syncronization Loop */
 
 	// To Do. 1. Needs to ensure maximum rate limit is not reached
 
-	// Connects into mysql database and retrieve all row
-	var mysql *source.MySQL
 	var errMy error
 
 	mysql, errMy = source.NewSource()
@@ -60,7 +68,7 @@ func main() {
 	// Inserts all the documents into the collection Comments
 
 	fmt.Printf("Inserting %d comments...\n", len(d.Comments))
-	errMo = mongo.Add(d)
+	errMo = mongo.Add(d, dry)
 	if errMo != nil {
 		log.Fatal("Error when inserting data into local db. ", errMo)
 	}

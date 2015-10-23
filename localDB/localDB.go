@@ -14,5 +14,5 @@ import "github.com/coralproject/mod-data-import/utils"
 // LocalDB is an interface to the different local databases available
 type LocalDB interface {
 	NewLocalDB() (*LocalDB, error)
-	Add(utils.Data) error // Data is where we are pushing the data to
+	Add(utils.Data, bool) error // Data is where we are pushing the data to, the boolean is to check if run it dry or not
 }

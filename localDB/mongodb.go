@@ -6,8 +6,6 @@ Possible local databases:
 
 Code Principles
 
-Check list at ...
-
 * Secure. For MongoDB look at security checklist: https://docs.mongodb.org/master/administration/security-checklist/
 * Intentional
 
@@ -25,15 +23,83 @@ import (
 
 /* Implementing the Local DB Connections */
 
-//////////// MongoDB local ////////////
-
 // MongoDB has the connection and db to local database
 type MongoDB struct {
 	connection string
 	session    *mgo.Session
 }
 
-////// Not exported functions //////
+/* Exported Functions */
+
+// NewLocalDB gets the connection's string to the mongo database returned into a MongoDB struct type
+// Method required by localDB.Interface
+func NewLocalDB() (*MongoDB, error) {
+
+	c, err := config.GetCredentials()
+	if err != nil {
+		log.Fatal("Error when trying to get credentials. ", err)
+	}
+
+	connection, err := mongoDBConnection(c)
+	if err != nil {
+		log.Fatal("Error when trying to get credentials to connect to mongodb. ", err)
+	}
+
+	// Get mongodb connection string
+	return &MongoDB{connection: connection}, err
+}
+
+// Add imports data into the database
+// Method required by localDB.Interface
+func (m MongoDB) Add(d utils.Data, dry bool) error {
+
+	err := m.open()
+	if err != nil {
+		log.Fatal("Error when connecting to MongoDB.", err)
+		return err
+	}
+	defer m.close()
+
+	db := m.session.DB("coral")
+
+	errLogin := db.Login("gaba", "gabita")
+	if errLogin != nil {
+		log.Fatal("Error when authenticating the database. ", errLogin)
+		return errLogin
+	}
+	defer db.Logout()
+
+	valComments := make([]interface{}, len(d.Comments))
+	for i, v := range d.Comments {
+		// To Do. Convert __id into commentid to create better ObjectIds in Mongodb. v[__id] = v[commentid]
+		valComments[i] = v
+	}
+
+	// To Do . For each record returned
+	//     Check to ensure the document isn't already added
+	//     If not, add the document and kick off import actions
+	//     If it's there, update the document
+	//     Update the log collection
+
+	var errInsert error
+	// We are going to import d into one collection (Get the name of the collection from the strategy configuration file)
+	// It has to be batch insert to be efficient
+	if !dry {
+		errInsert = db.C("comments").Insert(valComments...)
+	} else {
+		fmt.Println("Not inserting anything into local database... ")
+		errInsert = nil
+	}
+
+	if errInsert != nil {
+		log.Fatal("Error when inserting data into the new collection. ", errInsert)
+		return errInsert
+	}
+
+	return nil
+}
+
+/* Not exported functions */
 
 func mongoDBConnection(credentials []config.Credential) (string, error) {
 
@@ -52,83 +118,21 @@ func mongoDBConnection(credentials []config.Credential) (string, error) {
 	return "", err
 }
 
-////// Exported Functions //////
-
-// NewLocalDB initialize the connection to the local database
-func NewLocalDB() (*MongoDB, error) {
-
-	c, err := config.GetCredentials()
-
-	if err != nil {
-		log.Fatal("Error when trying to create new local db", err)
-	}
-
-	connection, err := mongoDBConnection(c)
-	if err != nil {
-		log.Fatal("Error when trying to get credentials to connect to mongodb. ", err)
-	}
-
-	// Get MySQL connection string
-	return &MongoDB{connection: connection}, err
-}
-
 // Open a connection to the mongodb
-func (m MongoDB) Open() (*mgo.Session, error) {
+func (m MongoDB) open() error {
 	session, err := mgo.Dial(m.connection)
 	if err != nil {
 		log.Fatal("Error when trying to connect to the mongo database. ", err)
-		return nil, err
+		return err
 	}
 
 	m.session = session
 
-	return session, nil
-}
-
-// Close closes the db
-func (m MongoDB) Close(session *mgo.Session) error {
-	session.Close()
 	return nil
 }
 
-// Add imports data into the database
-func (m MongoDB) Add(d utils.Data) error {
-
-	session, err := m.Open()
-	if err != nil {
-		log.Fatal("Error when connecting to MongoDB.", err)
-		return err
-	}
-	defer session.Close()
-
-	db := session.DB("coral")
-
-	errLogin := db.Login("gaba", "gabita")
-	if errLogin != nil {
-		log.Fatal("Error when authenticating the database. ", errLogin)
-		return errLogin
-	}
-	defer db.Logout()
-
-	valComments := make([]interface{}, len(d.Comments))
-	for i, v := range d.Comments {
-		valComments[i] = v
-	}
-
-	// To Do . For each record returned
-	//     Check to ensure the document isn't already added
-	//     If not, add the document and kick off import actions
-	//     If it's there, update the document
-	//     Update the log collection
-
-	// We are going to import d into one collection (Get the name of the collection from the strategy configuration file)
-	// It has to be batch insert to be efficient
-	errInsert := db.C("comments").Insert(valComments...)
-
-	if errInsert != nil {
-		log.Fatal("Error when inserting data into the new collection. ", errInsert)
-		return errInsert
-	}
-
+// Close closes the db
+func (m MongoDB) close() error {
+	m.session.Close()
 	return nil
 }
