@@ -1,8 +1,10 @@
-# Data Import Layer
+# Sponge
 
-The import layer tries to keep our _local_ data in sync with _foreign_ data.
+![Coral Sponge](http://ryecityschools.midland.schoolfusion.us/modules/groups/homepagefiles/cms/496886/Image/Webquests/Marine%20Life/Clipart%20of%20Animals/sponge.gif)
 
-It will contain strategies for pulling data from existing systems into Coral.  The data will be pulled into a mongo db without transformation.
+Sponge is Coral's Data Import Layer.  It keeps the _local_ raw data store in sync with _foreign_ data.
+
+Sponge uses _Strategies_ to pulling data from existing systems into Coral ecosystems.  The data will be pulled into a mongo db _raw_, without transformation.
 
 ## Overview
 
