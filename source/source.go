@@ -8,7 +8,7 @@ External possible sources:
 */
 package source
 
-import "github.com/coralproject/mod-data-import/utils"
+import "github.com/coralproject/sponge/utils"
 
 // Source is where the data is coming from (mysql, api)
 type Source interface {

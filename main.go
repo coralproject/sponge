@@ -9,22 +9,19 @@ package main
 import (
 	// It is only being used when defining the NullStrings in the struct
 
+	"flag"
 	"fmt"
 	"log" // It should be our logger
-	"os"
 
-	"github.com/coralproject/mod-data-import/localDB"
-	"github.com/coralproject/mod-data-import/source"
-	"github.com/coralproject/mod-data-import/utils"
+	"github.com/coralproject/sponge/localDB"
+	"github.com/coralproject/sponge/source"
+	"github.com/coralproject/sponge/utils"
 )
 
 func main() {
 
 	// I want to be able to run the program dry (no insert into local db)
-	dry := (os.Args[1] == "--dry")
-	if dry {
-		fmt.Println("Running dry...")
-	}
+	dry := flag.Bool("dry", false, "a bool")
 
 	// To Do: Get Strategy with configuration's fields for this phase 1 (tier 1)
 
@@ -68,7 +65,7 @@ func main() {
 	// Inserts all the documents into the collection Comments
 
 	fmt.Printf("Inserting %d comments...\n", len(d.Comments))
-	errMo = mongo.Add(d, dry)
+	errMo = mongo.Add(d, *dry)
 	if errMo != nil {
 		log.Fatal("Error when inserting data into local db. ", errMo)
 	}

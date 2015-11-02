@@ -7,7 +7,7 @@ Possible local databases:
 */
 package localDB
 
-import "github.com/coralproject/mod-data-import/utils"
+import "github.com/coralproject/sponge/utils"
 
 ////// Structures  //////
 

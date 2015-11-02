@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/coralproject/mod-data-import/models"
+import "github.com/coralproject/sponge/models"
 
 // Data is a struct that has all the db rows and error field
 type Data struct {

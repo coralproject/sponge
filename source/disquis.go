@@ -8,7 +8,7 @@ External possible sources:
 */
 package source
 
-import "github.com/coralproject/mod-data-import/utils"
+import "github.com/coralproject/sponge/utils"
 
 /* Implementing the Sources */
 

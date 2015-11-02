@@ -16,8 +16,8 @@ import (
 	"fmt"
 	"log" // To Do. It needs to use our logging system.
 
-	"github.com/coralproject/mod-data-import/config"
-	"github.com/coralproject/mod-data-import/utils"
+	"github.com/coralproject/sponge/config"
+	"github.com/coralproject/sponge/utils"
 	"gopkg.in/mgo.v2"
 )
 
@@ -71,7 +71,7 @@ func (m MongoDB) Add(d utils.Data, dry bool) error {
 
 	valComments := make([]interface{}, len(d.Comments))
 	for i, v := range d.Comments {
-		// To Do. Convert __id into commentid to create better ObjectIds in Mongodb. v[__id] = v[commentid]
+		// To Do. Convert __id into commentid to create better ObjectIds in Mongodb. v[_id] = v[commentid]
 		valComments[i] = v
 	}
 

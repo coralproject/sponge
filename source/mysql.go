@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/coralproject/mod-data-import/config"
-	"github.com/coralproject/mod-data-import/models"
-	"github.com/coralproject/mod-data-import/utils"
+	"github.com/coralproject/sponge/config"
+	"github.com/coralproject/sponge/models"
+	"github.com/coralproject/sponge/utils"
 	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
 )
 

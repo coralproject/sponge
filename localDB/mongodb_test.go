@@ -3,27 +3,44 @@ package localDB_test
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"testing"
 
-	"github.com/coralproject/mod-data-import/localDB"
-	"github.com/coralproject/mod-data-import/utils"
+	"github.com/coralproject/sponge/localDB"
+	"github.com/coralproject/sponge/models"
+	"github.com/coralproject/sponge/utils"
 )
 
 func TestNewLocalDB(t *testing.T) {
-	t.Skip("It shows what to test.")
 
-	//func NewLocalDB() (*MongoDB, error) {
+	// Stubs config.GetCredentials and mongoDBConnection()
 
+	mongo, errMo := localDB.NewLocalDB()
+
+	// Expect mongodb Type MongoDB struct
+	var typeMongoDB reflect.Type = reflect.TypeOf((*localDB.MongoDB)(nil)).Elem()
+	if reflect.TypeOf(*mongo) == typeMongoDB {
+		t.Error("Expect a mongoDB struct")
+	}
+
+	// Expect err should be nil
+	if errMo != nil {
+		t.Error("Expect a nul error")
+	}
+}
+
+func TestNewLocalDBBadConfig(t *testing.T) {
 	// Error when there is no configuration file
-	// Error when there is no field for mongodb connection in configuration file
-	// Fail if connection string has no specific pattern
+	// config.GetCredentials gives an error
+}
 
-	// The connection string has always be of the form user:
-	//c.Username + ":" + c.Password + "@" + c.Host + "/" + c.Database
+func TestNewLocalDBBadMongoDbConnection(t *testing.T) {
+	// Error when there is no field for mongodb connection in configuration file
+	// mongoDBConnection(c) gives an error
 }
 
 func TestAdd(t *testing.T) {
-	t.Skip("It shows what to test.")
+	t.Skip("Pass.")
 }
 
 /* ON HOW TO USE THIS PACKAGE */
@@ -38,10 +55,10 @@ func ExampleMongoDB() {
 	}
 
 	var d utils.Data
-	d.Comments = []Comment{{commentid: 1}, {commentid: 2}}
+	d.Comments = []models.Comment{{CommentID: 1}, {CommentID: 2}}
 
-	// Inserts all the documents into the collection Comments
-	errMo = mongo.Add(d)
+	// Inserts all the documents into the collection CommentsExample (dry in false)
+	errMo = mongo.Add(d, false)
 	if errMo != nil {
 		log.Fatal("Error when inserting data into local db. ", errMo)
 	}
