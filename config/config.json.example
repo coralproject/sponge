@@ -2,17 +2,27 @@
 	"Name": "Publisher",
 	"Strategy": {
 		"type": "mysql",
-		"tables": ["comments"],
-		"anonymize": false
+		"tables": ["nyt_comments"]
 },
 
-	"Credentials": [{
-		"database":  "",
-		"username":  "",
-		"password":  "",
-		"host":      "localhost",
-		"port":     "5432",
-		"adapter":  "mysql"
-	}]
-
+	"Credentials": [
+		{
+			"database":  "coral",
+			"username":  "",
+			"password":  "",
+			"host":      "localhost",
+			"port":     "5432",
+			"adapter":  "mysql",
+			"type": "source"
+		},
+		{
+			"database":  "coral",
+			"username":  "",
+			"password":  "",
+			"host":      "localhost",
+			"port":     "5432",
+			"adapter":  "mongodb",
+			"type": "local"
+		}
+	]
 }

@@ -19,16 +19,16 @@ This program imports data from a _foreign_ source into a local mongo database.  
 * Wordpress Core - https://codex.wordpress.org/XML-RPC_WordPress_API/Comments
 * Lyvewire - http://answers.livefyre.com/developers/api-reference/
 * Facebook - https://developers.facebook.com/docs/graph-api/reference/v2.5/comment
-  
+
 ### Strategies
 
-* Field translation table: map of 
+* Field translation table: map of
 * Data relationships
 * Limit of rows to request at a time
 * Update Frequency:  
 * Maximum Request Limits
 
-*DB Connection* 
+*DB Connection*
 
 * Connection information: host, port, username, password, database
 * Tables to import: list of tables that will be duplicated in our local collection
@@ -51,20 +51,20 @@ For each table or api in the strategy:
 * Use the strategy to request the slice (either db query or api call)
 	* Update the rate limit counter
 * For each record returned
-	* Check to ensure the document isn't already added 
+	* Check to ensure the document isn't already added
 	* If not, add the document and kick off _import actions_
 	* If it's there, update the document
-	* Update the _log collection_ 
+	* Update the _log collection_
 
 
 ### Application States
 
-#### Initialization Phase 
+#### Initialization Phase
 
 * Initialize the _log_ collection with time that initialization began
 * Kick off _synchronization loop_ at _initialization frequency_
 
-#### Synchronization Phase 
+#### Synchronization Phase
 
 * Kick off the _synchronization loop_ at the _synchronization frequency_
 
