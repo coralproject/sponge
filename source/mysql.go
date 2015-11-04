@@ -10,10 +10,9 @@ package source
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
-	"github.com/coralproject/sponge/config"
+	configuration "github.com/coralproject/sponge/config"
 	"github.com/coralproject/sponge/models"
 	"github.com/coralproject/sponge/utils"
 	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
@@ -27,24 +26,18 @@ type MySQL struct {
 	Database   *sql.DB
 }
 
+var config = *configuration.New() // Reads the configuration file
+
 /* Exported Functions */
 
 // NewSource returns a new connection
 // Method required by source.Interface
-func NewSource() (*MySQL, error) {
+func NewSource() *MySQL {
 
-	c, err := config.GetCredentials()
-	if err != nil {
-		log.Fatal("Error when trying to create new source ", err)
-	}
-
-	connection, err := mysqlConnection(c)
-	if err != nil {
-		log.Fatal("Error when trying to get credentials to connect to mysql. ", err)
-	}
+	connection := mysqlConnection(config)
 
 	// Get MySQL connection string
-	return &MySQL{Connection: connection, Database: nil}, err
+	return &MySQL{Connection: connection, Database: nil}
 }
 
 // GetNewData returns the data requested
@@ -62,7 +55,8 @@ func (m MySQL) GetNewData() utils.Data {
 
 	defer m.close(db)
 
-	sd, err := m.Database.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments")
+	//sd, err := m.Database.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments")
+	sd, err := m.Database.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments limit 10")
 	if err != nil {
 		log.Fatal("Error when quering the DB ", err)
 		d.Error = err
@@ -94,19 +88,13 @@ func (m MySQL) GetNewData() utils.Data {
 /* Not exported functions */
 
 // Returns the connection string
-func mysqlConnection(credentials []config.Credential) (string, error) {
-	// look at the credentials related to mysql
-	for i := 0; i < len(credentials); i++ {
-		if credentials[i].Adapter == "mysql" {
-			c := credentials[i]
-			connection := c.Username + ":" + c.Password + "@" + "/" + c.Database
-			return connection, nil
-		}
-	}
+func mysqlConnection(conf configuration.Config) string {
 
-	err := fmt.Errorf("Error when trying to get the connection string for mysql.")
+	cred := conf.GetCredentials("source")
 
-	return "", err
+	connection := cred.Username + ":" + cred.Password + "@" + "/" + cred.Database
+
+	return connection
 }
 
 // Open gives back a pointer to the DB

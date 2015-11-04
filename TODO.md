@@ -1,8 +1,7 @@
-## What I'm working on (Log)
+## What I'm working on (Gaba)
 
 On the day:
 * get the configuration everywhere (mongodb.go has hardcoded configuration)
-* mongodb is giving an error!
 * be able to add more than one table from the strategy
 * YAML
 

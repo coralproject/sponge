@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"log" // To Do. It needs to use our logging system.
 
-	"github.com/coralproject/sponge/config"
+	configuration "github.com/coralproject/sponge/config"
 	"github.com/coralproject/sponge/utils"
 	"gopkg.in/mgo.v2"
 )
@@ -29,40 +29,29 @@ type MongoDB struct {
 	session    *mgo.Session
 }
 
+// global variables related to configuration
+var config = *configuration.New()               // Reads the configuration file
+var credential = config.GetCredentials("local") // Gets the credentials
+
 /* Exported Functions */
 
 // NewLocalDB gets the connection's string to the mongo database returned into a MongoDB struct type
 // Method required by localDB.Interface
-func NewLocalDB() (*MongoDB, error) {
-
-	c, err := config.GetCredentials()
-	if err != nil {
-		log.Fatal("Error when trying to get credentials. ", err)
-	}
-
-	connection, err := mongoDBConnection(c)
-	if err != nil {
-		log.Fatal("Error when trying to get credentials to connect to mongodb. ", err)
-	}
-
+func NewLocalDB() *MongoDB {
 	// Get mongodb connection string
-	return &MongoDB{connection: connection}, err
+	return &MongoDB{connection: mongoDBConnection()}
 }
 
 // Add imports data into the database
 // Method required by localDB.Interface
+// m has to be already initialized with a connection
 func (m MongoDB) Add(d utils.Data, dry bool) error {
 
-	err := m.open()
-	if err != nil {
-		log.Fatal("Error when connecting to MongoDB.", err)
-		return err
-	}
-	defer m.close()
+	// Connect to the local Database
+	db := m.session.DB(credential.Database)
 
-	db := m.session.DB("coral")
+	errLogin := db.Login(credential.Username, credential.Password)
 
-	errLogin := db.Login("gaba", "gabita")
 	if errLogin != nil {
 		log.Fatal("Error when authenticating the database. ", errLogin)
 		return errLogin
@@ -99,40 +88,35 @@ func (m MongoDB) Add(d utils.Data, dry bool) error {
 	return nil
 }
 
-/* Not exported functions */
-
-func mongoDBConnection(credentials []config.Credential) (string, error) {
-
-	// look at the credentials related to mongodb
-	for i := 0; i < len(credentials); i++ {
-		if credentials[i].Adapter == "mongodb" {
-			c := credentials[i]
-			//mongodb: //[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-			connection := c.Username + ":" + c.Password + "@" + c.Host + "/" + c.Database
-			return connection, nil
-		}
-	}
-
-	err := fmt.Errorf("Error when trying to get the connection string for mongodb.")
-
-	return "", err
-}
-
 // Open a connection to the mongodb
-func (m MongoDB) open() error {
-	session, err := mgo.Dial(m.connection)
+// We are setting m's session field so m has to be a pointer.
+func (m *MongoDB) Open() error {
+	var err error
+
+	m.session, err = mgo.Dial(m.connection)
+
 	if err != nil {
 		log.Fatal("Error when trying to connect to the mongo database. ", err)
-		return err
 	}
 
-	m.session = session
-
-	return nil
+	return err
 }
 
 // Close closes the db
-func (m MongoDB) close() error {
-	m.session.Close()
+func (m MongoDB) Close() error {
+
+	if m.session != nil {
+		m.session.Close()
+	}
+
 	return nil
+}
+
+/* Not exported functions */
+
+// Returns the connection string
+func mongoDBConnection() string {
+	//mongodb: //[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+	connection := credential.Username + ":" + credential.Password + "@" + credential.Host + "/" + credential.Database
+	return connection
 }

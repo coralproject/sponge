@@ -20,30 +20,26 @@ import (
 
 func main() {
 
+	/* Arguments for the command line */
 	// I want to be able to run the program dry (no insert into local db)
-	dry := flag.Bool("dry", false, "a bool")
+	var dry bool
+	flag.BoolVar(&dry, "dry", false, "a bool") // To Do
 
-	// To Do: Get Strategy with configuration's fields for this phase 1 (tier 1)
+	/* Connects into mysql database and retrieve all data */
 
-	// Connects into mysql database and retrieve all row
 	var mysql *source.MySQL
-
-	/* Syncronization Loop */
-
 	// To Do. 1. Needs to ensure maximum rate limit is not reached
+	mysql = source.NewSource()
 
-	var errMy error
-
-	mysql, errMy = source.NewSource()
-	if errMy != nil {
-		log.Fatal("Error when creating new source ", errMy)
-	}
-
+	// Print message
 	fmt.Println("Connecting to external source to get updated data: ...")
 
 	// To Do 2. Determine which slice of data to get next
 	// To Do 3. Use the strategy to request the slice (either db query or api call)
 
+	/* EXTRACT DATA */
+
+	// We are using d to store data from the source
 	var d utils.Data
 
 	// Get the last data from external source (right now is getting all the data from table comments on external source, it needs to look at the strategy to know which table to bring in)
@@ -52,23 +48,35 @@ func main() {
 		log.Fatal("Error when querying the external database", d.Error)
 	}
 
+	// Print message
 	fmt.Printf("Got %d rows from external source. \n", len(d.Comments))
 
-	// Connects into mongo database and inserts everything
+	// Print message
 	fmt.Println("Connecting to local database to insert data: ... ")
 
-	mongo, errMo := localDB.NewLocalDB()
-	if errMo != nil {
-		log.Fatal("Error when creating new local db. ", errMo)
+	// the database we are importing into
+	mongo := localDB.NewLocalDB()
+
+	/* Open a session for MongoDB */
+	err := mongo.Open()
+	if err != nil {
+		log.Fatal("Error when connecting to MongoDB.", err)
 	}
 
-	// Inserts all the documents into the collection Comments
+	/* Close the session when it is done */
+	defer mongo.Close()
 
+	/* INSERT DATA */
+
+	// To Do: do this for all the collections/tables in the configuration
+
+	// Inserts all the documents into the collection Comments
 	fmt.Printf("Inserting %d comments...\n", len(d.Comments))
-	errMo = mongo.Add(d, *dry)
+	errMo := mongo.Add(d, false) // To Do: It should have dry variable instead of false.
 	if errMo != nil {
 		log.Fatal("Error when inserting data into local db. ", errMo)
 	}
 
 	fmt.Println("Done.")
+
 }
