@@ -1,6 +1,5 @@
 # Scripts
 
-
 ##### Fields in the NYT data sample
 
 1. commentID: comment's identifier. Numeric. - YES
@@ -29,7 +28,8 @@
 
 ##### Creating the table.
 
-```CREATE TABLE nyt_comments (
+```
+CREATE TABLE nyt_comments (
   commentID INT NOT NULL,
   assetID INT NOT NULL,
   statusID INT,
@@ -54,13 +54,16 @@
   commentType VARCHAR(255),
   parentID VARCHAR(255),
   PRIMARY KEY (commentID)
-)  ENGINE=InnoDB DEFAULT CHARSET=utf8;```
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
 
 ##### Loading the data
 
-```LOAD DATA INFILE 'nyt_sample_data.csv'
+```
+LOAD DATA INFILE 'nyt_sample_data.csv'
 INTO TABLE nyt_comments
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;```
+IGNORE 1 ROWS;
+```
