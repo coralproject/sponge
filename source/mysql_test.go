@@ -1,3 +1,4 @@
+/* package source_test is doing unit tests for the source package */
 package source_test
 
 import (
@@ -7,22 +8,31 @@ import (
 	"testing"
 )
 
-type FakeMySQL struct {
-	Connection string
-	Database   *sql.DB
+// NewSource returns a new MySQL struct
+// Signature: NewSource() *MySQL
+// It depends on the credentials to get the connection string
+func TestNewSource(t *testing.T){
+
+	m := NewSource()
+
+	// m should be type MySQL
+	
+	// m should have a valid connection string
+	// m should not have a database connection
 }
 
-// NewSource returns a new MySQL struct
-// Signature: NewSource() (*MySQL, error)
-// It depends on the credentials
-func NewSource() (*FakeMySQL, error) {
-	var f *FakeMySQL
-	f = {
-		Connection: "",
-		Database: nil
-	}
-	return f, nil
-}
+
+
+
+
+
+
+
+
+
+
+/**/
+
 
 func TestGetNewData(t *testing.T) {
 

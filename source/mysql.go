@@ -10,13 +10,21 @@ package source
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"strings"
 
 	configuration "github.com/coralproject/sponge/config"
+
 	"github.com/coralproject/sponge/models"
 	"github.com/coralproject/sponge/utils"
+
 	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
 )
+
+// Global configuration variables that holds all the configuration from the config file
+var config = *configuration.New() // Reads the configuration file
+var credential = config.GetCredential("mysql")
 
 /* Implementing the Sources */
 
@@ -26,23 +34,32 @@ type MySQL struct {
 	Database   *sql.DB
 }
 
-var config = *configuration.New() // Reads the configuration file
-
 /* Exported Functions */
 
-// NewSource returns a new connection
+// NewSource returns a new Mysql struct with the connection string in it
 // Method required by source.Interface
 func NewSource() *MySQL {
-
-	connection := mysqlConnection(config)
+	//connection := mysqlConnection(config)
 
 	// Get MySQL connection string
-	return &MySQL{Connection: connection, Database: nil}
+	return &MySQL{Connection: connection(), Database: nil}
 }
 
-// GetNewData returns the data requested
+// // GetNewData returns the data requested
+// // Method required by source.Interface
+// func (m *MySQL) GetNewData() utils.Data {
+// 	var d utils.Data
+// 	return d
+// }
+
+// GetNewData returns the data requested for the table
 // Method required by source.Interface
-func (m MySQL) GetNewData() utils.Data {
+// To Do: we need to get the tables from the configuration file and get data per table with limit
+func (m *MySQL) GetNewData() utils.Data {
+
+	table := config.GetTables()["comments"] // To Do: it needs to get all the tables and get data for each one. Maybe concurrent for each table?
+
+	// We are sending the data in the utils.Data
 	var d utils.Data
 
 	db, err := m.open()
@@ -51,12 +68,14 @@ func (m MySQL) GetNewData() utils.Data {
 		d.Error = err
 	}
 
-	m.Database = db // To Do: m.Database turns nil outside m.Open, not sure why #FixBug
+	m.Database = db
 
 	defer m.close(db)
 
+	queryString := strings.Join([]string{"SELECT * from", table, "limit 10"}, " ")
 	//sd, err := m.Database.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments")
-	sd, err := m.Database.Query("SELECT commentID, assetID, statusID, commentTitle, commentBody, userID, createDate, updateDate, approveDate, commentExcerpt, editorsSelection, recommendationCount, replyCount, isReply, commentSequence, userDisplayName, userReply, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType, parentID from nyt_comments limit 10")
+	sd, err := m.Database.Query(queryString)
+
 	if err != nil {
 		log.Fatal("Error when quering the DB ", err)
 		d.Error = err
@@ -87,18 +106,24 @@ func (m MySQL) GetNewData() utils.Data {
 
 /* Not exported functions */
 
-// Returns the connection string
-func mysqlConnection(conf configuration.Config) string {
+// // Returns the connection string
+// func mysqlConnection(conf configuration.Config) string {
+//
+// 	cred := conf.GetCredential("source")
+//
+// 	connection := cred.Username + ":" + cred.Password + "@" + "/" + cred.Database
+//
+// 	return connection
+// }
 
-	cred := conf.GetCredentials("source")
-
-	connection := cred.Username + ":" + cred.Password + "@" + "/" + cred.Database
-
-	return connection
+func connection() string {
+	fmt.Println(credential)
+	fmt.Println("credential")
+	return credential.Username + ":" + credential.Password + "@" + "/" + credential.Database
 }
 
 // Open gives back a pointer to the DB
-func (m MySQL) open() (*sql.DB, error) {
+func (m *MySQL) open() (*sql.DB, error) {
 
 	var err error
 	m.Database, err = sql.Open("mysql", m.Connection)

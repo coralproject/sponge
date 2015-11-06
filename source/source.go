@@ -12,6 +12,6 @@ import "github.com/coralproject/sponge/utils"
 
 // Source is where the data is coming from (mysql, api)
 type Source interface {
-	NewSource() (*Source, error)
+	NewSource() *Source
 	GetNewData() utils.Data // Data is a struct that has all the db rows and error field
 }
