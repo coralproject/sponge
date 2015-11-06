@@ -30,8 +30,8 @@ type MongoDB struct {
 }
 
 // global variables related to configuration
-var config = *configuration.New()               // Reads the configuration file
-var credential = config.GetCredentials("local") // Gets the credentials
+var config = *configuration.New()              // Reads the configuration file
+var credential = config.GetCredential("local") // Gets the credentials
 
 /* Exported Functions */
 
