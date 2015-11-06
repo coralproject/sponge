@@ -1,8 +1,10 @@
 {
-	"Name": "Publisher",
+	"Name": "New York Times",
 	"Strategy": {
 		"type": "mysql",
-		"tables": ["nyt_comments"]
+		"tables": {
+			"comments": "nyt_comments"
+		}
 },
 
 	"Credentials": [
