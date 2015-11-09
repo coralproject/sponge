@@ -7,12 +7,12 @@ Possible local databases:
 */
 package localDB
 
-import "github.com/coralproject/sponge/utils"
+import "github.com/coralproject/sponge/models"
 
 ////// Structures  //////
 
 // LocalDB is an interface to the different local databases available
 type LocalDB interface {
 	NewLocalDB() (*LocalDB, error)
-	Add(utils.Data, bool) error // Data is where we are pushing the data to, the boolean is to check if run it dry or not
+	Add(string, []models.Model, bool) error // Data is where we are pushing the data to, the boolean is to check if run it dry or not
 }

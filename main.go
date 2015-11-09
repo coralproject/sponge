@@ -11,11 +11,11 @@ import (
 
 	"flag"
 	"fmt"
-	"log" // It should be our logger
+	"log"
+	// It should be our logger
 
 	"github.com/coralproject/sponge/localDB"
 	"github.com/coralproject/sponge/source"
-	"github.com/coralproject/sponge/utils"
 )
 
 func main() {
@@ -25,58 +25,32 @@ func main() {
 	var dry bool
 	flag.BoolVar(&dry, "dry", false, "a bool") // To Do
 
-	/* Connects into mysql database and retrieve all data */
+	/* The external data source */
 
 	var mysql *source.MySQL
-	// To Do. 1. Needs to ensure maximum rate limit is not reached
-	mysql = source.NewSource()
+	mysql = source.NewSource() // To Do. 1. Needs to ensure maximum rate limit is not reached
 
-	// Print message
-	fmt.Println("Connecting to external source to get updated data: ...")
-
-	// To Do 2. Determine which slice of data to get next
-	// To Do 3. Use the strategy to request the slice (either db query or api call)
+	/* The local data source */
+	var mongo *localDB.MongoDB
+	mongo = localDB.NewLocalDB()
 
 	/* EXTRACT DATA */
 
-	// We are using d to store data from the source
-	var d utils.Data
+	// Get All the tables from the MySQL
+	tables := mysql.GetTables()
+	//var data utils.Data
+	for collectionName, tableName := range tables {
+		fmt.Printf("Connecting to external source to get updated data for %s. \n", tableName)
+		data := mysql.GetData(tableName)
+		if data.Error != nil {
+			fmt.Println("Error when getting data from ", tableName)
+		}
 
-	// Get the last data from external source (right now is getting all the data from table comments on external source, it needs to look at the strategy to know which table to bring in)
-	d = mysql.GetNewData()
-	if d.Error != nil {
-		log.Fatal("Error when querying the external database", d.Error)
+		fmt.Printf("Connecting to local database to get push data into %s. \n", collectionName)
+		err := mongo.Add(collectionName, data.Rows, dry) //push data into mongodb local collection <-- go routine
+		if err != nil {
+			log.Fatal("It was not able to push data into Mongodb. ", err)
+		}
 	}
-
-	// Print message
-	fmt.Printf("Got %d rows from external source. \n", len(d.Comments))
-
-	// Print message
-	fmt.Println("Connecting to local database to insert data: ... ")
-
-	// the database we are importing into
-	mongo := localDB.NewLocalDB()
-
-	/* Open a session for MongoDB */
-	err := mongo.Open()
-	if err != nil {
-		log.Fatal("Error when connecting to MongoDB.", err)
-	}
-
-	/* Close the session when it is done */
-	defer mongo.Close()
-
-	/* INSERT DATA */
-
-	// To Do: do this for all the collections/tables in the configuration
-
-	// Inserts all the documents into the collection Comments
-	fmt.Printf("Inserting %d comments...\n", len(d.Comments))
-	errMo := mongo.Add(d, false) // To Do: It should have dry variable instead of false.
-	if errMo != nil {
-		log.Fatal("Error when inserting data into local db. ", errMo)
-	}
-
-	fmt.Println("Done.")
 
 }

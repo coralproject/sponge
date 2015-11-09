@@ -14,10 +14,10 @@ package localDB
 
 import (
 	"fmt"
-	"log" // To Do. It needs to use our logging system.
+	"log" // To Do. It needs to use our logging systema
 
 	configuration "github.com/coralproject/sponge/config"
-	"github.com/coralproject/sponge/utils"
+	"github.com/coralproject/sponge/models"
 	"gopkg.in/mgo.v2"
 )
 
@@ -42,50 +42,45 @@ func NewLocalDB() *MongoDB {
 	return &MongoDB{connection: mongoDBConnection()}
 }
 
-// Add imports data into the database
-// Method required by localDB.Interface
+// Add imports data into the collection collection in mongodb
 // m has to be already initialized with a connection
-func (m MongoDB) Add(d utils.Data, dry bool) error {
+func (m MongoDB) Add(collection string, data []models.Model, dry bool) error {
 
-	// Connect to the local Database
+	err := m.Open()
+	if err != nil {
+		fmt.Println("Error when opening connection to Mongodb. ", err)
+	}
+
+	// Connect to the local Database and close connection when done
 	db := m.session.DB(credential.Database)
 
 	errLogin := db.Login(credential.Username, credential.Password)
-
 	if errLogin != nil {
 		log.Fatal("Error when authenticating the database. ", errLogin)
 		return errLogin
 	}
 	defer db.Logout()
 
-	valComments := make([]interface{}, len(d.Comments))
-	for i, v := range d.Comments {
-		// To Do. Convert __id into commentid to create better ObjectIds in Mongodb. v[_id] = v[commentid]
-		valComments[i] = v
-	}
-
-	// To Do . For each record returned
-	//     Check to ensure the document isn't already added
-	//     If not, add the document and kick off import actions
-	//     If it's there, update the document
-	//     Update the log collection
-
-	var errInsert error
-	// We are going to import d into one collection (Get the name of the collection from the strategy configuration file)
-	// It has to be batch insert to be efficient
+	// Push Data
+	var errI error
 	if !dry {
-		errInsert = db.C("comments").Insert(valComments...)
+
+		// To Do: We need to find a better way to send the data... []interface{} and []model.Model are different type...
+		new := make([]interface{}, len(data))
+		for i, v := range data {
+			new[i] = v
+		}
+		// INSERT Collection
+		errI = db.C(collection).Insert(new...)
+		if errI != nil {
+			log.Fatal("Error when inserting data into the new collection. ", errI)
+		}
 	} else {
-		fmt.Println("Not inserting anything into local database... ")
-		errInsert = nil
+		log.Println("Running DRY: Not inserting anything into local database... ")
+		errI = nil
 	}
 
-	if errInsert != nil {
-		log.Fatal("Error when inserting data into the new collection. ", errInsert)
-		return errInsert
-	}
-
-	return nil
+	return errI
 }
 
 // Open a connection to the mongodb

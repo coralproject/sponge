@@ -1,10 +1,20 @@
 package utils
 
-import "github.com/coralproject/sponge/models"
+import (
+	"fmt"
+
+	"github.com/coralproject/sponge/models"
+)
 
 // Data is a struct that has all the db rows and error field
 type Data struct {
-	//Rows     *sql.Rows // Move into appropiate structure because this has to work for API too (no database/sql)
-	Comments []models.Comment
-	Error    error
+	Error error
+	Rows  []models.Model // this could be any of the interfaces defined in models package
+	Type  string
+}
+
+// New creates a new model based on a table name
+func New(table string) models.Model {
+	fmt.Println("POOO")
+	return models.Comment{}
 }

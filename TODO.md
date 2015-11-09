@@ -1,17 +1,15 @@
 ## What I'm working on (Gaba)
 
-On the day:
-* get the configuration everywhere (mongodb.go has hardcoded configuration)
-* be able to add more than one table from the strategy
-* YAML
+* Adds more tables
 
 This days:
 * add benchmark functions for pulling from mysql and adding to mongodb
 * Add TESTS
+* YAML
+* Move from Scan to prepare stmt
 
 
 FUTURE
-* Move from Scan to prepare stmt
 * Divide importing in phases (by LIMIT)
 * Look at concurrency for importing?
 * Get Strategy's configuration for this phase 1 (tier 1)
