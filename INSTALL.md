@@ -28,6 +28,18 @@ cp config/config.json.example config/config.json
  go run main.go
 ```
 
+
+### To build
+
+```
+ go build -o import
+```
+
+```
+ ./import
+```
+
+
 ### Example data to import
 
 At ./scripts/LOADCSV.md we have the mysql commands on how to import the ./script/nyt_sample_data.csv example.
