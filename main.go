@@ -18,6 +18,22 @@ import (
 	"github.com/coralproject/sponge/source"
 )
 
+// Import from tablename to collectionName
+func retrieves(collectionName string, tableName string, mysql *source.MySQL, mongo *localDB.MongoDB, dry bool) {
+
+	fmt.Printf("Connecting to external source to get updated data for %s. \n", tableName)
+	data := mysql.GetData(tableName, collectionName)
+	if data.Error != nil {
+		fmt.Println("Error when getting data from ", tableName)
+	}
+
+	fmt.Printf("Connecting to local database to get push data into %s. \n", collectionName)
+	err := mongo.Add(collectionName, data.Rows, dry) //push data into mongodb local collection <-- go routine
+	if err != nil {
+		log.Fatal("It was not able to push data into Mongodb. ", err)
+	}
+}
+
 func main() {
 
 	/* Arguments for the command line */
@@ -41,17 +57,7 @@ func main() {
 
 	//var data utils.Data
 	for collectionName, tableName := range tables {
-		fmt.Printf("Connecting to external source to get updated data for %s. \n", tableName)
-		data := mysql.GetData(tableName, collectionName)
-		if data.Error != nil {
-			fmt.Println("Error when getting data from ", tableName)
-		}
-
-		fmt.Printf("Connecting to local database to get push data into %s. \n", collectionName)
-		err := mongo.Add(collectionName, data.Rows, dry) //push data into mongodb local collection <-- go routine
-		if err != nil {
-			log.Fatal("It was not able to push data into Mongodb. ", err)
-		}
+		retrieves(collectionName, tableName, mysql, mongo, dry)
 	}
 
 }

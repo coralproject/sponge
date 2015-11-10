@@ -60,7 +60,7 @@ func (m *MySQL) GetData(tableName string, modelName string) utils.Data {
 	}
 	defer m.close(db)
 
-	queryString := strings.Join([]string{"SELECT * from", tableName, "limit 10"}, " ")
+	queryString := strings.Join([]string{"SELECT * from", tableName}, " ")
 
 	// Returns data into a map that is a json structure
 	d.Rows, err = runQuery(db, modelName, queryString)
