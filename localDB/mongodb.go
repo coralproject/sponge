@@ -75,6 +75,8 @@ func (m MongoDB) Add(collection string, data []models.Model, dry bool) error {
 		if errI != nil {
 			log.Fatal("Error when inserting data into the new collection. ", errI)
 		}
+		n, _ := db.C(collection).Count()
+		fmt.Printf("The collection %s contains %d records.\n", collection, n)
 	} else {
 		log.Println("Running DRY: Not inserting anything into local database... ")
 		errI = nil

@@ -21,6 +21,11 @@ cp config/config.json.example config/config.json
 	* Strategy:  type of database and tables you are importing.
 	* Credentials: Array of credentials with information about each database you are importing from and to. Adapter is the kind of DBMS and type is source or local.
 
+* To add a new collection/table
+
+	* Modify config.json with collection: table in the strategy.Tables
+	* Add new model to models interface.  This needs to be done automatically.
+	* Adds new collection to the utils New func. This needs to be done automatically.
 
 ### How to run
 

@@ -38,10 +38,11 @@ func main() {
 
 	// Get All the tables from the MySQL
 	tables := mysql.GetTables()
+
 	//var data utils.Data
 	for collectionName, tableName := range tables {
 		fmt.Printf("Connecting to external source to get updated data for %s. \n", tableName)
-		data := mysql.GetData(tableName)
+		data := mysql.GetData(tableName, collectionName)
 		if data.Error != nil {
 			fmt.Println("Error when getting data from ", tableName)
 		}

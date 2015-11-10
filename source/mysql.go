@@ -49,7 +49,7 @@ func (m *MySQL) GetTables() map[string]string {
 }
 
 // GetData returns the raw data from the tableName
-func (m *MySQL) GetData(tableName string) utils.Data {
+func (m *MySQL) GetData(tableName string, modelName string) utils.Data {
 
 	var d utils.Data
 
@@ -63,20 +63,24 @@ func (m *MySQL) GetData(tableName string) utils.Data {
 	queryString := strings.Join([]string{"SELECT * from", tableName, "limit 10"}, " ")
 
 	// Returns data into a map that is a json structure
-	d.Rows, err = runQuery(db, tableName, queryString)
-	d.Type = tableName
+	d.Rows, err = runQuery(db, modelName, queryString)
+	d.Type = modelName
 	if err != nil {
 		log.Fatal("Error when quering the DB ", err)
 	}
+
 	return d
 }
 
-func runQuery(db *sql.DB, table string, query string) ([]models.Model, error) {
+func runQuery(db *sql.DB, model string, query string) ([]models.Model, error) {
 
 	var m models.Model
 	var ms []models.Model
 
-	m = utils.New(table)
+	m, errM := utils.New(model)
+	if errM != nil {
+		log.Fatal("Error when trying to create a new model. ", errM)
+	}
 
 	sd, err := db.Query(query)
 	if err != nil {

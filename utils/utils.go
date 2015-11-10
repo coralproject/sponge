@@ -14,7 +14,19 @@ type Data struct {
 }
 
 // New creates a new model based on a table name
-func New(table string) models.Model {
-	fmt.Println("POOO")
-	return models.Comment{}
+// IT NEEDS TO FIND A WAY TO USE REFLECT/METAPROGRAMMING TO CREATE A "OBJECT" OF TYPE TABLE FOR THE MODELS
+func New(table string) (models.Model, error) {
+
+	var err error
+
+	if table == "Comment" {
+		return models.Comment{}, err
+	} else if table == "Asset" {
+		return models.Asset{}, err
+	} else if table == "Note" {
+		return models.Note{}, err
+	}
+
+	err = fmt.Errorf("Error when trying to create a new model with %s. ", table)
+	return nil, err
 }
