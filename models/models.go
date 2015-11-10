@@ -14,6 +14,24 @@ type Model interface {
 	ProcessData(*sql.Rows) ([]Model, error)
 }
 
+// New creates a new model based on a table name. This is a Factory func
+// IT NEEDS TO FIND A WAY TO USE REFLECT/METAPROGRAMMING TO CREATE A "OBJECT" OF TYPE TABLE FOR THE MODELS
+func New(table string) (Model, error) {
+
+	var err error
+
+	if table == "Comment" {
+		return Comment{}, err
+	} else if table == "Asset" {
+		return Asset{}, err
+	} else if table == "Note" {
+		return Note{}, err
+	}
+
+	err = fmt.Errorf("Error when trying to create a new model with %s. ", table)
+	return nil, err
+}
+
 /* FOR COMMENTS */
 
 // Comment is the struct that will hold the comment row

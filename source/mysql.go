@@ -77,7 +77,8 @@ func runQuery(db *sql.DB, model string, query string) ([]models.Model, error) {
 	var m models.Model
 	var ms []models.Model
 
-	m, errM := utils.New(model)
+	// Creates a Model of the type model. A model struct.
+	m, errM := models.New(model)
 	if errM != nil {
 		log.Fatal("Error when trying to create a new model. ", errM)
 	}
