@@ -1,4 +1,4 @@
-package localDB_test
+package fiddler_test
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coralproject/sponge/localDB"
+	"github.com/coralproject/sponge/fiddler"
 	"github.com/coralproject/sponge/models"
 	"github.com/coralproject/sponge/utils"
 )
@@ -34,9 +34,9 @@ func TestNewLocalDB(t *testing.T) {
 
 	// Stubs config.GetCredentials and mongoDBConnection()
 
-	mongo := localDB.NewLocalDB()
+	mongo := fiddler.NewLocalDB()
 	// Expect mongodb Type MongoDB struct
-	var typeMongoDB = reflect.TypeOf((*localDB.MongoDB)(nil)).Elem()
+	var typeMongoDB = reflect.TypeOf((*fiddler.MongoDB)(nil)).Elem()
 	if reflect.TypeOf(*mongo) == typeMongoDB {
 		t.Error("Expect a mongoDB struct to be type ", typeMongoDB)
 	}
@@ -64,7 +64,7 @@ func TestAdd(t *testing.T) {
 func ExampleMongoDB() {
 
 	// Connects into mongo database
-	mongo := localDB.NewLocalDB()
+	mongo := fiddler.NewLocalDB()
 
 	var d utils.Data
 	d.Comments = []models.Comment{{CommentID: 1}, {CommentID: 2}}

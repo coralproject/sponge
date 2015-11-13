@@ -1,22 +1,13 @@
 /*
-Package localDB implements a way to get data into our local mongo database.
-
-Possible local databases:
-* MongoDB
-
-Code Principles
-
-* Secure. For MongoDB look at security checklist: https://docs.mongodb.org/master/administration/security-checklist/
-* Intentional
+Package fiddler implements a way to get data into our local database source.
 
 */
-package localDB
+package fiddler
 
 import (
 	"fmt"
 	"log" // To Do. It needs to use our logging systema
 
-	configuration "github.com/coralproject/sponge/config"
 	"github.com/coralproject/sponge/models"
 	"gopkg.in/mgo.v2"
 )
@@ -29,22 +20,21 @@ type MongoDB struct {
 	session    *mgo.Session
 }
 
-// global variables related to configuration
-var config = *configuration.New()                // Reads the configuration file
-var credential = config.GetCredential("mongodb") // Gets the credentials
+// global variables related to mongo credentials
+var mongoCredential = config.GetCredential("mongodb") // Gets the credentials
 
 /* Exported Functions */
 
 // NewLocalDB gets the connection's string to the mongo database returned into a MongoDB struct type
 // Method required by localDB.Interface
-func NewLocalDB() *MongoDB {
+func (m *MongoDB) NewLocalDB() *MongoDB {
 	// Get mongodb connection string
 	return &MongoDB{connection: mongoDBConnection()}
 }
 
 // Add imports data into the collection collection in mongodb
 // m has to be already initialized with a connection
-func (m MongoDB) Add(collection string, data []models.Model, dry bool) error {
+func (m MongoDB) Add(collection string, data []models.Model) error {
 
 	err := m.Open()
 	if err != nil {
@@ -52,9 +42,9 @@ func (m MongoDB) Add(collection string, data []models.Model, dry bool) error {
 	}
 
 	// Connect to the local Database and close connection when done
-	db := m.session.DB(credential.Database)
+	db := m.session.DB(mongoCredential.Database)
 
-	errLogin := db.Login(credential.Username, credential.Password)
+	errLogin := db.Login(mongoCredential.Username, mongoCredential.Password)
 	if errLogin != nil {
 		log.Fatal("Error when authenticating the database. ", errLogin)
 		return errLogin
@@ -63,24 +53,19 @@ func (m MongoDB) Add(collection string, data []models.Model, dry bool) error {
 
 	// Push Data
 	var errI error
-	if !dry {
 
-		// To Do: We need to find a better way to send the data... []interface{} and []model.Model are different type...
-		new := make([]interface{}, len(data))
-		for i, v := range data {
-			new[i] = v
-		}
-		// INSERT Collection
-		errI = db.C(collection).Insert(new...)
-		if errI != nil {
-			log.Fatal("Error when inserting data into the new collection. ", errI)
-		}
-		n, _ := db.C(collection).Count()
-		fmt.Printf("The collection %s contains %d records.\n", collection, n)
-	} else {
-		log.Println("Running DRY: Not inserting anything into local database... ")
-		errI = nil
+	// To Do: We need to find a better way to send the data... []interface{} and []model.Model are different type...
+	new := make([]interface{}, len(data))
+	for i, v := range data {
+		new[i] = v
 	}
+	// INSERT Collection
+	errI = db.C(collection).Insert(new...)
+	if errI != nil {
+		log.Fatal("Error when inserting data into the new collection. ", errI)
+	}
+	n, _ := db.C(collection).Count()
+	fmt.Printf("The collection %s contains %d records.\n", collection, n)
 
 	return errI
 }
@@ -114,6 +99,6 @@ func (m MongoDB) Close() error {
 // Returns the connection string
 func mongoDBConnection() string {
 	//mongodb: //[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	connection := credential.Username + ":" + credential.Password + "@" + credential.Host + "/" + credential.Database
+	connection := mongoCredential.Username + ":" + mongoCredential.Password + "@" + mongoCredential.Host + "/" + mongoCredential.Database
 	return connection
 }
