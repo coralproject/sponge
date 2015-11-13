@@ -41,10 +41,17 @@ import (
 	"github.com/coralproject/core/log"
 )
 
+// Table holds the struct on what is the external source's table name and fields
+type Table struct {
+	Name   string            `json:"name"`
+	Fields map[string]string `json:"fields"`
+}
+
 // Strategy explains which tables or data we are getting from the source.
 type Strategy struct {
-	Typesource string            `json:"typesource"`
-	Tables     map[string]string `json:"tables"`
+	Typesource string           `json:"typesource"`
+	Tables     map[string]Table `json:"tables"`
+	Action     []Table
 }
 
 // Credential has the information to connect to the external source.
@@ -74,6 +81,7 @@ type Config struct {
 func New() *Config {
 
 	config, err := readConfigFile("config/config.json")
+
 	if err != nil {
 		log.Fatal("Error when getting the configuration file. ", err)
 	}
@@ -110,9 +118,19 @@ func (conf Config) GetStrategy() Strategy {
 }
 
 // GetTables returns a list of tables to be imported
-func (conf Config) GetTables() map[string]string {
+func (conf Config) GetTables() map[string]Table {
 	// To Do: catch the error when no Tables
 	return conf.Strategy.Tables
+}
+
+// GetTableName returns the external source's table mapped to the coral model
+func (conf Config) GetTableName(modelName string) string {
+	return conf.Strategy.Tables[modelName].Name
+}
+
+// GetTableFields returns the external source's table fields mapped to the coral model
+func (conf Config) GetTableFields(modelName string) map[string]string {
+	return conf.Strategy.Tables[modelName].Fields
 }
 
 /* Not Exported Functions */

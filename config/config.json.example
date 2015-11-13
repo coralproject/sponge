@@ -1,12 +1,35 @@
 {
 	"Name": "New York Times",
 	"Strategy": {
-		"type": "mysql",
-		"tables": {
-			"comments": "nyt_comments"
-		}
-},
-
+		"Typesource": "mysql",
+		"Tables": {
+			"Comment": {
+				"name": "crnr_comment",
+				"fields": {
+					"ID": "CommentID",
+					"Body": "CommentBody",
+					"ParentID": "ParentID",
+					"AssetID": "AssetID",
+					"StatusID": "StatusID",
+					"CreateDate": "CreateDate",
+					"UpdateDate": "UpdateDate",
+					"ApproveDate": "ApproveDate",
+					"Raw": "EditorSelection, RecommendationCount, NotifyViaEmailOnApproval"
+				}
+			}
+		},
+		"Action": [
+			{
+				"name": "crnr_comment_notes",
+				"fields": {
+					"type": "Note",
+					"userID": "UserID",
+					"value": "CommentNoteID",
+					"CreateDate": ""
+				}
+			}
+			]
+	},
 	"Credentials": [
 		{
 			"database":  "coral",
