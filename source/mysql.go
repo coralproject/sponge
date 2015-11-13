@@ -34,19 +34,24 @@ type MySQL struct {
 // NewSource returns a new Mysql struct with the connection string in it
 // Method required by source.Interface
 func NewSource() *MySQL {
-	//connection := mysqlConnection(config)
 
 	// Get MySQL connection string
 	return &MySQL{Connection: connection(), Database: nil}
 }
 
 // GetTables gets all the tables names from this data source
-func (m *MySQL) GetTables() map[string]string {
-	return config.Strategy.Tables
+func (m *MySQL) GetTables() []string {
+	keys := []string{}
+	for k := range config.Strategy.Tables {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // GetData returns the raw data from the tableName
-func (m *MySQL) GetData(tableName string, modelName string) utils.Data {
+func (m *MySQL) GetData(modelName string) utils.Data {
+
+	tableName := config.GetTableName(modelName)
 
 	var d utils.Data
 	d.Type = modelName
@@ -61,7 +66,7 @@ func (m *MySQL) GetData(tableName string, modelName string) utils.Data {
 	queryString := strings.Join([]string{"SELECT * from", tableName}, " ")
 
 	// Returns data into a map that is a json structure
-	d.Rows, err = runQuery(db, modelName, queryString)
+	d.Rows, err = RunQuery(db, modelName, queryString)
 	if err != nil {
 		d.Error = err
 	}
@@ -69,8 +74,8 @@ func (m *MySQL) GetData(tableName string, modelName string) utils.Data {
 	return d
 }
 
-// Run the query on the db
-func runQuery(db *sql.DB, model string, query string) ([]models.Model, error) {
+// RunQuery executes the query on the db
+func RunQuery(db *sql.DB, model string, query string) ([]models.Model, error) {
 
 	var m models.Model
 	var ms []models.Model
