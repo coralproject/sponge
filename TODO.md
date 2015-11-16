@@ -7,7 +7,6 @@ Today
 
 This days:
 * add benchmark functions for pulling from mysql and adding to mongodb
-* YAML for configuration system
 * Move from Scan to prepare stmt
 
 

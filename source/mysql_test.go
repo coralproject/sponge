@@ -67,7 +67,7 @@ func TestGetData(t *testing.T) {
 	var m *source.MySQL
 	m = source.NewSource()
 
-	d := m.GetData("testTable", "testModel") // function being tested
+	d := m.GetData("testModel") // function being tested
 
 	if d.Error != nil {
 		t.Error("Error should be nil.")
