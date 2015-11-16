@@ -1,0 +1,30 @@
+{
+	"Name": "New York Times",
+	"Strategy": {
+		"type": "mysql",
+		"tables": {
+			"comments": "nyt_comments"
+		}
+},
+
+	"Credentials": [
+		{
+			"database":  "coral",
+			"username":  "",
+			"password":  "",
+			"host":      "localhost",
+			"port":     "5432",
+			"adapter":  "mysql",
+			"type": "source"
+		},
+		{
+			"database":  "coral",
+			"username":  "",
+			"password":  "",
+			"host":      "localhost",
+			"port":     "5432",
+			"adapter":  "mongodb",
+			"type": "local"
+		}
+	]
+}
