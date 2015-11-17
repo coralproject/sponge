@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log" // To Do. It needs to use our logging systema
 
+	configuration "github.com/coralproject/sponge/config"
 	"github.com/coralproject/sponge/models"
 	"gopkg.in/mgo.v2"
 )
@@ -21,7 +22,7 @@ type MongoDB struct {
 }
 
 // global variables related to mongo credentials
-var mongoCredential = config.GetCredential("mongodb") // Gets the credentials
+var mongoCredential = config.GetCredential("mongodb").(configuration.CredentialDatabase) // Gets the credentials
 
 /* Exported Functions */
 
