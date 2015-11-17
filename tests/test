@@ -1,0 +1,56 @@
+package test
+
+reflect.DeepEqual
+
+
+// build integration
+
+var fooAddr = flag.String()
+
+func TestFoo(t()) {
+f, err := newFoo(*fooAddr)
+}
+
+
+on save
+  go fmt
+  goimports
+on build
+  go vet
+  golint
+  go test
+on deploy
+  go test
+    -tags=integration
+  gocov?
+  Travis
+
+Dependency Management
+
+VENDOR
+
+copy dependencies with submodules -> no
+copy dependencies with subtrees -> it works ok
+copy dependency with a tool (maybe godep) -> still didnt do it but it seems everything is going this way
+
+
+If what your building is a
+
+- Binary -> _vendor subdirectory (acts as a root to another go path) + blessed build process(maybe started by a makefile), with prefixed gopath
+
+- Library -> vendor subdirectory + use tool to rewrite your imports
+
+
+BUILD
+
+- Development -> go build
+- Official -> make
+
+
+DEPLOY
+
+stateless services (request router, 12-factor model, scaled, containers)
+
+Versus
+
+stateful services (mysql, redis, any/no model, provisioned, containers?)

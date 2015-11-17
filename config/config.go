@@ -36,10 +36,22 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 
 	"github.com/coralproject/core/log"
 )
+
+//* Errors used in this package *//
+
+// When trying to connect to the database with the connection string
+type endpointError struct {
+	key string
+}
+
+func (e endpointError) Error() string {
+	return fmt.Sprintf("Error when trying to get endpoint %s.", e.key)
+}
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
@@ -54,8 +66,13 @@ type Strategy struct {
 	Action     []Table
 }
 
-// Credential has the information to connect to the external source.
-type Credential struct {
+// Credential is the interface for APIs or Database Sources
+type Credential interface {
+	GetAdapter() string
+}
+
+// CredentialDatabase has the information to connect to the external databaase source.
+type CredentialDatabase struct {
 	Database string `json:"database"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -63,6 +80,53 @@ type Credential struct {
 	Port     string `json:"port"`    //= '5432'
 	Adapter  string `json:"adapter"` //= 'mysql'
 	Type     string `json:"type"`    //= 'source' or 'local'
+}
+
+// GetAdapter returns the adapter
+func (c CredentialDatabase) GetAdapter() string {
+	return c.Adapter
+}
+
+// CredentialAPI has the information to connect to an external API source.
+type CredentialAPI struct {
+	Username  string            `json:"username"` // BasicAuth
+	Password  string            `json:"password"` // BasicAuth
+	Adapter   string            `json:"adapter"`
+	Endpoints map[string]string `json:"endpoints"`
+}
+
+// GetAdapter returns the adapter
+func (c CredentialAPI) GetAdapter() string {
+	return c.Adapter
+}
+
+// GetEndpoints returns all the endpoints
+func (c CredentialAPI) GetEndpoints() map[string]string {
+	return c.Endpoints
+}
+
+// GetEndpoint gives the endpoint for that modelName
+func (c CredentialAPI) GetEndpoint(modelName string) (string, error) {
+	endpoints := c.GetEndpoints()
+	for k, e := range endpoints {
+		if k == modelName {
+			return e, nil
+		}
+	}
+	err := fmt.Errorf("Endpoint %s not found.", modelName)
+
+	return "", err
+}
+
+// GetAuthenticationEndpoint returns the authentication url
+func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
+	for key, val := range c.Endpoints {
+		if key == "authentication" {
+			return val, nil
+		}
+	}
+
+	return "", endpointError{key: "authentication"}
 }
 
 // Config is a structure with all the information for the specitic strategy (how to get the data, from which source)
@@ -97,7 +161,7 @@ func (conf Config) GetCredential(adapter string) Credential {
 
 	// look at the credentials related to local database (mongodb in our original example)
 	for i := 0; i < len(credentials); i++ {
-		if credentials[i].Adapter == adapter {
+		if credentials[i].GetAdapter() == adapter {
 			cred = credentials[i]
 			return cred
 		}
