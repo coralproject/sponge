@@ -1,0 +1,53 @@
+{
+	"Name": "New York Times",
+	"Strategy": {
+		"Typesource": "mysql",
+		"Tables": {
+			"Comment": {
+				"name": "crnr_comment",
+				"fields": {
+					"ID": "CommentID",
+					"Body": "CommentBody",
+					"ParentID": "ParentID",
+					"AssetID": "AssetID",
+					"StatusID": "StatusID",
+					"CreateDate": "CreateDate",
+					"UpdateDate": "UpdateDate",
+					"ApproveDate": "ApproveDate",
+					"Raw": "EditorSelection, RecommendationCount, NotifyViaEmailOnApproval"
+				}
+			}
+		},
+		"Action": [
+			{
+				"name": "crnr_comment_notes",
+				"fields": {
+					"type": "Note",
+					"userID": "UserID",
+					"value": "CommentNoteID",
+					"CreateDate": ""
+				}
+			}
+			]
+	},
+	"Credentials": [
+		{
+			"database":  "coral",
+			"username":  "",
+			"password":  "",
+			"host":      "localhost",
+			"port":     "5432",
+			"adapter":  "mysql",
+			"type": "source"
+		},
+		{
+			"database":  "coral",
+			"username":  "",
+			"password":  "",
+			"host":      "localhost",
+			"port":     "5432",
+			"adapter":  "mongodb",
+			"type": "local"
+		}
+	]
+}

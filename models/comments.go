@@ -1,0 +1,80 @@
+package models
+
+import (
+	"database/sql"
+	"fmt"
+	"time"
+
+	"github.com/coralproject/sponge/config"
+)
+
+//* COMMENTS *//
+
+// Comment is the comment struct
+type Comment struct {
+	ID          string         `json:"id" bson:"_id"`
+	Body        string         `json:"body" bson:"body"`
+	ParentID    sql.NullString `json:"parentId" bson:"parentId"`
+	AssetID     string         `json:"assetId" bson:"assetId"`
+	StatusID    string         `json:"status" bson:"status"`
+	CreateDate  time.Time      `json:"createdDate" bson:"createdDate"`
+	UpdateDate  time.Time      `json:"updatedDate" bson:"updatedDate"`
+	ApproveDate time.Time      `json:"approvedDate" bson:"approvedDate"`
+	Raw         []string       `json:"raws" bson:"raws"`
+	Actions     []Action       `json:"actions" bson:"actions"`
+	Notes       []Note         `json:"notes" bson:"notes"`
+}
+
+// Print only print information about the comment
+func (c Comment) Print() {
+	fmt.Println("Comment: ", c.ID, c.Body)
+}
+
+// Transform get the data from sd
+func (c Comment) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
+	var comment Comment
+	var comments []Model
+
+	var createDate string
+	var updateDate sql.NullString // convert from sql.NullString to string
+	var approveDate sql.NullString
+
+	// commentID assetID statusID commentTitle commentBody userID createDate updateDate approveDate commentExcerpt editorsSelection recommendationCount
+	// replyCount isReply commentSequence userDisplayName userURL userTitle userLocation showCommentExcerpt hideRegisteredUserName commentType parentID
+	// notifyViaEmailOnApproval]
+
+	var title, userid, editorSelection, recomendationCount, replyCount, isReply, userDisplayName sql.NullString
+	var userURL, userTitle, userLocation, showCommentExcerpt, hideRegisteredUserName, commentType sql.NullString
+	var commentExcerpt, commentSequence, notifyViaEmailOnApproval sql.NullString
+
+	for sd.Next() {
+		// To Do: It needs to be able to get the extra fields into raw (we don't really know in the code which fields the comment table has)
+		err := sd.Scan(&comment.ID, &comment.AssetID, &comment.StatusID, &title, &comment.Body, &userid, &createDate, &updateDate,
+			&approveDate, &commentExcerpt, &editorSelection, &recomendationCount,
+			&replyCount, &isReply, &commentSequence, &userDisplayName, &userURL, &userTitle, &userLocation, &showCommentExcerpt,
+			&hideRegisteredUserName, &commentType, &comment.ParentID, &notifyViaEmailOnApproval)
+		//&comment.ParentID, &comment.AssetID, &comment.StatusID, &createDate, &updateDate,
+		//&comment.ApproveDate, &raws)
+		if err != nil {
+			return nil, scanError{error: err}
+		}
+
+		comment.CreateDate, _ = time.Parse("2006-01-02", createDate) // To Do: I need to see how to dinamically discover what is the dateTime layout
+		//comment.UpdateDate, _ = time.Parse("2006-01-02", updateDate)
+		//comment.ApproveDate, _ = time.Parse("2006-01-02", approveDate)
+
+		n := len(comments)
+		if len(comments) == cap(comments) {
+			// Comments is full and we must expand
+			// Double the size and add 1
+			newComments := make([]Model, len(comments), 2*len(comments)+1)
+			copy(newComments, comments)
+			comments = newComments
+		}
+		comments = comments[0 : n+1]
+		//comment.Raw = strings.Split(raws, ",")
+		comments[n] = comment
+	}
+
+	return comments, nil
+}
