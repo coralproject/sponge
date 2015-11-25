@@ -12,14 +12,13 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/coralproject/sponge/models"
-	"github.com/coralproject/sponge/utils"
+	configuration "github.com/coralproject/sponge/config"
 
 	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
 )
 
 // Global configuration variables that holds the credentials for mysql
-var credential = config.GetCredential("mysql")
+var credential = config.GetCredential("mysql").(configuration.CredentialDatabase)
 
 /* Implementing the Sources */
 
@@ -49,52 +48,27 @@ func (m *MySQL) GetTables() []string {
 }
 
 // GetData returns the raw data from the tableName
-func (m *MySQL) GetData(modelName string) utils.Data {
+func (m *MySQL) GetData(modelName string) (*sql.Rows, error) {
 
+	// Get the corresponding table to the modelName
 	tableName := config.GetTableName(modelName)
 
-	var d utils.Data
-	d.Type = modelName
-
+	// open a connection
 	db, err := m.open()
 	if err != nil {
-		d.Error = err
-		return d
+		return nil, err
 	}
 	defer m.close(db)
 
-	queryString := strings.Join([]string{"SELECT * from", tableName}, " ")
-
-	// Returns data into a map that is a json structure
-	d.Rows, err = RunQuery(db, modelName, queryString)
-	if err != nil {
-		d.Error = err
-	}
-
-	return d
-}
-
-// RunQuery executes the query on the db
-func RunQuery(db *sql.DB, model string, query string) ([]models.Model, error) {
-
-	var m models.Model
-	var ms []models.Model
-
-	// Creates a Model of the type model. A model struct.
-	m, err := models.New(model)
-	if err != nil {
-		return nil, modelError{model: model}
-	}
+	// the query string . To Do. Select only the stuff you are going to use
+	query := strings.Join([]string{"SELECT * from", tableName}, " ")
 
 	sd, err := db.Query(query)
 	if err != nil {
 		return nil, queryError{query: query}
 	}
-	defer sd.Close()
 
-	ms, err = m.Transform(sd)
-
-	return ms, err
+	return sd, nil
 }
 
 //////* Not exported functions *//////
@@ -125,17 +99,3 @@ func (m *MySQL) open() (*sql.DB, error) {
 func (m MySQL) close(db *sql.DB) error {
 	return db.Close()
 }
-
-// // Get returns data from the query to the db
-// func (m MySQL) get(db *sql.DB, query string) (*sql.Rows, error) {
-//
-// 	// LOOK INTO config.Strategy to see which is the strategy to follow
-// 	d, err := db.Query(query)
-// 	if err != nil {
-// 		log.Fatal("Error when quering the DB ", err)
-// 		return nil, queryError{query: query}
-// 	}
-//
-// 	// To Do: it needs to return DATA type
-// 	return d, nil
-// }
