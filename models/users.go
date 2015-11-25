@@ -3,7 +3,8 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"strings"
+
+	"github.com/coralproject/sponge/config"
 )
 
 // User has information on the user
@@ -17,17 +18,28 @@ type User struct {
 
 // Print only print information about the user
 func (u User) Print() {
-	fmt.Println("Asset: ", u.ID, u.Name)
+	fmt.Println("User: ", u.ID, u.Name)
 }
 
 // Transform get the data from sd
-func (u User) Transform(sd *sql.Rows) ([]Model, error) {
+func (u User) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 	var user User
 	var users []Model
-	var raws string
+	var id, cassetID, statusID, title,
+		body, createDate, updateDate,
+		approveDate, commentExcerpt, editorSelection, recomendationCount,
+		replyCount, isReply, commentSequence, userURL, userTitle,
+		userLocation, showCommentExcerpt, hideRegisteredUserName, commentType,
+		parentID, notifyViaEmailOnApproval sql.NullString
 
 	for sd.Next() {
-		err := sd.Scan(&user.ID, &user.DisplayName, &user.Name, &user.Email, &raws)
+
+		err := sd.Scan(&id, &cassetID, &statusID, &title,
+			&body, &user.ID, &createDate, &updateDate,
+			&approveDate, &commentExcerpt, &editorSelection, &recomendationCount,
+			&replyCount, &isReply, &commentSequence, &user.DisplayName, &userURL, &userTitle,
+			&userLocation, &showCommentExcerpt, &hideRegisteredUserName, &commentType,
+			&parentID, &notifyViaEmailOnApproval)
 		if err != nil {
 			return nil, scanError{error: err}
 		}
@@ -41,7 +53,7 @@ func (u User) Transform(sd *sql.Rows) ([]Model, error) {
 			users = newUsers
 		}
 		users = users[0 : n+1]
-		user.Raw = strings.Split(raws, ",")
+		//user.Raw = strings.Split(raws, ",")
 		users[n] = user
 	}
 
