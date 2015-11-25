@@ -1,57 +1,16 @@
 /*
 Package config handles the loading and distribution of configuration related with external sources.
-
-{
-
-	"Name": "New York Times",
-	Strategy: {
-		"type": "mysql", //To Do: look for a better Name
-		"tables": {"comments": "nyt_comments"},
-	},
-
-	"Credentials": [{
-		"database":  "",
-		"username":  "",
-		"password":  "",
-		"host":      "",
-		"port":     (int),
-		"adapter":  "".
-		"type": "source"
-	},
-	{
-		"database":  "",
-		"username":  "",
-		"password":  "",
-		"host":      "",
-		"port":     (int),
-		"adapter":  "".
-		"type": "local"
-	}
-	]
-
-}
-
 */
 package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/coralproject/core/log"
 )
 
-//* Errors used in this package *//
-
-// When trying to connect to the database with the connection string
-type endpointError struct {
-	key string
-}
-
-func (e endpointError) Error() string {
-	return fmt.Sprintf("Error when trying to get endpoint %s.", e.key)
-}
+//* CONFIGURATION STRUCTS *//
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
@@ -113,9 +72,8 @@ func (c CredentialAPI) GetEndpoint(modelName string) (string, error) {
 			return e, nil
 		}
 	}
-	err := fmt.Errorf("Endpoint %s not found.", modelName)
 
-	return "", err
+	return "", endpointError{key: modelName}
 }
 
 // GetAuthenticationEndpoint returns the authentication url
@@ -129,25 +87,30 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 	return "", endpointError{key: "authentication"}
 }
 
+// Credentials are all the credentials for external and internal data sources
+type Credentials struct {
+	Databases []CredentialDatabase
+	APIs      []CredentialAPI
+}
+
 // Config is a structure with all the information for the specitic strategy (how to get the data, from which source)
 type Config struct {
 	Name        string
 	Strategy    Strategy
-	Credentials []Credential
+	Credentials Credentials // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
 }
-
-// Pointer to the master config record
-//var config *Config
 
 /* Exported Functions */
 
 // New creates a new config
 func New() *Config {
 
-	config, err := readConfigFile("config/config.json")
+	f := "config/config.json"
+	config, err := readConfigFile(f)
 
 	if err != nil {
-		log.Fatal("Error when getting the configuration file. ", err)
+		log.Fatal(err.Error())
+		return nil
 	}
 
 	return config
@@ -157,17 +120,26 @@ func New() *Config {
 func (conf Config) GetCredential(adapter string) Credential {
 	var cred Credential
 
-	credentials := conf.Credentials
+	creds := conf.Credentials.APIs
 
 	// look at the credentials related to local database (mongodb in our original example)
-	for i := 0; i < len(credentials); i++ {
-		if credentials[i].GetAdapter() == adapter {
-			cred = credentials[i]
+	for i := 0; i < len(creds); i++ {
+		if creds[i].GetAdapter() == adapter {
+			cred = creds[i]
 			return cred
 		}
 	}
 
-	log.Fatal("Error when trying to get the credential for ", adapter)
+	creda := conf.Credentials.Databases
+
+	// look at the credentials related to local database (mongodb in our original example)
+	for i := 0; i < len(creda); i++ {
+		if creda[i].GetAdapter() == adapter {
+			cred = creda[i]
+			return cred
+		}
+	}
+	log.Fatal(getCredentialError{adapter: adapter}.Error())
 
 	return cred
 }
@@ -216,14 +188,18 @@ func readConfigFile(f string) (*Config, error) {
 
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
-		log.Fatal("Unable to read config file ", f, err)
-		return nil, err
+		e := readingFileError{filename: f, err: err}
+		log.Fatal(e.Error())
+
+		return nil, e
 	}
 
 	config, err := unmarshal(content)
 	if err != nil {
-		log.Fatal("Unable to parse JSON in config file ", f, err)
-		return nil, err
+		e := parseFileError{filename: f, err: err}
+		log.Fatal(e.Error())
+
+		return nil, e
 	}
 
 	return config, err
