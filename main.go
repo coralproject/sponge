@@ -36,7 +36,7 @@ func main() {
 			log.Printf("### Getting data from external source.\n")
 			data, err := mysql.GetData(modelName)
 			if err != nil {
-				log.Printf("Error when getting mysql data from table %s. ", modelName)
+				log.Printf("Error when getting mysql data from table %s. Error: %s", modelName, err.Error())
 				return
 			}
 

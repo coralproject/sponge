@@ -25,21 +25,15 @@ func (u User) Print() {
 func (u User) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 	var user User
 	var users []Model
-	var id, cassetID, statusID, title,
-		body, createDate, updateDate,
-		approveDate, commentExcerpt, editorSelection, recomendationCount,
-		replyCount, isReply, commentSequence, userURL, userTitle,
-		userLocation, showCommentExcerpt, hideRegisteredUserName, commentType,
-		parentID, notifyViaEmailOnApproval sql.NullString
+	// var id, cassetID, statusID, title,
+	// 	body, createDate, updateDate,
+	// 	approveDate, commentExcerpt, editorSelection, recomendationCount,
+	// 	replyCount, isReply, commentSequence, userURL, userTitle,
+	// 	userLocation, showCommentExcerpt, hideRegisteredUserName, commentType,
+	// 	parentID, notifyViaEmailOnApproval sql.NullString
 
 	for sd.Next() {
-
-		err := sd.Scan(&id, &cassetID, &statusID, &title,
-			&body, &user.ID, &createDate, &updateDate,
-			&approveDate, &commentExcerpt, &editorSelection, &recomendationCount,
-			&replyCount, &isReply, &commentSequence, &user.DisplayName, &userURL, &userTitle,
-			&userLocation, &showCommentExcerpt, &hideRegisteredUserName, &commentType,
-			&parentID, &notifyViaEmailOnApproval)
+		err := sd.Scan(&user.ID, &user.DisplayName)
 		if err != nil {
 			return nil, scanError{error: err}
 		}

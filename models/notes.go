@@ -31,10 +31,9 @@ func (n Note) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 
 	var createDate string
 	var updateDate string
-	var userID, userDisplayName string
 
 	for sd.Next() {
-		err := sd.Scan(&note.ID, &note.CommentID, &userID, &userDisplayName, &createDate, &updateDate, &note.CommentNote)
+		err := sd.Scan(&note.ID, &note.CommentID, &note.CommentNote, &createDate, &updateDate)
 		if err != nil {
 			return nil, scanError{error: err}
 		}
