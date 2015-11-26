@@ -52,6 +52,7 @@ func (m *MySQL) GetData(modelName string) (*sql.Rows, error) {
 
 	// Get the corresponding table to the modelName
 	tableName := config.GetTableName(modelName)
+	tableFields := config.GetTableFields(modelName) // map[string]string
 
 	// open a connection
 	db, err := m.open()
@@ -60,12 +61,22 @@ func (m *MySQL) GetData(modelName string) (*sql.Rows, error) {
 	}
 	defer m.close(db)
 
-	// the query string . To Do. Select only the stuff you are going to use
-	query := strings.Join([]string{"SELECT * from", tableName}, " ")
+	// Fields for that table
+	f := make([]string, 0, len(tableFields))
+	for _, value := range tableFields {
+		if value != "" {
+			f = append(f, value)
+		}
+	}
 
+	fields := strings.Join(f, ", ")
+
+	// Get only the fields that we are going to use
+	// the query string . To Do. Select only the stuff you are going to use
+	query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
 	sd, err := db.Query(query)
 	if err != nil {
-		return nil, queryError{query: query}
+		return nil, queryError{query: query, error: err}
 	}
 
 	return sd, nil

@@ -16,10 +16,11 @@ func (e connectError) Error() string {
 // When trying to query the database with the query string
 type queryError struct {
 	query string
+	error error
 }
 
 func (e queryError) Error() string {
-	return fmt.Sprintf("Error when quering the database with %s.", e.query)
+	return fmt.Sprintf("Error when quering the database with %s.Error: %s", e.query, e.error.Error())
 }
 
 // When trying to create a new model... <-- To Do
