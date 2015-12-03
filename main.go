@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/coralproject/sponge/fiddler"
-	"github.com/coralproject/sponge/shelf"
 	"github.com/coralproject/sponge/source"
 )
 
@@ -42,19 +41,21 @@ func main() {
 
 			// Transform the data
 			log.Printf("### Transforming data to the coral schema.\n")
-			dataCoral, err := fiddler.Transform(modelName, data)
+			_, err = fiddler.Transform(modelName, data)
 			if err != nil {
 				log.Printf(err.Error())
 				return
 			}
 
-			// Send it to Shelf
-			log.Printf("### Pushing data into collection %s. ### \n", modelName)
-			err = shelf.Add(modelName, dataCoral)
-			if err != nil {
-				log.Printf("Error when pushing data into the shelf, collection %s. \n", modelName)
-				return
-			}
+			//fmt.Println(dataCoral)
+
+			// // Send it to Shelf
+			// log.Printf("### Pushing data into collection %s. ### \n", modelName)
+			// err = shelf.Add(modelName, dataCoral)
+			// if err != nil {
+			// 	log.Printf("Error when pushing data into the shelf, collection %s. \n", modelName)
+			// 	return
+			// }
 
 		}(modelName)
 	}
