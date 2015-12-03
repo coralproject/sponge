@@ -31,3 +31,10 @@ type modelError struct {
 func (e modelError) Error() string {
 	return fmt.Sprintf("Error when trying to create a new model %s.", e.model)
 }
+
+// When trying to find the connection to dbms
+type notFoundError struct{ dbms string }
+
+func (e notFoundError) Error() string {
+	return fmt.Sprintf("Error when trying to get the dbms %s.", e.dbms)
+}

@@ -46,6 +46,11 @@ func (c CredentialDatabase) GetAdapter() string {
 	return c.Adapter
 }
 
+// GetType returns the adapter
+func (c CredentialDatabase) GetType() string {
+	return c.Type
+}
+
 // CredentialAPI has the information to connect to an external API source.
 type CredentialAPI struct {
 	Username  string            `json:"username"` // BasicAuth
@@ -117,14 +122,14 @@ func New() *Config {
 }
 
 // GetCredential returns the credentials for connection with the external source
-func (conf Config) GetCredential(adapter string) Credential {
+func (conf Config) GetCredential(a string, t string) Credential {
 	var cred Credential
 
 	creds := conf.Credentials.APIs
 
 	// look at the credentials related to local database (mongodb in our original example)
 	for i := 0; i < len(creds); i++ {
-		if creds[i].GetAdapter() == adapter {
+		if creds[i].GetAdapter() == a {
 			cred = creds[i]
 			return cred
 		}
@@ -134,12 +139,12 @@ func (conf Config) GetCredential(adapter string) Credential {
 
 	// look at the credentials related to local database (mongodb in our original example)
 	for i := 0; i < len(creda); i++ {
-		if creda[i].GetAdapter() == adapter {
+		if creda[i].GetAdapter() == a && creda[i].GetType() == t {
 			cred = creda[i]
 			return cred
 		}
 	}
-	log.Fatal(getCredentialError{adapter: adapter}.Error())
+	log.Fatal(getCredentialError{adapter: a}.Error())
 
 	return cred
 }

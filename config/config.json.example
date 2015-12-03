@@ -13,8 +13,39 @@
 					"StatusID": "StatusID",
 					"CreateDate": "CreateDate",
 					"UpdateDate": "UpdateDate",
-					"ApproveDate": "ApproveDate",
-					"Raw": "EditorSelection, RecommendationCount, NotifyViaEmailOnApproval"
+					"ApproveDate": "ApproveDate"
+				}
+			},
+			"Asset": {
+				"name": "crnr_asset",
+				"fields": {
+					"ID":"AssetID",
+					"VendorID": "VendorID",
+					"SourceID": "SourceID",
+					"AssetURL": "AssetURL",
+					"CreateDate": "CreateDate",
+					"UpdateDate": "UpdateDate",
+					"Taxonomy": ""
+				}
+			},
+			"Note": {
+				"name": "crnr_comment_notes",
+				"fields": {
+					"ID": "commentNoteID",
+					"CommentID": "CommentID",
+					"CommentNote": "CommentNote",
+					"CreateDate": "CreateDate",
+					"UpdateDate": "UpdateDate"
+				}
+			},
+			"User": {
+				"name": "crnr_comment",
+				"fields": {
+					"id": "UserID",
+					"displayname": "UserDisplayName",
+					"name": "",
+					"avatar": "",
+					"email": ""
 				}
 			}
 		},
@@ -27,27 +58,58 @@
 					"value": "CommentNoteID",
 					"CreateDate": ""
 				}
+			},
+			{
+				"name": "crnr_comment",
+				"fields": {
+					"type": "Comment",
+					"userid": "UserID",
+					"value": "CommentID",
+					"CredateDate": ""
+				}
 			}
-			]
+		]
 	},
-	"Credentials": [
-		{
-			"database":  "coral",
-			"username":  "",
-			"password":  "",
-			"host":      "localhost",
-			"port":     "5432",
-			"adapter":  "mysql",
-			"type": "source"
-		},
-		{
-			"database":  "coral",
-			"username":  "",
-			"password":  "",
-			"host":      "localhost",
-			"port":     "5432",
-			"adapter":  "mongodb",
-			"type": "local"
-		}
-	]
+	"Credentials": {
+		"Databases": [
+			{
+				"database":  "",
+				"username":  "",
+				"password":  "",
+				"host":      "",
+				"port":     "5432",
+				"adapter":  "mysql",
+				"type": "source"
+			},
+			{
+				"database":  "",
+				"username":  "",
+				"password":  "",
+				"host":      "",
+				"port":     "27017",
+				"adapter":  "mongodb",
+				"type": "source"
+			},
+			{
+				"database":  "",
+				"username":  "",
+				"password":  "",
+				"host":      "",
+				"port":     "27017",
+				"adapter":  "mongodb",
+				"type": "local"
+			}
+		],
+		"APIs": [
+			{
+				"username":  "",
+				"password":  "",
+				"adapter":   "shelf",
+				"endpoints": {
+					"authentication": "/API/authenticate",
+					"users": "/API/users"
+				}
+			}
+		]
+	}
 }

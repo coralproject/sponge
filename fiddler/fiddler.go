@@ -5,7 +5,6 @@ Package fiddler transform, through a strategy file, data from external source in
 package fiddler
 
 import (
-	"database/sql"
 	"log"
 
 	configuration "github.com/coralproject/sponge/config"
@@ -19,7 +18,7 @@ var config = *configuration.New() // Reads the configuration file
 // Transformer is the interface for all the model structs <--- be carefull, this is an interface that Comment, Asset and Note are implementing. Transform is acting on a slice of Model (how that works?)
 type Transformer interface {
 	Print()
-	Transform(*sql.Rows, configuration.Table) ([]Transformer, error)
+	Transform([]map[string]interface{}, configuration.Table) ([]Transformer, error)
 }
 
 // New creates a new model based on a table name. This is a Factory func
@@ -38,7 +37,7 @@ func New(table string) (Transformer, error) {
 }
 
 // Transform from external source data into the coral schema
-func Transform(modelName string, data *sql.Rows) ([]Transformer, error) {
+func Transform(modelName string, data []map[string]interface{}) ([]Transformer, error) { //data *sql.Rows) ([]Transformer, error) {
 	var dataCoral []Transformer
 
 	m, err := New(modelName)
