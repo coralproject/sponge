@@ -9,17 +9,39 @@ import (
 	"log"
 
 	configuration "github.com/coralproject/sponge/config"
-	"github.com/coralproject/sponge/models"
 )
 
 // global variables related to configuration
 var config = *configuration.New() // Reads the configuration file
 
-// Transform from external source data into the coral schema
-func Transform(modelName string, data *sql.Rows) ([]models.Model, error) {
-	var dataCoral []models.Model
+// To Do: This needs to be looking at the strategy and model depending on the data that is being pulled
 
-	m, err := models.New(modelName)
+// Transformer is the interface for all the model structs <--- be carefull, this is an interface that Comment, Asset and Note are implementing. Transform is acting on a slice of Model (how that works?)
+type Transformer interface {
+	Print()
+	Transform(*sql.Rows, configuration.Table) ([]Transformer, error)
+}
+
+// New creates a new model based on a table name. This is a Factory func
+// IT NEEDS TO FIND A WAY TO USE REFLECT/METAPROGRAMMING TO CREATE A "OBJECT" OF TYPE TABLE FOR THE MODELS
+func New(table string) (Transformer, error) {
+
+	if table == "Comment" {
+		return Comment{}, nil
+	} else if table == "Asset" {
+		return Asset{}, nil
+	} else if table == "User" {
+		return User{}, nil
+	}
+
+	return nil, newmodelError{tablename: table}
+}
+
+// Transform from external source data into the coral schema
+func Transform(modelName string, data *sql.Rows) ([]Transformer, error) {
+	var dataCoral []Transformer
+
+	m, err := New(modelName)
 	if err != nil {
 		log.Printf(err.Error())
 		return nil, err

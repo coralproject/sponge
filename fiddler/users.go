@@ -1,30 +1,36 @@
-package models
+package fiddler
 
 import (
 	"database/sql"
 	"fmt"
 
-	"github.com/coralproject/sponge/config"
+	"github.com/coralproject/shelf/pkg/srv/comment"
+	configuration "github.com/coralproject/sponge/config"
 )
 
-// User has information on the user
+//User is embedding the comment package to extend it
 type User struct {
-	ID          string   `json:"id" bson:"_id"`
-	DisplayName string   `json:"displayName" bson:"displayName"`
-	Name        string   `json:"name" bson:"name"`
-	Email       string   `json:"email" bson:"email"`
-	Raw         []string `json:"raws" bson:"raws"`
+	comment.User
 }
+
+// // User has information on the user
+// type User struct {
+// 	ID          string   `json:"id" bson:"_id"`
+// 	DisplayName string   `json:"displayName" bson:"displayName"`
+// 	Name        string   `json:"name" bson:"name"`
+// 	Email       string   `json:"email" bson:"email"`
+// 	Raw         []string `json:"raws" bson:"raws"`
+// }
 
 // Print only print information about the user
 func (u User) Print() {
-	fmt.Println("User: ", u.ID, u.Name)
+	fmt.Println("User: ", u.ID, u.UserName)
 }
 
 // Transform get the data from sd
-func (u User) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
+func (u User) Transform(sd *sql.Rows, table configuration.Table) ([]Transformer, error) {
 	var user User
-	var users []Model
+	var users []Transformer
 	// var id, cassetID, statusID, title,
 	// 	body, createDate, updateDate,
 	// 	approveDate, commentExcerpt, editorSelection, recomendationCount,
@@ -33,7 +39,7 @@ func (u User) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 	// 	parentID, notifyViaEmailOnApproval sql.NullString
 
 	for sd.Next() {
-		err := sd.Scan(&user.ID, &user.DisplayName)
+		err := sd.Scan(&user.ID, &user.UserName)
 		if err != nil {
 			return nil, scanError{error: err}
 		}
@@ -42,7 +48,7 @@ func (u User) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 		if len(users) == cap(users) {
 			// Comments is full and we must expand
 			// Double the size and add 1
-			newUsers := make([]Model, len(users), 2*len(users)+1)
+			newUsers := make([]Transformer, len(users), 2*len(users)+1)
 			copy(newUsers, users)
 			users = newUsers
 		}

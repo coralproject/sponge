@@ -1,29 +1,34 @@
-package models
+package fiddler
 
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
-	"github.com/coralproject/sponge/config"
+	"github.com/coralproject/shelf/pkg/srv/comment"
+	configuration "github.com/coralproject/sponge/config"
 )
 
 //* COMMENTS *//
 
-// Comment is the comment struct
+// Comment is embedding the comment package to extend it
 type Comment struct {
-	ID          string         `json:"id" bson:"_id"`
-	Body        sql.NullString `json:"body" bson:"body"`
-	ParentID    sql.NullString `json:"parentId" bson:"parentId"`
-	AssetID     sql.NullString `json:"assetId" bson:"assetId"`
-	StatusID    sql.NullString `json:"status" bson:"status"`
-	CreateDate  time.Time      `json:"createdDate" bson:"createdDate"`
-	UpdateDate  time.Time      `json:"updatedDate" bson:"updatedDate"`
-	ApproveDate time.Time      `json:"approvedDate" bson:"approvedDate"`
-	Raw         []string       `json:"raws" bson:"raws"`
-	Actions     []Action       `json:"actions" bson:"actions"`
-	Notes       []Note         `json:"notes" bson:"notes"`
+	comment.Comment
 }
+
+// // Comment is the comment struct
+// type Comment struct {
+// 	ID          string         `json:"id" bson:"_id"`
+// 	Body        sql.NullString `json:"body" bson:"body"`
+// 	ParentID    sql.NullString `json:"parentId" bson:"parentId"`
+// 	AssetID     sql.NullString `json:"assetId" bson:"assetId"`
+// 	StatusID    sql.NullString `json:"status" bson:"status"`
+// 	CreateDate  time.Time      `json:"createdDate" bson:"createdDate"`
+// 	UpdateDate  time.Time      `json:"updatedDate" bson:"updatedDate"`
+// 	ApproveDate time.Time      `json:"approvedDate" bson:"approvedDate"`
+// 	Raw         []string       `json:"raws" bson:"raws"`
+// 	Actions     []Action       `json:"actions" bson:"actions"`
+// 	Notes       []Note         `json:"notes" bson:"notes"`
+// }
 
 // Print only print information about the comment
 func (c Comment) Print() {
@@ -31,9 +36,9 @@ func (c Comment) Print() {
 }
 
 // Transform get the data from sd
-func (c Comment) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
+func (c Comment) Transform(sd *sql.Rows, table configuration.Table) ([]Transformer, error) {
 	var comment Comment
-	var comments []Model
+	var comments []Transformer
 
 	var createDate sql.NullString
 	var updateDate sql.NullString // convert from sql.NullString to string
@@ -46,7 +51,7 @@ func (c Comment) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 
 	for sd.Next() {
 		// To Do: It needs to be able to get the extra fields into raw (we don't really know in the code which fields the comment table has)
-		err := sd.Scan(&comment.ID, &comment.Body, &comment.ParentID, &comment.AssetID, &comment.StatusID,
+		err := sd.Scan(&comment.ID, &comment.Body, &comment.ParentID, &comment.AssetID, &comment.Status,
 			&createDate, &updateDate, &approveDate)
 		if err != nil {
 			return nil, scanError{error: err}
@@ -60,7 +65,7 @@ func (c Comment) Transform(sd *sql.Rows, table config.Table) ([]Model, error) {
 		if len(comments) == cap(comments) {
 			// Comments is full and we must expand
 			// Double the size and add 1
-			newComments := make([]Model, len(comments), 2*len(comments)+1)
+			newComments := make([]Transformer, len(comments), 2*len(comments)+1)
 			copy(newComments, comments)
 			comments = newComments
 		}
