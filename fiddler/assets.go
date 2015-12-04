@@ -2,10 +2,14 @@ package fiddler
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/coralproject/shelf/pkg/srv/comment"
 	configuration "github.com/coralproject/sponge/config"
+	"github.com/oleiade/reflections"
 )
+
+//* ASSETS *//
 
 // Asset is embedding the comment package to extend it
 type Asset struct {
@@ -32,38 +36,67 @@ type Asset struct {
 
 // Print only print information about the comment
 func (a Asset) Print() {
-	fmt.Println("Asset: ", a.ID, a.URL)
+	fmt.Println("Asset: ", a.AssetID, a.URL)
 }
 
-// Transform get the data from sd
+// Transform does the data transformation on the Asset
 func (a Asset) Transform(sd []map[string]interface{}, table configuration.Table) ([]Transformer, error) {
-	//var asset Asset
+
+	var asset Asset
 	var assets []Transformer
 
-	//
-	// for sd.Next() {
-	//
-	// 	// Scaning the columns
-	// 	err := sd.Scan(&asset.ID, &vendorID, &asset.SourceID, &asset.URL, &createDate, &updateDate)
-	//
-	// 	if err != nil {
-	// 		return nil, scanError{error: err}
-	// 	}
-	// 	// asset.CreateDate, _ = time.Parse("2006-01-02", createDate) // To Do: I need to see how to dinamically discover what is the dateTime layout
-	// 	// asset.UpdateDate, _ = time.Parse("2006-01-02", updateDate)
-	//
-	// 	// Resize array
-	// 	n := len(assets)
-	// 	if len(assets) == cap(assets) {
-	// 		// Assets is full and we must expand
-	// 		// Double the size and add 1
-	// 		newAssets := make([]Transformer, len(assets), 2*len(assets)+1)
-	// 		copy(newAssets, assets)
-	// 		assets = newAssets
-	// 	}
-	// 	assets = assets[0 : n+1]
-	// 	assets[n] = asset
-	// }
+	// To Do: it needs refactoring as my gut tells me that is quite inefficient
+	for _, value := range sd {
+		for coralField, f := range table.Fields {
+
+			if f != "" { // convert field f with value value[f] into field coralField
+				newValue := transformAssetField(f, value[f], coralField)
+
+				if newValue != nil {
+					err := reflections.SetField(&asset, coralField, newValue)
+					if err != nil {
+						log.Fatal(err)
+						return nil, err
+					}
+				}
+			}
+		}
+
+		n := len(assets)
+		if len(assets) == cap(assets) {
+			// Comments is full and we must expand
+			// Double the size and add 1
+			newAssets := make([]Transformer, len(assets), 2*len(assets)+1)
+			copy(newAssets, assets)
+			assets = newAssets
+		}
+		assets = assets[0 : n+1]
+		//comment.Raw = strings.Split(raws, ",")
+		assets[n] = asset
+	}
 
 	return assets, nil
+}
+
+//Here we transform the record into what we want (based on the configuration)
+// 1. convert types (values are all strings) into the struct
+func transformAssetField(sourceField string, oldValue interface{}, coralField string) interface{} {
+
+	var newValue interface{}
+
+	const longForm = "2015-11-02 12:26:05"
+
+	// Right now this the simpler thing to do. Needs to look more into reflect to do it
+	// dinamically (if it is worth it) or merge this into the comment package
+	switch coralField {
+	case "AssetID": //string
+		newValue = oldValue
+	case "SourceID": //string    `json:"parent_id" bson:"parent_d"`
+		newValue = oldValue
+	case "URL": //string    `json:"asset_id" bson:"asset_id"`
+		newValue = oldValue
+		// Taxonomies missing
+	}
+
+	return newValue
 }

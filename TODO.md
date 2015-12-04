@@ -3,9 +3,8 @@
 Today
 
 * tests - how to better do themselves
-* go to finish service layer endpoints and use them ehre
+* transformations
+* Vendoring: I'm not doing them.
 
 This days:
 * add benchmark functions for pulling from mysql and adding to mongodb
-* Move from Scan to prepare stmt
-* Vendoring: I'm not doing them. 

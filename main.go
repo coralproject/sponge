@@ -7,6 +7,7 @@ Import external source database into local source
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/coralproject/sponge/fiddler"
@@ -31,7 +32,7 @@ func main() {
 	// 	go func(modelName string) {
 	// 		defer wg.Done()
 
-	modelName := "Comment"
+	modelName := "User"
 	// Get the data
 	log.Printf("### Getting data from external source.\n")
 	data, err := mysql.GetData(modelName)
@@ -42,13 +43,13 @@ func main() {
 
 	//Transform the data
 	log.Printf("### Transforming data to the coral schema.\n")
-	_, err = fiddler.Transform(modelName, data)
+	dataCoral, err := fiddler.Transform(modelName, data)
 	if err != nil {
 		log.Printf(err.Error())
 		return
 	}
 
-	//fmt.Println(dataCoral)
+	fmt.Println(dataCoral)
 
 	// // Send it to Shelf
 	// log.Printf("### Pushing data into collection %s. ### \n", modelName)
