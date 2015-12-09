@@ -1,0 +1,21 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "github.com/elgs/gosqljson",
+			"revision": "fd9aa0754e16fe231ccb1e95c3c71ba2859eab16",
+			"revisionTime": "2015-05-09T14:56:35+08:00"
+		},
+		{
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "527bcd55aab2e53314f1a150922560174b493034",
+			"revisionTime": "2015-09-08T14:46:01+02:00"
+		},
+		{
+			"path": "github.com/oleiade/reflections",
+			"revision": "632977f98cd34d217c4b57d0840ec188b3d3dcaf",
+			"revisionTime": "2013-11-21T05:18:50-08:00"
+		}
+	]
+}

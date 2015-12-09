@@ -6,8 +6,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-
-	"github.com/coralproject/core/log"
+	"log"
 )
 
 //* CONFIGURATION STRUCTS *//
@@ -110,7 +109,7 @@ type Config struct {
 // New creates a new config
 func New() *Config {
 
-	f := "config/config.json"
+	f := "config.json"
 	config, err := readConfigFile(f)
 
 	if err != nil {
