@@ -10,8 +10,9 @@ import (
 	"sync"
 
 	"github.com/coralproject/shelf/pkg/cfg"
-	"github.com/coralproject/shelf/pkg/db/mongo"
+	"github.com/coralproject/sponge/pkg/db/mongo"
 	"github.com/coralproject/sponge/pkg/fiddler"
+	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/source"
 )
 
@@ -26,11 +27,6 @@ func init() {
 
 	log.Init(os.Stderr, logLevel)
 
-	if err := cfg.Init("SPONGE"); err != nil {
-		log.Error("startup", "init", err, "Initializing config")
-		os.Exit(1)
-	}
-
 	err := mongo.InitMGO()
 	if err != nil {
 		log.Error("startup", "init", err, "Initializing MongoDB")
@@ -40,17 +36,19 @@ func init() {
 
 func main() {
 
+	log.Dev("startup", "main", "Start")
+
 	// Connect to external source
 	mysql, err := source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("startup", "main", err, "Connect to external MySQL")
 		return
 	}
 
 	// Get All the tables from the MySQL
 	tables, err := mysql.GetTables()
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("startup", "main", err, "Get external MySQL tables")
 		return
 	}
 
@@ -63,24 +61,24 @@ func main() {
 			defer wg.Done()
 
 			// Get the data
-			log.Printf("### Getting data from external source.\n")
+			fmt.Printf("### Getting data from external source.\n")
 			data, err := mysql.GetData(modelName)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error("import", "main", err, "Get external MySQL data")
 				return
 			}
 
 			//Transform the data
-			log.Printf("### Transforming data to the coral schema.\n")
+			fmt.Printf("### Transforming data to the coral schema.\n")
 			dataCoral, err := fiddler.Transform(modelName, data)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error("transform", "main", err, "Transform Data")
 				return
 			}
 
 			// var context interface{}
 			// var db *db.DB
-			log.Printf("### Pushing data into collection %s. ### \n", modelName)
+			fmt.Printf("### Pushing data into collection %s. ### \n", modelName)
 			switch modelName {
 			case "User":
 				//err = comment.AddUsers(context, db, dataCoral)
@@ -91,10 +89,12 @@ func main() {
 			}
 
 			if err != nil {
-				log.Printf("Error when pushing data into the shelf, collection %s. \n", modelName)
+				log.Error("save", "main", err, "Send data to local database")
 			}
 
 		}(modelName)
 	}
 	wg.Wait()
+
+	log.Dev("shutdown", "main", "Complete")
 }
