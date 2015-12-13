@@ -1,21 +1,108 @@
 {
 	"comment": "",
-	"ignore": "test",
+	"ignore": "",
 	"package": [
+		{
+			"path": "github.com/coralproject/shelf/pkg/cfg",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/coralproject/shelf/pkg/db",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/coralproject/shelf/pkg/db/mongo",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/coralproject/shelf/pkg/log",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/coralproject/shelf/pkg/srv/comment",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/coralproject/shelf/pkg/tests",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
+			"revisionTime": "2015-11-05T15:09:06-06:00"
+		},
+		{
+			"path": "github.com/davecgh/go-spew/spew/testdata",
+			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
+			"revisionTime": "2015-11-05T15:09:06-06:00"
+		},
 		{
 			"path": "github.com/elgs/gosqljson",
 			"revision": "fd9aa0754e16fe231ccb1e95c3c71ba2859eab16",
 			"revisionTime": "2015-05-09T14:56:35+08:00"
 		},
 		{
-			"path": "github.com/go-sql-driver/mysql",
-			"revision": "527bcd55aab2e53314f1a150922560174b493034",
-			"revisionTime": "2015-09-08T14:46:01+02:00"
-		},
-		{
 			"path": "github.com/oleiade/reflections",
 			"revision": "632977f98cd34d217c4b57d0840ec188b3d3dcaf",
 			"revisionTime": "2013-11-21T05:18:50-08:00"
+		},
+		{
+			"origin": "github.com/coralproject/shelf/vendor/github.com/pborman/uuid",
+			"path": "github.com/pborman/uuid",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "d8ed2627bdf02c080bf22230dbb337003b7aba2d",
+			"revisionTime": "2015-10-28T10:42:44+01:00"
+		},
+		{
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "e7a1d8890c7638d7bb50e3e498de4a1e913a28cf",
+			"revisionTime": "2015-11-07T23:40:24Z"
+		},
+		{
+			"origin": "github.com/coralproject/shelf/vendor/gopkg.in/bluesuncorp/validator.v6",
+			"path": "gopkg.in/bluesuncorp/validator.v6",
+			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
+			"revisionTime": "2015-12-09T01:47:32-05:00"
+		},
+		{
+			"path": "gopkg.in/check.v1",
+			"revision": "11d3bc7aa68e238947792f30573146a3231fc0f1",
+			"revisionTime": "2015-07-29T10:04:31+02:00"
+		},
+		{
+			"path": "gopkg.in/mgo.v2",
+			"revision": "f402e3a216db333ae6b3ba68b9152a34a0bc6984",
+			"revisionTime": "2015-10-05T19:07:38-07:00"
+		},
+		{
+			"path": "gopkg.in/mgo.v2/bson",
+			"revision": "f402e3a216db333ae6b3ba68b9152a34a0bc6984",
+			"revisionTime": "2015-10-05T19:07:38-07:00"
+		},
+		{
+			"path": "gopkg.in/mgo.v2/internal/sasl",
+			"revision": "f402e3a216db333ae6b3ba68b9152a34a0bc6984",
+			"revisionTime": "2015-10-05T19:07:38-07:00"
+		},
+		{
+			"path": "gopkg.in/mgo.v2/internal/scram",
+			"revision": "f402e3a216db333ae6b3ba68b9152a34a0bc6984",
+			"revisionTime": "2015-10-05T19:07:38-07:00"
+		},
+		{
+			"path": "gopkg.in/yaml.v2",
+			"revision": "53feefa2559fb8dfa8d81baad31be332c97d6c77",
+			"revisionTime": "2015-09-24T11:23:14-03:00"
 		}
 	]
 }
