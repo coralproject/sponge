@@ -1,15 +1,20 @@
 /*
-Package config handles the loading and distribution of configuration related with external sources.
+Package strategy handles the loading and distribution of configuration related with external sources.
 */
-package config
+package strategy
 
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
+
+	"github.com/ardanlabs/kit/log"
 )
 
-//* CONFIGURATION STRUCTS *//
+// func init() {
+//  // validate CONFIGURATION
+// }
+
+//* Strategy Structure *//
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
@@ -17,8 +22,8 @@ type Table struct {
 	Fields map[string]string `json:"fields"`
 }
 
-// Strategy explains which tables or data we are getting from the source.
-type Strategy struct {
+// Map explains which tables or data we are getting from the source.
+type Map struct {
 	Typesource string           `json:"typesource"`
 	Tables     map[string]Table `json:"tables"`
 	Action     []Table
@@ -97,44 +102,33 @@ type Credentials struct {
 	APIs      []CredentialAPI
 }
 
-// Config is a structure with all the information for the specitic strategy (how to get the data, from which source)
-type Config struct {
+// Strategy is a structure with all the information for the specitic strategy (how to get the data, from which source)
+type Strategy struct {
 	Name        string
-	Strategy    Strategy
+	Map         Map
 	Credentials Credentials // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
 }
 
 /* Exported Functions */
 
-// New creates a new config
-func New() *Config {
+// New creates a new strategy from configuration file
+func New() Strategy {
 
-	f := "config.json"
-	config, err := readConfigFile(f)
+	f := "strategy.json"
+	strategy, err := readConfigFile(f)
 
 	if err != nil {
-		log.Fatal(err.Error())
-		return nil
+		log.Error("setting", "new", err, "Getting strategy file")
 	}
 
-	return config
+	return strategy
 }
 
 // GetCredential returns the credentials for connection with the external source
-func (conf Config) GetCredential(a string, t string) Credential {
-	var cred Credential
+func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
+	var cred CredentialDatabase
 
-	creds := conf.Credentials.APIs
-
-	// look at the credentials related to local database (mongodb in our original example)
-	for i := 0; i < len(creds); i++ {
-		if creds[i].GetAdapter() == a {
-			cred = creds[i]
-			return cred
-		}
-	}
-
-	creda := conf.Credentials.Databases
+	creda := s.Credentials.Databases
 
 	// look at the credentials related to local database (mongodb in our original example)
 	for i := 0; i < len(creda); i++ {
@@ -143,68 +137,65 @@ func (conf Config) GetCredential(a string, t string) Credential {
 			return cred
 		}
 	}
-	log.Fatal(getCredentialError{adapter: a}.Error())
+
+	//	log.Error("startup", "getCredentials", errors.New("Credential not found."), "Getting strategy")
 
 	return cred
 }
 
-// GetStrategy returns the strategy
-// To Do: Needs to manage errors
-func (conf Config) GetStrategy() Strategy {
-	strategy := conf.Strategy
-
-	// To Do: catch the error on getting credentials and return it
-	return strategy
+// GetMap returns the strategy
+func (s Strategy) GetMap() Map {
+	return s.Map
 }
 
 // GetTables returns a list of tables to be imported
-func (conf Config) GetTables() map[string]Table {
+func (s Strategy) GetTables() map[string]Table {
 	// To Do: catch the error when no Tables
-	return conf.Strategy.Tables
+	return s.Map.Tables
 }
 
 // GetTableName returns the external source's table mapped to the coral model
-func (conf Config) GetTableName(modelName string) string {
-	return conf.Strategy.Tables[modelName].Name
+func (s Strategy) GetTableName(modelName string) string {
+	return s.Map.Tables[modelName].Name
 }
 
 // GetTableFields returns the external source's table fields mapped to the coral model
-func (conf Config) GetTableFields(modelName string) map[string]string {
-	return conf.Strategy.Tables[modelName].Fields
+func (s Strategy) GetTableFields(modelName string) map[string]string {
+	return s.Map.Tables[modelName].Fields
 }
 
 /* Not Exported Functions */
 
 // Read the configuration file and load it into the Config
-func unmarshal(content []byte) (*Config, error) {
+func unmarshal(content []byte) (Strategy, error) {
 
-	c := new(Config)
+	s := Strategy{}
 
-	err := json.Unmarshal(content, &c)
+	err := json.Unmarshal(content, &s)
 	if err != nil {
-		return nil, err
+		log.Error("startup", "unmarshal", err, "Getting strategy")
+		return Strategy{}, err
 	}
 
-	return c, nil
+	return s, nil
 }
 
-func readConfigFile(f string) (*Config, error) {
+func readConfigFile(f string) (Strategy, error) {
+
+	log.Dev("startup", "readConfigFile", "Reading Config File : %s", f)
 
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
-		e := readingFileError{filename: f, err: err}
-		log.Fatal(e.Error())
+		log.Error("startup", "readConfigFile", err, "Getting strategy")
 
-		return nil, e
+		return Strategy{}, err
 	}
 
-	config, err := unmarshal(content)
+	strategy, err := unmarshal(content)
 	if err != nil {
-		e := parseFileError{filename: f, err: err}
-		log.Fatal(e.Error())
-
-		return nil, e
+		log.Error("startup", "readConfigFile", err, "Getting strategy")
+		return Strategy{}, err
 	}
 
-	return config, err
+	return strategy, err
 }

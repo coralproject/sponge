@@ -1,4 +1,4 @@
-package config
+package strategy
 
 //* Errors used in this package *//
 import "fmt"
@@ -23,11 +23,11 @@ func (e readingFileError) Error() string {
 }
 
 // When trying to get the credential for adapter
-type getCredentialError struct {
+type credentialError struct {
 	adapter string
 }
 
-func (e getCredentialError) Error() string {
+func (e credentialError) Error() string {
 	return fmt.Sprintf("Error when trying to get the credential for %s.", e.adapter)
 }
 
