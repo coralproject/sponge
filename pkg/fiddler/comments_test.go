@@ -1,10 +1,9 @@
 package fiddler
 
 import (
-	"database/sql"
 	"testing"
 
-	"github.com/coralproject/sponge/config"
+	str "github.com/coralproject/sponge/strategy"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,25 +20,24 @@ func TestNewComment(t *testing.T) {
 // Signature (c Comment) Transform(sd *sql.Rows, table config.Table) ([]Model, error)
 func TestTransformComment(t *testing.T) {
 
-	a, err := New("Comment")
+	c, err := New("Comment")
 
 	sd := mockMysqlRowsComments()
-	table := config.Table{}
+	var table str.Table
 
-	var comments []Model
+	var comments []Transformer
 
 	// The func we are testing
-	comments, err = a.Transform(sd, table)
+	comments, err = c.Transform(sd, table)
 
 	assert.Nil(t, err, "It should not return any error.")
-
 	assert.NotNil(t, comments, "It should return comments.")
 }
 
 // Something that implements sd *sql.Rows
-func mockMysqlRowsComments() *sql.Rows {
+func mockMysqlRowsComments() []map[string]interface{} {
 
-	var sd *sql.Rows
+	var sd []map[string]interface{}
 
 	// To Do: Needs to return a valid sql.Rows stubbed
 	return sd

@@ -2,36 +2,28 @@ package fiddler
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/coralproject/shelf/pkg/srv/comment"
-	configuration "github.com/coralproject/sponge/config"
-	"github.com/oleiade/reflections"
+	str "github.com/coralproject/sponge/strategy"
 )
 
 //* ACTIONS *//
 
 // Action denotes an action taken by someone/something on someone/something.
 type Action struct {
-	comment.Action
+	fields map[string]interface{}
 }
-
-// 	Type   string    `json:"type" bson:"type"`
-// 	UserID string    `json:"user_id" bson:"user_id"`
-// 	Value  string    `json:"value" bson:"value"`
-// 	Date   time.Time `json:"date" bson:"date"`
-// }
 
 // Print only print information about the action
 func (a Action) Print() {
-	fmt.Println("Action: ", a.UserID, a.Type, a.Value)
+	fmt.Println("Action: ", a.fields["UserID"], a.fields["Type"], a.fields["Value"])
 }
 
 // Transform get the data from sd
-func (a Action) Transform(sd []map[string]interface{}, table configuration.Table) ([]Transformer, error) {
+func (a Action) Transform(sd []map[string]interface{}, table str.Table) ([]Transformer, error) {
 
 	var action Action
+	action.fields = make(map[string]interface{})
 	var actions []Transformer
 
 	// To Do: it needs refactoring as my gut tells me that is quite inefficient
@@ -40,11 +32,8 @@ func (a Action) Transform(sd []map[string]interface{}, table configuration.Table
 
 			// convert field f with value value[f] into field coralField
 			newValue := transformActionField(f, value[f], coralField)
-
-			err := reflections.SetField(&action, coralField, newValue)
-			if err != nil {
-				log.Fatal(err)
-				return nil, err
+			if newValue != nil {
+				action.fields[coralField] = newValue
 			}
 		}
 
@@ -71,7 +60,7 @@ func transformActionField(sourceField string, oldValue interface{}, coralField s
 	var newValue interface{}
 
 	// Right now this the simpler thing to do. Needs to look more into reflect to do it
-	// dinamically (if it is worth it) or merge this into the comment package
+	// dinamically (if it is worth it) or merge this into the model package
 	switch coralField {
 	case "Type": //string
 		newValue = oldValue

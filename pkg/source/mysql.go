@@ -8,14 +8,13 @@ import (
 	"encoding/json"
 	"strings"
 
-	configuration "github.com/coralproject/sponge/config"
-
+	"github.com/coralproject/sponge/pkg/log"
 	"github.com/elgs/gosqljson"
-	//_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Global configuration variables that holds the credentials for mysql
-var credentialMysql = config.GetCredential("mysql", "source").(configuration.CredentialDatabase)
+var credentialMysql = strategy.GetCredential("mysql", "source")
 
 /* Implementing the Sources */
 
@@ -30,7 +29,7 @@ type MySQL struct {
 // GetTables gets all the tables names from this data source
 func (m MySQL) GetTables() ([]string, error) {
 	keys := []string{}
-	for k := range config.Strategy.Tables {
+	for k := range strategy.Map.Tables {
 		keys = append(keys, k)
 	}
 	return keys, nil
@@ -40,12 +39,13 @@ func (m MySQL) GetTables() ([]string, error) {
 func (m MySQL) GetData(modelName string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	// Get the corresponding table to the modelName
-	tableName := config.GetTableName(modelName)
-	tableFields := config.GetTableFields(modelName) // map[string]string
+	tableName := strategy.GetTableName(modelName)
+	tableFields := strategy.GetTableFields(modelName) // map[string]string
 
 	// open a connection
 	db, err := m.open()
 	if err != nil {
+		log.Error("Connecting", "GetData", err, "Error connecting to database.")
 		return nil, err
 	}
 	defer m.close(db)
@@ -86,16 +86,16 @@ func connectionMySQL() string {
 	return credentialMysql.Username + ":" + credentialMysql.Password + "@" + "/" + credentialMysql.Database
 }
 
-// Open gives back a pointer to the DB
+// Open gives back  DB
 func (m *MySQL) open() (*sql.DB, error) {
 
 	database, err := sql.Open("mysql", m.Connection)
 	if err != nil {
-		return nil, &connectError{connection: m.Connection}
+		return nil, err
 	}
 
 	if err = database.Ping(); err != nil {
-		return nil, &connectError{connection: m.Connection}
+		return nil, err
 	}
 
 	m.Database = database

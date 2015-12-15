@@ -2,30 +2,31 @@ package fiddler
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/coralproject/shelf/pkg/srv/comment"
-	configuration "github.com/coralproject/sponge/config"
-	"github.com/oleiade/reflections"
+	str "github.com/coralproject/sponge/strategy"
 )
 
 //* COMMENTS *//
 
 // Comment is embedding the comment package to extend it
 type Comment struct {
-	comment.Comment
+	//model.Comment
+	fields map[string]interface{}
 }
 
 // Print only print information about the comment
 func (c Comment) Print() {
-	fmt.Println("Comment: ", c.CommentID, c.Body)
+	//	fmt.Println("Comment: ", c.CommentID, c.Body)
+	fmt.Println("Comment: ", c.fields["CommentID"], c.fields["Body"])
 }
 
 // Transform get the data from sd
-func (c Comment) Transform(sd []map[string]interface{}, table configuration.Table) ([]Transformer, error) {
+func (c Comment) Transform(sd []map[string]interface{}, table str.Table) ([]Transformer, error) {
 
 	var comment Comment
+	comment.fields = make(map[string]interface{})
+
 	var comments []Transformer
 
 	// To Do: it needs refactoring as my gut tells me that is quite inefficient
@@ -34,12 +35,14 @@ func (c Comment) Transform(sd []map[string]interface{}, table configuration.Tabl
 
 			// convert field f with value value[f] into field coralField
 			newValue := transformCommentField(f, value[f], coralField)
-
-			err := reflections.SetField(&comment, coralField, newValue)
-			if err != nil {
-				log.Fatal(err)
-				return nil, err
+			if newValue != nil {
+				comment.fields[coralField] = newValue
 			}
+			//err := reflections.SetField(&comment.data, coralField, newValue)
+			// if err != nil {
+			// 	log.Error("transform", "Transform Comment", err, "Transform field")
+			// 	return nil, err
+			// }
 		}
 
 		n := len(comments)
@@ -58,7 +61,7 @@ func (c Comment) Transform(sd []map[string]interface{}, table configuration.Tabl
 	return comments, nil
 }
 
-//Here we transform the record into what we want (based on the configuration)
+//Here we transform the record into what we want (based on the configuration in the strategy)
 // 1. convert types (values are all strings) into the struct
 func transformCommentField(sourceField string, oldValue interface{}, coralField string) interface{} {
 

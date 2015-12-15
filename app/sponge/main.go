@@ -5,12 +5,9 @@ Import external source database into local source and transform it
 package main
 
 import (
-	"fmt"
 	"os"
-	"sync"
 
-	"github.com/coralproject/shelf/pkg/cfg"
-	"github.com/coralproject/sponge/pkg/db/mongo"
+	"github.com/ardanlabs/kit/cfg"
 	"github.com/coralproject/sponge/pkg/fiddler"
 	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/source"
@@ -27,11 +24,11 @@ func init() {
 
 	log.Init(os.Stderr, logLevel)
 
-	err := mongo.InitMGO()
-	if err != nil {
-		log.Error("startup", "init", err, "Initializing MongoDB")
-		os.Exit(1)
-	}
+	// err := mongo.InitMGO()
+	// if err != nil {
+	// 	log.Error("startup", "init", err, "Initializing MongoDB")
+	// 	os.Exit(1)
+	// }
 }
 
 func main() {
@@ -46,55 +43,53 @@ func main() {
 	}
 
 	// Get All the tables from the MySQL
-	tables, err := mysql.GetTables()
+	_, err = mysql.GetTables() //tables
 	if err != nil {
 		log.Error("startup", "main", err, "Get external MySQL tables")
 		return
 	}
 
-	wg := sync.WaitGroup{}
+	modelName := "Comment"
+	// wg := sync.WaitGroup{}
+	//
+	// for _, modelName := range tables {
+	// 	wg.Add(1)
+	// 	go func(modelName string) {
+	// 		defer wg.Done()
 
-	//var data utils.Data
-	for _, modelName := range tables {
-		wg.Add(1)
-		go func(modelName string) {
-			defer wg.Done()
-
-			// Get the data
-			fmt.Printf("### Getting data from external source.\n")
-			data, err := mysql.GetData(modelName)
-			if err != nil {
-				log.Error("import", "main", err, "Get external MySQL data")
-				return
-			}
-
-			//Transform the data
-			fmt.Printf("### Transforming data to the coral schema.\n")
-			dataCoral, err := fiddler.Transform(modelName, data)
-			if err != nil {
-				log.Error("transform", "main", err, "Transform Data")
-				return
-			}
-
-			// var context interface{}
-			// var db *db.DB
-			fmt.Printf("### Pushing data into collection %s. ### \n", modelName)
-			switch modelName {
-			case "User":
-				//err = comment.AddUsers(context, db, dataCoral)
-				fmt.Printf("Ready to Add Users %s", dataCoral)
-			case "Comment":
-				//err = comment.AddComments(context, db, dataCoral)
-				fmt.Printf("Ready to Add Comments %s", dataCoral)
-			}
-
-			if err != nil {
-				log.Error("save", "main", err, "Send data to local database")
-			}
-
-		}(modelName)
+	// Get the data
+	log.User("import", "main", "### Getting data from external source.\n")
+	data, err := mysql.GetData(modelName)
+	if err != nil {
+		log.Error("import", "main", err, "Get external MySQL data")
 	}
-	wg.Wait()
+
+	//Transform the data
+	log.User("import", "main", "### Transforming data to the coral schema.\n")
+	_, err = fiddler.Transform(modelName, data) //Datacoral
+	if err != nil {
+		log.Error("transform", "main", err, "Transform Data")
+	}
+
+	// // var context interface{}
+	// // var db *db.DB
+	// fmt.Printf("### Pushing data into collection %s. ### \n", modelName)
+	// switch modelName {
+	// case "User":
+	// 	//err = comment.AddUsers(context, db, dataCoral)
+	// 	fmt.Printf("Ready to Add Users %s", dataCoral)
+	// case "Comment":
+	// 	//err = comment.AddComments(context, db, dataCoral)
+	// 	fmt.Printf("Ready to Add Comments %s", dataCoral)
+	// }
+	//
+	// if err != nil {
+	// 	log.Error("save", "main", err, "Send data to local database")
+	// }
+	//
+	// 	}(modelName)
+	// }
+	// wg.Wait()
 
 	log.Dev("shutdown", "main", "Complete")
 }

@@ -2,47 +2,29 @@ package fiddler
 
 import (
 	"fmt"
-	"log"
 
-	"github.com/coralproject/shelf/pkg/srv/comment"
-	configuration "github.com/coralproject/sponge/config"
-	"github.com/oleiade/reflections"
+	str "github.com/coralproject/sponge/strategy"
 )
 
 //* ASSETS *//
 
-// Asset is embedding the comment package to extend it
+// Asset is embedding the model package to extend it
 type Asset struct {
-	comment.Asset
+	//	model.Asset
+	fields map[string]interface{}
 }
 
-//// Taxonomy has information on taxonomy needed for the asset
-// type Taxonomy struct {
-// 	Name  string `json:"name" bson:"name"`
-// 	Value string `json:"value" bson:"value"`
-// }
-//
-// // Asset has the articles
-// type Asset struct {
-// 	ID       string `json:"id" bson:"_id"`
-// 	VendorID string `json:"vendorid" bson:"vendorid"`
-// 	SourceID string `json:"sourceid" bson:"sourceid"`
-// 	URL      string `json:"url" bson:"url"`
-// 	//Taxonomy   []Taxonomy `json:"taxonomy" bson:"taxonomy"`
-// 	CreateDate time.Time `json:"createdate" bson:"createdate"`
-// 	UpdateDate time.Time `json:"updatedate" bson:"updatedate"`
-// 	Raw        []string  `json:"raws" bson:"raws"`
-// }
-
-// Print only print information about the comment
+// Print only print information about the model
 func (a Asset) Print() {
-	fmt.Println("Asset: ", a.AssetID, a.URL)
+	fmt.Println("Asset: ", a.fields["AssetID"], a.fields["URL"])
 }
 
 // Transform does the data transformation on the Asset
-func (a Asset) Transform(sd []map[string]interface{}, table configuration.Table) ([]Transformer, error) {
+func (a Asset) Transform(sd []map[string]interface{}, table str.Table) ([]Transformer, error) {
 
 	var asset Asset
+	asset.fields = make(map[string]interface{})
+
 	var assets []Transformer
 
 	// To Do: it needs refactoring as my gut tells me that is quite inefficient
@@ -53,11 +35,7 @@ func (a Asset) Transform(sd []map[string]interface{}, table configuration.Table)
 				newValue := transformAssetField(f, value[f], coralField)
 
 				if newValue != nil {
-					err := reflections.SetField(&asset, coralField, newValue)
-					if err != nil {
-						log.Fatal(err)
-						return nil, err
-					}
+					asset.fields[coralField] = newValue
 				}
 			}
 		}
@@ -71,7 +49,7 @@ func (a Asset) Transform(sd []map[string]interface{}, table configuration.Table)
 			assets = newAssets
 		}
 		assets = assets[0 : n+1]
-		//comment.Raw = strings.Split(raws, ",")
+		//model.Raw = strings.Split(raws, ",")
 		assets[n] = asset
 	}
 
@@ -85,7 +63,7 @@ func transformAssetField(sourceField string, oldValue interface{}, coralField st
 	var newValue interface{}
 
 	// Right now this the simpler thing to do. Needs to look more into reflect to do it
-	// dinamically (if it is worth it) or merge this into the comment package
+	// dinamically (if it is worth it) or merge this into the model package
 	switch coralField {
 	case "AssetID": //string
 		newValue = oldValue

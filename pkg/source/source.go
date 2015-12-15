@@ -8,10 +8,10 @@ External possible sources:
 */
 package source
 
-import configuration "github.com/coralproject/sponge/config"
+import str "github.com/coralproject/sponge/strategy"
 
-// Global configuration variables that holds all the configuration from the config file
-var config = *configuration.New() // Reads the configuration file
+// global variables related to strategy
+var strategy = str.New() // Reads the strategy file
 
 // Sourcer is where the data is coming from (mysql, api)
 type Sourcer interface {

@@ -4,16 +4,12 @@ Package source implements a way to get data from external MongoDB sources.
 package source
 
 import (
-	"log"
-
+	"github.com/coralproject/sponge/pkg/log"
 	"gopkg.in/mgo.v2"
-
-	configuration "github.com/coralproject/sponge/config"
-	_ "github.com/go-sql-driver/mysql" // Check if this can be imported not blank. To Do.
 )
 
 // Global configuration variables that holds the credentials for mysql
-var credentialMongo = config.GetCredential("mongodb", "source").(configuration.CredentialDatabase)
+var credentialMongo = strategy.GetCredential("mongodb", "source")
 
 /* Implementing the Sources */
 
@@ -28,7 +24,7 @@ type MongoDB struct {
 // GetTables gets all the tables names from this data source
 func (m MongoDB) GetTables() ([]string, error) {
 	keys := []string{}
-	for k := range config.Strategy.Tables {
+	for k := range strategy.Map.Tables {
 		keys = append(keys, k)
 	}
 	return keys, nil
@@ -40,12 +36,13 @@ func (m MongoDB) GetData(modelName string) ([]map[string]interface{}, error) { /
 	var dat []map[string]interface{}
 
 	// Get the corresponding table to the modelName
-	collectionName := config.GetTableName(modelName)
+	collectionName := strategy.GetTableName(modelName)
 	// tableFields := config.GetTableFields(modelName) // map[string]string
 
 	// open a connection
 	session, err := m.initSession()
 	if err != nil {
+		log.Error("Importing", "GetData", err, "Init mongo session")
 		return nil, err
 	}
 	defer m.closeSession(session)
@@ -55,10 +52,10 @@ func (m MongoDB) GetData(modelName string) ([]map[string]interface{}, error) { /
 		Password: credentialMongo.Password,
 	}
 
-	errLogin := session.Login(&cred)
-	if errLogin != nil {
-		log.Fatal("Error when authenticating the database. ", errLogin)
-		return nil, errLogin
+	err = session.Login(&cred)
+	if err != nil {
+		log.Error("Importing", "GetData", err, "Login mongo session")
+		return nil, err
 	}
 
 	db := session.DB(credentialMongo.Database)
@@ -66,6 +63,7 @@ func (m MongoDB) GetData(modelName string) ([]map[string]interface{}, error) { /
 
 	err = col.Find(dat).All(dat)
 	if err != nil {
+		log.Error("Importing", "GetData", err, "Get collection")
 		return nil, err
 	}
 
@@ -84,7 +82,8 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 
 	database, err := mgo.Dial(m.Connection)
 	if err != nil {
-		return nil, &connectError{connection: m.Connection}
+		log.Error("Importing", "initSession", err, "Dial into session")
+		return nil, err
 	}
 
 	m.Database = database

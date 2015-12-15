@@ -2,35 +2,28 @@ package fiddler
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/coralproject/shelf/pkg/srv/comment"
-	configuration "github.com/coralproject/sponge/config"
-	"github.com/oleiade/reflections"
+	str "github.com/coralproject/sponge/strategy"
 )
 
 //* NOTES */
 
 // Note is embedding the comment package to extend it
 type Note struct {
-	comment.Note
+	fields map[string]interface{}
 }
-
-// Note denotes a note by a user in the system.
-// UserID string    `json:"user_id" bson:"user_id"`
-// Body   string    `json:"body" bson:"body"`
-// Date   time.Time `json:"date" bson:"date"`
 
 // Print only print information about the comment
 func (n Note) Print() {
-	fmt.Println("Note: ", n.UserID, n.Body)
+	fmt.Println("Note: ", n.fields["UserID"], n.fields["Body"])
 }
 
 // Transform get the data from sd
-func (n Note) Transform(sd []map[string]interface{}, table configuration.Table) ([]Transformer, error) {
+func (n Note) Transform(sd []map[string]interface{}, table str.Table) ([]Transformer, error) {
 
 	var note Note
+	note.fields = make(map[string]interface{})
 	var notes []Transformer
 
 	// To Do: it needs refactoring as my gut tells me that is quite inefficient
@@ -39,12 +32,10 @@ func (n Note) Transform(sd []map[string]interface{}, table configuration.Table) 
 
 			// convert field f with value value[f] into field coralField
 			newValue := transformNoteField(f, value[f], coralField)
-
-			err := reflections.SetField(&note, coralField, newValue)
-			if err != nil {
-				log.Fatal(err)
-				return nil, err
+			if newValue != nil {
+				note.fields[coralField] = newValue
 			}
+
 		}
 
 		n := len(notes)

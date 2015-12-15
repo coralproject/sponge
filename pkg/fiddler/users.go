@@ -2,28 +2,28 @@ package fiddler
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/coralproject/shelf/pkg/srv/comment"
-	configuration "github.com/coralproject/sponge/config"
-	"github.com/oleiade/reflections"
+	str "github.com/coralproject/sponge/strategy"
 )
 
 //User is embedding the comment package to extend it
 type User struct {
-	comment.User
+	//model.User
+	fields map[string]interface{}
 }
 
 // Print only print information about the user
 func (u User) Print() {
-	fmt.Println("User: ", u.UserID, u.UserName)
+	//fmt.Println("User: ", u.UserID, u.UserName)
+	fmt.Println("User: ", u.fields["UserID"], u.fields["UserName"])
 }
 
 // Transform get the data from sd
-func (u User) Transform(sd []map[string]interface{}, table configuration.Table) ([]Transformer, error) {
+func (u User) Transform(sd []map[string]interface{}, table str.Table) ([]Transformer, error) {
 
 	var user User
+	user.fields = make(map[string]interface{})
 	var users []Transformer
 
 	// To Do: it needs refactoring as my gut tells me that is quite inefficient
@@ -33,12 +33,14 @@ func (u User) Transform(sd []map[string]interface{}, table configuration.Table) 
 			// convert field f with value value[f] into field coralField
 			if f != "" {
 				newValue := transformUserField(f, value[f], coralField)
-
-				err := reflections.SetField(&user, coralField, newValue)
-				if err != nil {
-					log.Fatal(err)
-					return nil, err
+				if newValue != nil {
+					user.fields[coralField] = newValue
 				}
+				// err := reflections.SetField(&user, coralField, newValue)
+				// if err != nil {
+				// 	log.Error("transform", "Transform User", err, "Transform field")
+				// 	return nil, err
+				// }
 			}
 		}
 
@@ -51,7 +53,6 @@ func (u User) Transform(sd []map[string]interface{}, table configuration.Table) 
 			users = newUsers
 		}
 		users = users[0 : n+1]
-		//comment.Raw = strings.Split(raws, ",")
 		users[n] = user
 	}
 
