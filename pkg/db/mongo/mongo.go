@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coralproject/shelf/pkg/cfg"
+	"github.com/ardanlabs/kit/cfg"
 
 	"gopkg.in/mgo.v2"
 )
