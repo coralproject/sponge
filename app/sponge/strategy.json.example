@@ -1,82 +1,84 @@
 {
-	"Name": "New York Times",
-	"Map": {
-		"Typesource": "mysql",
-		"Tables": {
-			"Comment": {
-				"name": "crnr_comment",
-				"fields": {
-					"CommentID": "commentid",
-					"Body": "commentbody",
-					"ParentID": "parentid",
-					"AssetID": "assetid",
-					"Status": "statusid",
-					"DateCreated": "createdate",
-					"DateUpdated": "updatedate",
-					"DateApproved": "approvedate"
-				}
-			},
-			"Asset": {
-				"name": "crnr_asset",
-				"fields": {
-					"AssetID":"assetid",
-					"SourceID": "sourceID",
-					"URL": "asseturl"
-				}
-			},
-			"User": {
-				"name": "crnr_comment",
-				"fields": {
-					"UserID": "userid",
-					"UserName": "userdisplayname",
-					"Avatar": "",
-					"LastLogin": "",
-					"MemberSince": "",
-					"TrustScore": ""
-				}
-			}
-		},
-		"Action": [
-			{
-				"name": "crnr_comment_notes",
-				"fields": {
-					"type": "Note",
-					"userID": "UserID",
-					"value": "CommentNoteID",
-					"CreateDate": ""
-				}
-			},
-			{
-				"name": "crnr_comment",
-				"fields": {
-					"type": "Comment",
-					"userid": "UserID",
-					"value": "CommentID",
-					"CredateDate": ""
-				}
-			}
-		]
-	},
-	"Credentials": {
-		"Databases": [
-			{
-				"database":  "",
-				"username":  "",
-				"password":  "",
-				"host":      "localhost",
-				"port":     "5432",
-				"adapter":  "mysql",
-				"type": "source"
-			},
-			{
-				"database":  "",
-				"username":  "",
-				"password":  "",
-				"host":      "",
-				"port":     "27017",
-				"adapter":  "mongodb",
-				"type": "local"
-			}
-		]
-	}
+  "Name": "New York Times",
+  "Map": {
+    "foreign": "mysql",
+    "tables": {
+      "comment": {
+        "foreign": "crnr_comment",
+        "local": "comment",
+        "fields": [
+          {
+            "foreign": "commentid",
+            "local": "CommentID",
+            "relation": "Identity",
+						"type": "int"
+          },
+          {
+            "foreign": "commentbody",
+            "local": "Body",
+            "relation": "Identity",
+						"type": "[]byte"
+          },
+          {
+            "foreign": "parentid",
+            "local": "ParentID",
+            "relation": "Identity",
+						"type": "int"
+          },
+          {
+            "foreign": "assetid",
+            "local": "AssetID",
+            "relation": "Identity",
+						"type": "int"
+          },
+          {
+            "foreign": "statusid",
+            "local": "Status",
+            "relation": "Identity",
+						"type": "int"
+          },
+          {
+            "foreign": "createdate",
+            "local": "DateCreated",
+            "relation": "ParseTimeDate",
+						"type": "timedate"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "DateUpdated",
+            "relation": "ParseTimeDate",
+						"type": "timedate"
+          },
+          {
+            "foreign": "approvedate",
+            "local": "DateApproved",
+            "relation": "ParseTimeDate",
+						"type": "timedate"
+          }
+        ]
+      }
+    }
+  },
+  "Credentials": {
+    "Databases": [
+      {
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "localhost",
+        "port": "5432",
+        "adapter": "mysql",
+        "type": "foreign"
+      },
+      {
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": "27017",
+        "adapter": "mongodb",
+        "type": "local"
+      }
+    ]
+  }
 }
