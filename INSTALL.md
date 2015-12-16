@@ -9,27 +9,18 @@ git clone git@github.com:CoralProject/sponge.git
 ### Configure
 
 
-* Copy configuration file
+* Copy strategy file
+
+There is one strategy file for publisher. It tells us how to do the transformation between the publisher's data and the coral data schema. It also tells us how to connect to the external publisher's source. There is a strategy file example in app/sponge/strategy.json.example.
 
 ```
-cp config/config.json.example config/config.json
+cp app/sponge/strategy.json.example app/sponge/strategy.json
 ```
-
-* Configure database
-
-	* Name: name of the Publisher you are configuring for.
-	* Strategy:  type of database and tables you are importing.
-	* Credentials: Array of credentials with information about each database you are importing from and to. Adapter is the kind of DBMS and type is source or local.
-
-* To add a new collection/table
-
-	* Modify config.json with collection: table in the strategy.Tables
-	* Add new model to models interface.  This needs to be done automatically.
-	* Adds new collection to the utils New func. This needs to be done automatically.
 
 ### How to run
 
 ```
+cd app/sponge
  go run main.go
 ```
 
@@ -37,11 +28,12 @@ cp config/config.json.example config/config.json
 ### To build
 
 ```
- go build -o import
+cd app/sponge
+go build
 ```
 
 ```
- ./import
+ ./sponge
 ```
 
 
