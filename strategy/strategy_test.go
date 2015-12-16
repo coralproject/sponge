@@ -18,42 +18,110 @@ func fakeStrategy() Strategy {
 		Type:     "source",
 	}
 
+	cfields := make([]map[string]string, 8)
+
+	cfields[0] = map[string]string{
+		"foreign":  "commentid",
+		"local":    "CommentID",
+		"relation": "Identity",
+		"type":     "int",
+	}
+	cfields[1] = map[string]string{
+		"foreign":  "commentbody",
+		"local":    "Body",
+		"relation": "Identity",
+		"type":     "[]byte",
+	}
+	cfields[2] = map[string]string{
+		"foreign":  "parentid",
+		"local":    "ParentID",
+		"relation": "Identity",
+		"type":     "int",
+	}
+	cfields[3] = map[string]string{
+		"foreign":  "assetid",
+		"local":    "AssetID",
+		"relation": "Identity",
+		"type":     "int",
+	}
+	cfields[4] = map[string]string{
+		"foreign":  "statusid",
+		"local":    "Status",
+		"relation": "Identity",
+		"type":     "int",
+	}
+	cfields[5] = map[string]string{
+		"foreign":  "createdate",
+		"local":    "DateCreated",
+		"relation": "Parse",
+		"type":     "timedate",
+	}
+	cfields[6] = map[string]string{
+		"foreign":  "updatedate",
+		"local":    "DateUpdated",
+		"relation": "Parse",
+		"type":     "timedate",
+	}
+	cfields[7] = map[string]string{
+		"foreign":  "approvedate",
+		"local":    "DateApproved",
+		"relation": "Parse",
+		"type":     "timedate",
+	}
+
+	afields := make([]map[string]string, 3)
+	afields[0] = map[string]string{
+		"foreign":  "assetid",
+		"local":    "AssetID",
+		"relation": "identity",
+		"type":     "int",
+	}
+	afields[1] = map[string]string{
+		"foreign":  "sourceid",
+		"local":    "SourceID",
+		"relation": "identity",
+		"type":     "int",
+	}
+	afields[2] = map[string]string{
+		"foreign":  "asseturl",
+		"local":    "URL",
+		"relation": "identity",
+		"type":     "[]byte",
+	}
+
+	ufields := make([]map[string]string, 6)
+	ufields[0] = map[string]string{
+		"foreign":  "userid",
+		"local":    "UserID",
+		"relation": "identity",
+		"type":     "int",
+	}
+	ufields[1] = map[string]string{
+		"foreign":  "userdisplayname",
+		"local":    "UserName",
+		"relation": "identity",
+		"type":     "[]byte",
+	}
+
 	var fakeConf = Strategy{
 		Name: "New York Times",
 		Map: Map{
-			Typesource: "mysql",
+			Foreign: "mysql",
 			Tables: map[string]Table{
 				"Comment": Table{
-					Name: "crnr_comment",
-					Fields: map[string]string{
-						"CommentID":    "commentid",
-						"Body":         "commentbody",
-						"ParentID":     "parentid",
-						"AssetID":      "assetid",
-						"Status":       "statusid",
-						"DateCreated":  "createdate",
-						"DateUpdated":  "updatedate",
-						"DateApproved": "approvedate",
-					},
+					Foreign: "crnr_comment",
+					Local:   "comment",
+					Fields:  cfields,
 				},
 				"Asset": Table{
-					Name: "crnr_asset",
-					Fields: map[string]string{
-						"AssetID":  "assetid",
-						"SourceID": "sourceID",
-						"URL":      "asseturl",
-					},
+					Foreign: "crnr_asset",
+					Local:   "asset",
+					Fields:  afields,
 				},
 				"User": Table{
-					Name: "crnr_comment",
-					Fields: map[string]string{
-						"UserID":      "userid",
-						"UserName":    "userdisplayname",
-						"Avatar":      "",
-						"LastLogin":   "",
-						"MemberSince": "",
-						"TrustScore":  "",
-					},
+					Foreign: "crnr_comment",
+					Local:   "user",
+					Fields:  ufields,
 				},
 			},
 		},
@@ -113,8 +181,8 @@ func TestGetStrategy(t *testing.T) {
 
 	strategy := fakeConf.GetMap()
 
-	if strategy.Typesource != "mysql" {
-		t.Error("Expected mysql, got ", strategy.Typesource)
+	if strategy.Foreign != "mysql" {
+		t.Error("Expected mysql, got ", strategy.Foreign)
 	}
 }
 
@@ -126,7 +194,7 @@ func TestGetTables(t *testing.T) {
 	var tables map[string]Table
 	tables = fakeConf.GetTables()
 
-	if tables["Comment"].Name != "crnr_comment" {
+	if tables["Comment"].Foreign != "crnr_comment" {
 		t.Error("Expected crnr_comment, got ", tables["Comment"])
 	}
 }

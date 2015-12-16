@@ -1,0 +1,82 @@
+{
+	"Name": "New York Times",
+	"Map": {
+		"Typesource": "mysql",
+		"Tables": {
+			"Comment": {
+				"name": "crnr_comment",
+				"fields": {
+					"CommentID": "commentid",
+					"Body": "commentbody",
+					"ParentID": "parentid",
+					"AssetID": "assetid",
+					"Status": "statusid",
+					"DateCreated": "createdate",
+					"DateUpdated": "updatedate",
+					"DateApproved": "approvedate"
+				}
+			},
+			"Asset": {
+				"name": "crnr_asset",
+				"fields": {
+					"AssetID":"assetid",
+					"SourceID": "sourceID",
+					"URL": "asseturl"
+				}
+			},
+			"User": {
+				"name": "crnr_comment",
+				"fields": {
+					"UserID": "userid",
+					"UserName": "userdisplayname",
+					"Avatar": "",
+					"LastLogin": "",
+					"MemberSince": "",
+					"TrustScore": ""
+				}
+			}
+		},
+		"Action": [
+			{
+				"name": "crnr_comment_notes",
+				"fields": {
+					"type": "Note",
+					"userID": "UserID",
+					"value": "CommentNoteID",
+					"CreateDate": ""
+				}
+			},
+			{
+				"name": "crnr_comment",
+				"fields": {
+					"type": "Comment",
+					"userid": "UserID",
+					"value": "CommentID",
+					"CredateDate": ""
+				}
+			}
+		]
+	},
+	"Credentials": {
+		"Databases": [
+			{
+				"database":  "",
+				"username":  "",
+				"password":  "",
+				"host":      "localhost",
+				"port":     "5432",
+				"adapter":  "mysql",
+				"type": "source"
+			},
+			{
+				"database":  "",
+				"username":  "",
+				"password":  "",
+				"host":      "",
+				"port":     "27017",
+				"adapter":  "mongodb",
+				"type": "local"
+			}
+		]
+	}
+}

@@ -31,12 +31,12 @@ func (m MongoDB) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(modelName string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(coralTableName string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	var dat []map[string]interface{}
 
 	// Get the corresponding table to the modelName
-	collectionName := strategy.GetTableName(modelName)
+	collectionName := strategy.GetTableForeignName(coralTableName)
 	// tableFields := config.GetTableFields(modelName) // map[string]string
 
 	// open a connection

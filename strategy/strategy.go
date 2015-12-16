@@ -16,17 +16,39 @@ import (
 
 //* Strategy Structure *//
 
-// Table holds the struct on what is the external source's table name and fields
-type Table struct {
-	Name   string            `json:"name"`
-	Fields map[string]string `json:"fields"`
+// Strategy is a structure with all the information for the specitic strategy (how to get the data, from which source)
+type Strategy struct {
+	Name        string
+	Map         Map
+	Credentials Credentials // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
 }
 
 // Map explains which tables or data we are getting from the source.
 type Map struct {
-	Typesource string           `json:"typesource"`
-	Tables     map[string]Table `json:"tables"`
-	Action     []Table
+	Foreign string           `json:"foreign"`
+	Tables  map[string]Table `json:"tables"`
+}
+
+// Table holds the struct on what is the external source's table name and fields
+type Table struct {
+	Foreign string              `json:"foreign"`
+	Local   string              `json:"local"`
+	Fields  []map[string]string `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+}
+
+// ^
+//Fields has maps in the style
+// {
+// 	"foreign": "parentid",
+// 	"local": "ParentID",
+// 	"relation": "Identity",
+// 	"type": "int"
+// }
+
+// Credentials are all the credentials for external and internal data sources
+type Credentials struct {
+	Databases []CredentialDatabase
+	APIs      []CredentialAPI
 }
 
 // Credential is the interface for APIs or Database Sources
@@ -96,26 +118,17 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 	return "", endpointError{key: "authentication"}
 }
 
-// Credentials are all the credentials for external and internal data sources
-type Credentials struct {
-	Databases []CredentialDatabase
-	APIs      []CredentialAPI
-}
-
-// Strategy is a structure with all the information for the specitic strategy (how to get the data, from which source)
-type Strategy struct {
-	Name        string
-	Map         Map
-	Credentials Credentials // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
-}
-
 /* Exported Functions */
 
 // New creates a new strategy from configuration file
 func New() Strategy {
 
+	var strategy Strategy
+	var err error
+
 	f := "strategy.json"
-	strategy, err := readConfigFile(f)
+
+	strategy, err = readConfigFile(f)
 
 	if err != nil {
 		log.Error("setting", "new", err, "Getting strategy file")
@@ -124,7 +137,7 @@ func New() Strategy {
 	return strategy
 }
 
-// GetCredential returns the credentials for connection with the external source
+// GetCredential returns the credentials for connection with the external source adapter a, type t
 func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
 	var cred CredentialDatabase
 
@@ -154,14 +167,14 @@ func (s Strategy) GetTables() map[string]Table {
 	return s.Map.Tables
 }
 
-// GetTableName returns the external source's table mapped to the coral model
-func (s Strategy) GetTableName(modelName string) string {
-	return s.Map.Tables[modelName].Name
+// GetTableForeignName returns the external source's table mapped to the coral model
+func (s Strategy) GetTableForeignName(coralName string) string {
+	return s.Map.Tables[coralName].Foreign
 }
 
-// GetTableFields returns the external source's table fields mapped to the coral model
-func (s Strategy) GetTableFields(modelName string) map[string]string {
-	return s.Map.Tables[modelName].Fields
+// GetTableForeignFields returns the external source's table fields mapped to the coral model
+func (s Strategy) GetTableForeignFields(coralName string) []map[string]string {
+	return s.Map.Tables[coralName].Fields
 }
 
 /* Not Exported Functions */
@@ -182,7 +195,7 @@ func unmarshal(content []byte) (Strategy, error) {
 
 func readConfigFile(f string) (Strategy, error) {
 
-	log.Dev("startup", "readConfigFile", "Reading Config File : %s", f)
+	//log.Dev("startup", "readConfigFile", "Reading Config File : %s", f)
 
 	content, err := ioutil.ReadFile(f)
 	if err != nil {

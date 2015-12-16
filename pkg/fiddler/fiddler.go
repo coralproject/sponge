@@ -5,6 +5,9 @@ Package fiddler transform, through a strategy file, data from external source in
 package fiddler
 
 import (
+	"encoding/json"
+	"time"
+
 	"github.com/coralproject/sponge/pkg/log"
 	str "github.com/coralproject/sponge/strategy"
 )
@@ -14,49 +17,70 @@ var strategy = str.New() // Reads the strategy file
 
 const longForm = "2015-11-02 12:26:05" // date format. To Do: it needs to be defined in the strategy file for the publisher
 
-// To Do: This needs to be looking at the strategy and model depending on the data that is being pulled
-
-// Transformer is the interface for all the model structs <--- be carefull, this is an interface that Comment, Asset and Note are implementing. Transform is acting on a slice of Model (how that works?)
-type Transformer interface {
-	Print()
-	Transform([]map[string]interface{}, str.Table) ([]Transformer, error)
-}
-
-// New creates a new model based on a table name. This is a Factory func
-// IT NEEDS TO FIND A WAY TO USE REFLECT/METAPROGRAMMING TO CREATE A "OBJECT" OF TYPE TABLE FOR THE MODELS
-func New(table string) (Transformer, error) {
-
-	if table == "Comment" {
-		return Comment{}, nil
-	} else if table == "Asset" {
-		return Asset{}, nil
-	} else if table == "User" {
-		return User{}, nil
-	}
-
-	e := newmodelError{tablename: table}
-	log.Error("transform", "New", e, "Factory Model")
-
-	return nil, e
-}
-
 // Transform from external source data into the coral schema
-func Transform(modelName string, data []map[string]interface{}) ([]Transformer, error) { //data *sql.Rows) ([]Transformer, error) {
-	var dataCoral []Transformer
+func Transform(modelName string, data []map[string]interface{}) ([]byte, error) {
+	var dataCoral []byte
 
-	m, err := New(modelName)
-	if err != nil {
-		log.Error("transform", "Transform", err, "Transform factory")
-		return nil, err
+	table := strategy.GetTables()[modelName]
+
+	// Loop on all the data
+	for _, row := range data {
+
+		newRow, err := transformRow(row, table.Fields)
+		if err != nil {
+			return nil, err
+		}
+
+		// add to comments
+		dataCoral = append(dataCoral[:], newRow[:]...)
 	}
-
-	dataCoral, err = m.Transform(data, strategy.GetTables()[modelName])
-	if err != nil {
-		log.Error("transform", "Transform", err, "Transform Factory")
-		return nil, err
-	}
-
-	// Get dataCoral into JSON
 
 	return dataCoral, nil
+}
+
+// Convert a row into the comment coral structure
+func transformRow(row map[string]interface{}, fields []map[string]string) ([]byte, error) {
+	// "fields": [
+	// 	{
+	// 		"foreign": "commentid",
+	// 		"local": "CommentID",
+	// 		"relation": "Identity",
+	// 		"type": "int"
+	// 	},
+	// 	... ]
+
+	newRow := make(map[string]interface{})
+	// Loop on the fields for the translation
+	for _, f := range fields {
+		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
+		newValue := transformField(row[f["foreign"]], f["relation"])
+		if newValue != nil {
+			newRow[f["local"]] = newValue
+		}
+	}
+
+	// Convert to Json
+	jrow, err := json.Marshal(newRow)
+	if err != nil {
+		log.Error("transform", "transformCommentrow", err, "Transform Comment")
+		return nil, err
+	}
+
+	return jrow, nil
+}
+
+//Here we transform the record into what we want (based on the configuration in the strategy)
+// 1. convert types (values are all strings) into the struct
+func transformField(oldValue interface{}, relation string) interface{} {
+
+	var newValue interface{}
+
+	switch relation {
+	case "Identity":
+		newValue = oldValue
+	case "ParseTimeDate":
+		newValue, _ = time.Parse(longForm, oldValue.(string))
+	}
+
+	return newValue
 }

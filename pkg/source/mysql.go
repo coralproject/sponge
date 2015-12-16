@@ -6,15 +6,17 @@ package source
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 	"github.com/elgs/gosqljson"
+	// using mysql driver
 	_ "github.com/go-sql-driver/mysql"
 )
 
 // Global configuration variables that holds the credentials for mysql
-var credentialMysql = strategy.GetCredential("mysql", "source")
+var credentialMysql = strategy.GetCredential("mysql", "foreign")
 
 /* Implementing the Sources */
 
@@ -36,11 +38,11 @@ func (m MySQL) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MySQL) GetData(modelName string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MySQL) GetData(coralTableName string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	// Get the corresponding table to the modelName
-	tableName := strategy.GetTableName(modelName)
-	tableFields := strategy.GetTableFields(modelName) // map[string]string
+	tableName := strategy.GetTableForeignName(coralTableName)
+	tableFields := strategy.GetTableForeignFields(coralTableName) // []map[string]string
 
 	// open a connection
 	db, err := m.open()
@@ -50,11 +52,12 @@ func (m MySQL) GetData(modelName string) ([]map[string]interface{}, error) { //(
 	}
 	defer m.close(db)
 
-	// Fields for that table
+	// Fields for that external source table
 	f := make([]string, 0, len(tableFields))
-	for _, value := range tableFields {
-		if value != "" {
-			f = append(f, value)
+	for _, field := range tableFields {
+		fmt.Println("### FIELD: ", field)
+		if field != nil {
+			f = append(f, field["foreign"])
 		}
 	}
 
@@ -63,8 +66,10 @@ func (m MySQL) GetData(modelName string) ([]map[string]interface{}, error) { //(
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
 	query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
+
 	data, err := gosqljson.QueryDbToMapJson(db, "lower", query)
 	if err != nil {
+		log.Error("import", "GetData", err, "Running SQL query")
 		return nil, err
 	}
 
@@ -73,6 +78,7 @@ func (m MySQL) GetData(modelName string) ([]map[string]interface{}, error) { //(
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
+		log.Error("import", "GetData", err, "Unmarshalling the query")
 		return nil, err
 	}
 

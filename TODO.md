@@ -3,14 +3,20 @@
 Today
 
 
+. CHANGE STRUCTURE FOR JSON STRATEGY 
+. MYSQL IS NOT YET WORKING WITH NEW STRATEGY
+
+get all the transforms into one place (now that the strucutre is more flexible)
+
+
+
 STRATEGY FILE HAS TO HAVE A VALIDATION OF THE CONFIGURATION FILE (AS IN THE SCHEMA, WHAT IS REQUIRED)
 
 * convert config into Strategy
 ** logs
-** pointers!!
 
 * transformations
-  ** look to conver it into map[string][interface]
+  ** look to convert it into map[string][interface]
 * tests - how to better do themselves
 
 
