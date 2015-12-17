@@ -9,49 +9,49 @@
         "fields": [
           {
             "foreign": "commentid",
-            "local": "CommentID",
-            "relation": "Identity",
+            "local": "id",
+            "relation": "Source",
 						"type": "int"
           },
           {
             "foreign": "commentbody",
-            "local": "Body",
+            "local": "body",
             "relation": "Identity",
 						"type": "[]byte"
           },
           {
             "foreign": "parentid",
-            "local": "ParentID",
-            "relation": "Identity",
+            "local": "parent_id",
+            "relation": "Source",
 						"type": "int"
           },
           {
             "foreign": "assetid",
-            "local": "AssetID",
-            "relation": "Identity",
+            "local": "asset_id",
+            "relation": "Source",
 						"type": "int"
           },
           {
             "foreign": "statusid",
-            "local": "Status",
+            "local": "status",
             "relation": "Identity",
-						"type": "int"
+						"type": "string"
           },
           {
             "foreign": "createdate",
-            "local": "DateCreated",
+            "local": "date_created",
             "relation": "ParseTimeDate",
 						"type": "timedate"
           },
           {
             "foreign": "updatedate",
-            "local": "DateUpdated",
+            "local": "date_updated",
             "relation": "ParseTimeDate",
 						"type": "timedate"
           },
           {
             "foreign": "approvedate",
-            "local": "DateApproved",
+            "local": "date_approved",
             "relation": "ParseTimeDate",
 						"type": "timedate"
           }
