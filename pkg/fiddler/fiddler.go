@@ -50,14 +50,20 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]byt
 	// 	... ]
 
 	newRow := make(map[string]interface{})
+	var source []map[string]interface{}
 	// Loop on the fields for the translation
 	for _, f := range fields {
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		newValue := transformField(row[f["foreign"]], f["relation"])
+		newValue := transformField(row[f["foreign"]], f["relation"], f["local"])
 		if newValue != nil {
-			newRow[f["local"]] = newValue
+			if f["relation"] != "Source" { //special case
+				newRow[f["local"]] = newValue
+			} else {
+				source = append(source[:], newValue.([]map[string]interface{})...)
+			}
 		}
 	}
+	newRow["source"] = source
 
 	// Convert to Json
 	jrow, err := json.Marshal(newRow)
@@ -71,16 +77,22 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]byt
 
 //Here we transform the record into what we want (based on the configuration in the strategy)
 // 1. convert types (values are all strings) into the struct
-func transformField(oldValue interface{}, relation string) interface{} {
-
-	var newValue interface{}
+func transformField(oldValue interface{}, relation string, local string) interface{} {
 
 	switch relation {
 	case "Identity":
-		newValue = oldValue
+		return oldValue
+	case "Source": // this is dirty! look at this again please
+		var newValue []map[string]interface{}
+		newValue = make([]map[string]interface{}, 1)
+		newValue[0] = make(map[string]interface{})
+		newValue[0][local] = oldValue
+		return newValue
 	case "ParseTimeDate":
+		var newValue time.Time
 		newValue, _ = time.Parse(longForm, oldValue.(string))
+		return newValue
 	}
 
-	return newValue
+	return nil
 }

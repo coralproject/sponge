@@ -67,7 +67,7 @@ func main() {
 
 			//Transform the data
 			log.User("import", "main", "### Transforming data to the coral schema.\n")
-			dataCoral, err := fiddler.Transform(modelName, data) //Datacoral
+			dataCoral, err := fiddler.Transform(modelName, data) //Datacoral is []byte
 			if err != nil {
 				log.Error("transform", "main", err, "Transform Data")
 			}
@@ -76,11 +76,11 @@ func main() {
 
 			// // var context interface{}
 			// // var db *db.DB
-			//log.User("import", "main", "### Pushing data into collection %s. ### \n", modelName)
+			// log.User("import", "main", "### Pushing data into collection %s. ### \n", modelName)
 			// switch modelName {
 			// case "User":
 			// 	//err = comment.AddUsers(context, db, dataCoral)
-			//log.User("import", "main", "### Ready to Add Users %v", len(dataCoral))
+			// log.User("import", "main", "### Ready to Add Users %v", len(dataCoral))
 			// case "Comment":
 			// 	//err = comment.AddComments(context, db, dataCoral)
 			// 	fmt.Printf("Ready to Add Comments %s", dataCoral)

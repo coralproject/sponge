@@ -134,6 +134,11 @@ func New() Strategy {
 		log.Error("setting", "new", err, "Getting strategy file")
 	}
 
+	// err = validate(strategy)
+	// if err != nil {
+	// 	log.Error("setting", "new", err, "Validating strategy file")
+	// }
+
 	return strategy
 }
 
