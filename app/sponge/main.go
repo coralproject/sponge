@@ -7,12 +7,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/ardanlabs/kit/cfg"
+	"github.com/ardanlabs/kit/log"
+
 	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
-	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/source"
 )
 
@@ -26,12 +26,6 @@ func init() {
 	}
 
 	log.Init(os.Stderr, logLevel)
-
-	// err := mongo.InitMGO()
-	// if err != nil {
-	// 	log.Error("startup", "init", err, "Initializing MongoDB")
-	// 	os.Exit(1)
-	// }
 }
 
 func main() {
@@ -45,43 +39,39 @@ func main() {
 		return
 	}
 
-	// Get All the tables from the MySQL
+	// Get All the tables's names that we have in the strategy json file
 	tables, err := mysql.GetTables()
-	fmt.Println("### TABLES: ", tables)
+
 	if err != nil {
 		log.Error("startup", "main", err, "Get external MySQL tables")
 		return
 	}
 
-	wg := sync.WaitGroup{}
-
 	for _, modelName := range tables {
-		wg.Add(1)
-		go func(modelName string) {
-			defer wg.Done()
+		// Get the data
+		log.User("main", "main", "### Getting data '%s' from external source.\n", modelName)
+		data, err := mysql.GetData(modelName)
+		if err != nil {
+			log.Error("main", "main", err, "Get external MySQL data")
+			continue
+		}
 
-			// Get the data
-			log.User("import", "main", "### Getting data from external source.\n")
-			data, err := mysql.GetData(modelName)
+		//Transform the data row by row
+		log.User("main", "main", "# Transforming data to the coral schema.\n")
+		// Loop on all the data
+		for _, row := range data {
+			newRow, err := fiddler.TransformRow(row, modelName)
 			if err != nil {
-				log.Error("import", "main", err, "Get external MySQL data")
+				log.Error("main", "main", err, "Error when transforming the row %s.", row)
 			}
 
-			//Transform the data
-			log.User("import", "main", "### Transforming data to the coral schema.\n")
-			dataCoral, err := fiddler.Transform(modelName, data) //Datacoral is []byte
+			fmt.Println("####### ADD ROW: ", string(newRow))
+			// send the row to pillar
+			err = coral.AddRow(newRow, modelName)
 			if err != nil {
-				log.Error("transform", "main", err, "Transform Data")
+				log.Error("main", "main", err, "Error when adding the row %s.", row)
 			}
-
-			err = coral.AddData(modelName, dataCoral)
-			if err != nil {
-				log.Error("transform", "main", err, "Add Data To Coral")
-			}
-
-		}(modelName)
+		}
 	}
-	wg.Wait()
-
 	log.Dev("shutdown", "main", "Complete")
 }
