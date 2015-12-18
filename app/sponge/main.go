@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/ardanlabs/kit/cfg"
+	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
 	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/source"
@@ -46,6 +47,7 @@ func main() {
 
 	// Get All the tables from the MySQL
 	tables, err := mysql.GetTables()
+	fmt.Println("### TABLES: ", tables)
 	if err != nil {
 		log.Error("startup", "main", err, "Get external MySQL tables")
 		return
@@ -72,23 +74,10 @@ func main() {
 				log.Error("transform", "main", err, "Transform Data")
 			}
 
-			fmt.Println(string(dataCoral))
-
-			// // var context interface{}
-			// // var db *db.DB
-			// log.User("import", "main", "### Pushing data into collection %s. ### \n", modelName)
-			// switch modelName {
-			// case "User":
-			// 	//err = comment.AddUsers(context, db, dataCoral)
-			// log.User("import", "main", "### Ready to Add Users %v", len(dataCoral))
-			// case "Comment":
-			// 	//err = comment.AddComments(context, db, dataCoral)
-			// 	fmt.Printf("Ready to Add Comments %s", dataCoral)
-			// }
-			//
-			// if err != nil {
-			// 	log.Error("save", "main", err, "Send data to local database")
-			// }
+			err = coral.AddData(modelName, dataCoral)
+			if err != nil {
+				log.Error("transform", "main", err, "Add Data To Coral")
+			}
 
 		}(modelName)
 	}
