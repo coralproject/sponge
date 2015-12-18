@@ -2,14 +2,12 @@ package coral
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
-	"github.com/coralproject/pillar/server/model"
 )
 
 const methodGet string = "GET"
@@ -51,96 +49,53 @@ func init() {
 
 }
 
-// AddData is the exposed func to import data into the coral db
-func AddData(modelName string, data []byte) error {
-
+// AddRow send the row to pillar based on which collection is
+func AddRow(data []byte, modelName string) error {
 	var err error
-	//
-	// fmt.Println("### DATA: ", string(data))
-
 	switch modelName {
 	case "user":
-		err = addUsers(data)
-		if err != nil {
-			//log.Error("import", "AddUsers", err, "Send data to local database")
-			fmt.Println(err)
-		}
+		err = addUser(data)
 	case "comment":
-		err = addComments(data)
-		if err != nil {
-			log.Error("import", "AddComments", err, "Send data to local database")
-		}
+		err = addComment(data)
 	case "asset":
-		err = addAssets(data)
-		if err != nil {
-			log.Error("import", "AddAssets", err, "Send data to local database")
-		}
+		err = addAsset(data)
 	}
 
 	return err
 }
 
-// AddAssets calls the API to add assets
-func addAssets(jassets []byte) error {
+// AddComment  calls the API to add the comment
+func addComment(jcomment []byte) error {
 
-	objects := []model.Asset{}
+	fmt.Println(string(jcomment))
 
-	err := json.Unmarshal(jassets, &objects)
+	err := doRequest(methodPost, Config.urlComment, bytes.NewBuffer(jcomment))
 	if err != nil {
-		log.Error("client", "addAssets", err, "Parsing asset data")
-	}
-
-	for _, asset := range objects {
-		data, _ := json.Marshal(asset)
-
-		err = doRequest(methodPost, Config.urlAsset, bytes.NewBuffer(data))
-		if err != nil {
-			return err
-		}
+		fmt.Println(jcomment)
+		log.Error("coral", "addComment", err, "Error on sending request with comment.")
+		return err
 	}
 
 	return nil
 }
 
-// AddUsers calls the API to add users
-func addUsers(jusers []byte) error {
+// AddAssets calls the API to add the asset
+func addAsset(jasset []byte) error {
 
-	objects := []model.User{}
-
-	err := json.Unmarshal(jusers, &objects)
+	err := doRequest(methodPost, Config.urlAsset, bytes.NewBuffer(jasset))
 	if err != nil {
-		//log.Error("client", "addUsers", err, "Parsing user data")
-		fmt.Println(err)
-	}
-
-	for _, user := range objects {
-		data, _ := json.Marshal(user)
-		err = doRequest(methodPost, Config.urlUser, bytes.NewBuffer(data))
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	return nil
 }
 
-// AddComments  calls the API to add comments
-func addComments(jcomments []byte) error {
+// AddUsers calls the API to add the user
+func addUser(juser []byte) error {
 
-	objects := []model.Comment{}
-
-	err := json.Unmarshal(jcomments, &objects)
+	err := doRequest(methodPost, Config.urlUser, bytes.NewBuffer(juser))
 	if err != nil {
-		fmt.Println(err)
-		//log.Error("client", "addComment", err, "Parsing comments data")
-	}
-
-	for _, comment := range objects {
-		data, _ := json.Marshal(comment)
-		err = doRequest(methodPost, Config.urlComment, bytes.NewBuffer(data))
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	return nil
@@ -149,16 +104,19 @@ func addComments(jcomments []byte) error {
 func doRequest(method string, urlStr string, payload io.Reader) error {
 
 	request, err := http.NewRequest(method, urlStr, payload)
+	if err != nil {
+		log.Error("coral", "doRequest", err, "New request")
+		return err
+	}
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		//	log.Error("client", "doRequest", err, "Processing request")
-		fmt.Println(err)
-		return err
+		log.Error("coral", "doRequest", err, "Processing request")
 	}
 	defer response.Body.Close()
 
-	return nil
+	fmt.Println("ERRRRORR?  ", err)
+	return err
 }

@@ -6,6 +6,7 @@ package fiddler
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -45,6 +46,23 @@ func Transform(modelName string, data []map[string]interface{}) ([]byte, error) 
 	return dataCoral, nil
 }
 
+// TransformRow transform a row of data into the coral schema
+func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
+
+	table := strategy.GetTables()[modelName]
+
+	newRow, err := transformRow(row, table.Fields)
+
+	// Convert to Json
+	dataCoral, err := json.Marshal(newRow)
+	if err != nil {
+		log.Error("transform", "Transform", err, "Transform Data")
+		return nil, err
+	}
+
+	return dataCoral, err
+}
+
 // Convert a row into the comment coral structure
 func transformRow(row map[string]interface{}, fields []map[string]string) ([]map[string]interface{}, error) { //([]byte, error) {
 	// "fields": [
@@ -56,14 +74,23 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]map
 	// 	},
 	// 	... ]
 
+	// newRow will hold the transformed row
 	var newRow []map[string]interface{}
-	var source []map[string]interface{}
+
 	newRow = make([]map[string]interface{}, 1)
 	newRow[0] = make(map[string]interface{})
-	// Loop on the fields for the translation
+
+	// source is being used only for the special ocation when the fields relatsionship is source
+	var source []map[string]interface{}
+
+	fmt.Println("### ROW:", row)
+	// Loop on the fields for the transformation
 	for _, f := range fields {
+		fmt.Printf("### Field: %s, Value %v\n", f["foreign"], row[f["foreign"]])
+
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue := transformField(row[f["foreign"]], f["relation"], f["local"])
+
 		if newValue != nil {
 
 			if f["relation"] != "Source" {
@@ -89,21 +116,22 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]map
 // 1. convert types (values are all strings) into the struct
 func transformField(oldValue interface{}, relation string, local string) interface{} {
 
-	switch relation {
-	case "Identity":
-		return oldValue
-	case "Source": // this is dirty! look at this again please
-		var newValue []map[string]interface{}
-		newValue = make([]map[string]interface{}, 1)
-		newValue[0] = make(map[string]interface{})
-		newValue[0][local] = oldValue
-		return newValue
-	case "ParseTimeDate":
-		var newValue time.Time
-		newValue, _ = time.Parse(longForm, oldValue.(string))
-		return newValue
+	if oldValue != nil {
+		switch relation {
+		case "Identity":
+			return oldValue
+		case "Source": // this is dirty! look at this again please
+			var newValue []map[string]interface{}
+			newValue = make([]map[string]interface{}, 1)
+			newValue[0] = make(map[string]interface{})
+			newValue[0][local] = oldValue
+			return newValue
+		case "ParseTimeDate":
+			var newValue time.Time
+			newValue, _ = time.Parse(longForm, oldValue.(string))
+			return newValue
+		}
 	}
-
 	return nil
 }
 
