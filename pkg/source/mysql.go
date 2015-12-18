@@ -6,7 +6,6 @@ package source
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
@@ -55,7 +54,6 @@ func (m MySQL) GetData(coralTableName string) ([]map[string]interface{}, error) 
 	// Fields for that external source table
 	f := make([]string, 0, len(tableFields))
 	for _, field := range tableFields {
-		fmt.Println("### FIELD: ", field)
 		if field != nil {
 			f = append(f, field["foreign"])
 		}
