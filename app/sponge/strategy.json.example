@@ -3,6 +3,42 @@
   "Map": {
     "foreign": "mysql",
     "tables": {
+      "asset": {
+        "foreign": "crnr_asset",
+        "local": "asset",
+        "fields": [
+          {
+            "foreign": "assetid",
+            "local": "src_id",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "asseturl",
+            "local": "url",
+            "relation": "Identity",
+            "type": "int"
+          }
+        ]
+      },
+      "user": {
+        "foreign": "crnr_comment",
+        "local": "user",
+        "fields": [
+          {
+            "foreign": "userid",
+            "local": "src_id",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "userdisplayname",
+            "local": "user_name",
+            "relation": "Identity",
+            "type": "[]byte"
+          }
+        ]
+      },
       "comment": {
         "foreign": "crnr_comment",
         "local": "comment",
@@ -20,10 +56,10 @@
 						"type": "[]byte"
           },
           {
-            "foreign": "parentid",
-            "local": "parent_id",
+            "foreign": "userid",
+            "local": "user_id",
             "relation": "Source",
-						"type": "int"
+            "type": "int"
           },
           {
             "foreign": "assetid",
@@ -35,7 +71,13 @@
             "foreign": "statusid",
             "local": "status",
             "relation": "Identity",
-						"type": "string"
+						"type": "int"
+          },
+          {
+            "foreign": "parentid",
+            "local": "parent_id",
+            "relation": "Identity",
+            "type": "int"
           },
           {
             "foreign": "createdate",
@@ -56,6 +98,30 @@
 						"type": "timedate"
           }
         ]
+      },
+      "note": {
+        "foreign": "crnr_comment_notes",
+        "local": "note",
+        "fields": [
+          {
+            "foreign": "userid",
+            "local": "user_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "commentNote",
+            "local": "body",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "",
+            "local": "date",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          }
+        ]
       }
     }
   },
@@ -65,7 +131,7 @@
         "database": "",
         "username": "",
         "password": "",
-        "host": "localhost",
+        "host": "",
         "port": "5432",
         "adapter": "mysql",
         "type": "foreign"
