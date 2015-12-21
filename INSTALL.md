@@ -1,5 +1,9 @@
 # Installation
 
+## Development environment
+
+You will need an instance of mysql running for the external source and an instance of [Pillar](http://github.com/coralproject/pillar) running to send the data to.
+
 ### Clone Repository
 
 ```
