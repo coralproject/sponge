@@ -6,7 +6,6 @@ package fiddler
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -17,34 +16,6 @@ import (
 var strategy = str.New() // Reads the strategy file
 
 const longForm = "2015-11-02 12:26:05" // date format. To Do: it needs to be defined in the strategy file for the publisher
-
-// Transform from external source data into the coral schema
-func Transform(modelName string, data []map[string]interface{}) ([]byte, error) {
-
-	var d []map[string]interface{}
-
-	table := strategy.GetTables()[modelName]
-
-	// Loop on all the data
-	for _, row := range data {
-
-		newRow, err := transformRow(row, table.Fields)
-		if err != nil {
-			return nil, err
-		}
-		// append a row to the stream
-		d = appendRow(d, newRow)
-	}
-
-	// Convert to Json
-	dataCoral, err := json.Marshal(d)
-	if err != nil {
-		log.Error("transform", "Transform", err, "Transform Data")
-		return nil, err
-	}
-
-	return dataCoral, nil
-}
 
 // TransformRow transform a row of data into the coral schema
 func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
@@ -64,7 +35,7 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 }
 
 // Convert a row into the comment coral structure
-func transformRow(row map[string]interface{}, fields []map[string]string) ([]map[string]interface{}, error) { //([]byte, error) {
+func transformRow(row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) { //([]byte, error) {
 	// "fields": [
 	// 	{
 	// 		"foreign": "commentid",
@@ -75,18 +46,15 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]map
 	// 	... ]
 
 	// newRow will hold the transformed row
-	var newRow []map[string]interface{}
-
-	newRow = make([]map[string]interface{}, 1)
-	newRow[0] = make(map[string]interface{})
+	var newRow map[string]interface{}
+	newRow = make(map[string]interface{})
 
 	// source is being used only for the special ocation when the fields relatsionship is source
-	var source []map[string]interface{}
+	var source map[string]interface{}
+	source = make(map[string]interface{})
 
-	fmt.Println("### ROW:", row)
 	// Loop on the fields for the transformation
 	for _, f := range fields {
-		fmt.Printf("### Field: %s, Value %v\n", f["foreign"], row[f["foreign"]])
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue := transformField(row[f["foreign"]], f["relation"], f["local"])
@@ -94,7 +62,7 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]map
 		if newValue != nil {
 
 			if f["relation"] != "Source" {
-				newRow[0][f["local"]] = newValue // newvalue could be string or time.Time or int
+				newRow[f["local"]] = newValue // newvalue could be string or time.Time or int
 			} else { // special case when I'm looking into a source relationship
 				// {
 				//	"source":
@@ -103,11 +71,15 @@ func transformRow(row map[string]interface{}, fields []map[string]string) ([]map
 				//				]
 				// }
 				// append a field to the slice source, newValue's example: { "asset_id": xxx }
-				source = appendField(source, newValue)
+				//source = appendField(source, newValue)
+				source[f["local"]] = newValue
 			}
 		}
 	}
-	newRow[0]["source"] = source
+
+	if source != nil && len(source) > 0 {
+		newRow["source"] = source
+	}
 
 	return newRow, nil
 }
@@ -121,11 +93,11 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 		case "Identity":
 			return oldValue
 		case "Source": // this is dirty! look at this again please
-			var newValue []map[string]interface{}
-			newValue = make([]map[string]interface{}, 1)
-			newValue[0] = make(map[string]interface{})
-			newValue[0][local] = oldValue
-			return newValue
+			// var newValue []map[string]interface{}
+			// newValue = make([]map[string]interface{}, 1)
+			// newValue[0] = make(map[string]interface{})
+			// newValue[0][local] = oldValue
+			return oldValue
 		case "ParseTimeDate":
 			var newValue time.Time
 			newValue, _ = time.Parse(longForm, oldValue.(string))
@@ -133,24 +105,6 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 		}
 	}
 	return nil
-}
-
-// appends an item to []item
-func appendRow(items []map[string]interface{}, item []map[string]interface{}) []map[string]interface{} {
-	n := len(items)
-	total := len(items) + 1
-	if total > cap(items) {
-		newSize := total*3/2 + 1
-		newItems := make([]map[string]interface{}, total, newSize)
-		copy(newItems, items)
-		items = newItems
-	}
-
-	items = items[:total]
-	copy(items[n:], item)
-	items = items[:total]
-
-	return items
 }
 
 // source is [ { "asset_id": xxx}, { "comment_id": xxx} ]

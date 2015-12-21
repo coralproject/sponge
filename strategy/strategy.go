@@ -10,6 +10,10 @@ import (
 	"github.com/ardanlabs/kit/log"
 )
 
+const (
+	strategyFile = "strategy.json"
+)
+
 // func init() {
 //  // validate CONFIGURATION
 // }
@@ -126,9 +130,7 @@ func New() Strategy {
 	var strategy Strategy
 	var err error
 
-	f := "strategy.json"
-
-	strategy, err = readConfigFile(f)
+	strategy, err = readConfigFile(strategyFile)
 
 	if err != nil {
 		log.Error("setting", "new", err, "Getting strategy file")

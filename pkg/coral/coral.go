@@ -2,7 +2,6 @@ package coral
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -67,11 +66,8 @@ func AddRow(data []byte, modelName string) error {
 // AddComment  calls the API to add the comment
 func addComment(jcomment []byte) error {
 
-	fmt.Println(string(jcomment))
-
 	err := doRequest(methodPost, Config.urlComment, bytes.NewBuffer(jcomment))
 	if err != nil {
-		fmt.Println(jcomment)
 		log.Error("coral", "addComment", err, "Error on sending request with comment.")
 		return err
 	}
@@ -117,6 +113,5 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 	}
 	defer response.Body.Close()
 
-	fmt.Println("ERRRRORR?  ", err)
 	return err
 }

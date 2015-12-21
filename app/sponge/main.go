@@ -5,7 +5,6 @@ Import external source database into local source and transform it
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/ardanlabs/kit/cfg"
@@ -39,7 +38,7 @@ func main() {
 		return
 	}
 
-	// Get All the tables's names that we have in the strategy json file
+	//Get All the tables's names that we have in the strategy json file
 	tables, err := mysql.GetTables()
 
 	if err != nil {
@@ -48,12 +47,13 @@ func main() {
 	}
 
 	for _, modelName := range tables {
+
 		// Get the data
 		log.User("main", "main", "### Getting data '%s' from external source.\n", modelName)
 		data, err := mysql.GetData(modelName)
 		if err != nil {
 			log.Error("main", "main", err, "Get external MySQL data")
-			continue
+			//continue
 		}
 
 		//Transform the data row by row
@@ -65,7 +65,6 @@ func main() {
 				log.Error("main", "main", err, "Error when transforming the row %s.", row)
 			}
 
-			fmt.Println("####### ADD ROW: ", string(newRow))
 			// send the row to pillar
 			err = coral.AddRow(newRow, modelName)
 			if err != nil {
