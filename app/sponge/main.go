@@ -77,9 +77,10 @@ func main() {
 				percentComplete := float64(documents) / float64(totalDocuments) * float64(100)
 				msSinceStart := time.Since(start).Nanoseconds() / int64(1000000)
 				msSinceBlock := time.Since(blockStart).Nanoseconds() / int64(1000000)
+				timeRemaining := float64(time.Since(start).Seconds()) / percentComplete * float64(100)
 
 				// log stats
-				log.User("import", "", "%v%% complete - %v of %v documents in %vms, %vms avg - last %v in %vms, %vms avg \n", percentComplete, documents, totalDocuments, msSinceStart, msSinceStart/documents, blockSize, msSinceBlock, msSinceBlock/blockSize)
+				log.User("import", "", "%v%% complete - %v of %v documents in %vms, %vms avg - last %v in %vms, %vms avg -- est time remaining %vs\n", percentComplete, documents, totalDocuments, msSinceStart, msSinceStart/documents, blockSize, msSinceBlock, msSinceBlock/blockSize, timeRemaining)
 				blockStart = time.Now()
 
 			}
