@@ -19,6 +19,10 @@ import (
 
 var limitFlag int
 
+const (
+	limitDefault = 100
+)
+
 func init() {
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -30,7 +34,8 @@ func init() {
 
 	log.Init(os.Stderr, logLevel)
 
-	flag.IntVar(&limitFlag, "count", 10, "Number of rows that we are going to import at a time")
+	flag.IntVar(&limitFlag, "count", limitDefault, "Number of rows that we are going to import at a time")
+	flag.Parse()
 }
 
 func main() {
@@ -62,8 +67,6 @@ func main() {
 			//continue
 		}
 
-		total := len(data)
-		countRow := 0
 		//Transform the data row by row
 		log.User("main", "main", "# Transforming data to the coral schema.\n")
 		log.User("main", "main", "# And importing %v documents.", len(data))
@@ -77,7 +80,6 @@ func main() {
 		totalDocuments := int64(len(data))
 
 		for _, row := range data {
-			countRow = countRow + 1
 
 			// output benchmarking for each block of documents
 			if documents%blockSize == 0 && documents > 0 {
@@ -102,11 +104,11 @@ func main() {
 			}
 
 			// send the row to pillar
-			log.User("main", "main", "# %v/%v documents completed.", countRow, total)
 			err = coral.AddRow(newRow, modelName)
 			if err != nil {
 				log.Error("main", "main", err, "Error when adding the row %s.", row)
 			}
+
 		}
 	}
 	log.User("main", "main", "### Complete on %v seconds")
