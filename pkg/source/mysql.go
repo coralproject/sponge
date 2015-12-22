@@ -6,6 +6,7 @@ package source
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
@@ -63,8 +64,8 @@ func (m MySQL) GetData(coralTableName string, limit int) ([]map[string]interface
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
-	//	query := strings.Join([]string{"SELECT", fields, "from", tableName, "limit", fmt.Sprintf("%v", limit)}, " ")
-	query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
+	query := strings.Join([]string{"SELECT", fields, "from", tableName, "limit", fmt.Sprintf("%v", limit)}, " ")
+	//query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
 
 	data, err := gosqljson.QueryDbToMapJson(db, "lower", query)
 	if err != nil {
