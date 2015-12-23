@@ -100,7 +100,10 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 			return oldValue
 		case "ParseTimeDate":
 			var newValue time.Time
-			newValue, _ = time.Parse(longForm, oldValue.(string))
+
+			// TODO: move time format into strategy file
+			newValue, _ = time.Parse("2006-01-02", oldValue.(string))
+
 			return newValue
 		}
 	}
