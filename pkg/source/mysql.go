@@ -6,6 +6,7 @@ package source
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
@@ -37,7 +38,7 @@ func (m MySQL) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MySQL) GetData(coralTableName string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MySQL) GetData(coralTableName string, limit int) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	// Get the corresponding table to the modelName
 	tableName := strategy.GetTableForeignName(coralTableName)
@@ -63,7 +64,8 @@ func (m MySQL) GetData(coralTableName string) ([]map[string]interface{}, error) 
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
-	query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
+	query := strings.Join([]string{"SELECT", fields, "from", tableName, "limit", fmt.Sprintf("%v", limit)}, " ")
+	//query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
 
 	data, err := gosqljson.QueryDbToMapJson(db, "lower", query)
 	if err != nil {

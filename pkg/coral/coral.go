@@ -4,13 +4,17 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
 )
 
-const methodGet string = "GET"
-const methodPost string = "POST"
+const (
+	retryTimes int    = 3
+	methodGet  string = "GET"
+	methodPost string = "POST"
+)
 
 type restResponse struct {
 	status  string
@@ -51,6 +55,7 @@ func init() {
 // AddRow send the row to pillar based on which collection is
 func AddRow(data []byte, modelName string) error {
 	var err error
+
 	switch modelName {
 	case "user":
 		err = addUser(data)
@@ -107,11 +112,20 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		log.Error("coral", "doRequest", err, "Processing request")
+
+	// Retry retryTimes times if it fails to do the request
+	for i := 0; i < retryTimes; i++ {
+		response, err := client.Do(request)
+		if err != nil {
+			log.Error("coral", "doRequest", err, "Processing request")
+		} else {
+			defer response.Body.Close()
+			break
+		}
+
+		// wait and retry to do the request
+		time.Sleep(250 * time.Millisecond)
 	}
-	defer response.Body.Close()
 
 	return err
 }
