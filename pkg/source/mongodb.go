@@ -31,7 +31,7 @@ func (m MongoDB) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(coralTableName string, limit int, offset int) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	var dat []map[string]interface{}
 

@@ -1,12 +1,13 @@
 {
   "Name": "New York Times",
   "Map": {
-    "foreign": "mysql",
-    "tables": {
+    "Foreign": "mysql",
+    "Tables": {
       "asset": {
-        "foreign": "crnr_asset",
-        "local": "asset",
-        "fields": [
+        "Foreign": "crnr_asset",
+        "Local": "asset",
+        "OrderBy": "assetid",
+        "Fields": [
           {
             "foreign": "assetid",
             "local": "src_id",
@@ -18,13 +19,20 @@
             "local": "url",
             "relation": "Identity",
             "type": "int"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timeDate"
           }
         ]
       },
       "user": {
-        "foreign": "crnr_comment",
-        "local": "user",
-        "fields": [
+        "Foreign": "crnr_comment",
+        "Local": "user",
+        "OrderBy": "userid",
+        "Fields": [
           {
             "foreign": "userid",
             "local": "src_id",
@@ -36,13 +44,20 @@
             "local": "user_name",
             "relation": "Identity",
             "type": "[]byte"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
           }
         ]
       },
       "comment": {
-        "foreign": "crnr_comment",
-        "local": "comment",
-        "fields": [
+        "Foreign": "crnr_comment",
+        "Local": "comment",
+        "OrderBy": "commentid",
+        "Fields": [
           {
             "foreign": "commentid",
             "local": "id",
@@ -100,9 +115,10 @@
         ]
       },
       "note": {
-        "foreign": "crnr_comment_notes",
-        "local": "note",
-        "fields": [
+        "Foreign": "crnr_comment_notes",
+        "Local": "note",
+        "OrderBy": "userid",
+        "Fields": [
           {
             "foreign": "userid",
             "local": "user_id",
@@ -114,12 +130,6 @@
             "local": "body",
             "relation": "Identity",
             "type": "[]byte"
-          },
-          {
-            "foreign": "",
-            "local": "date",
-            "relation": "ParseTimeDate",
-            "type": "timedate"
           }
         ]
       }
@@ -143,7 +153,7 @@
         "host": "",
         "port": "27017",
         "adapter": "mongodb",
-        "type": "local"
+        "type": "foreign"
       }
     ]
   }

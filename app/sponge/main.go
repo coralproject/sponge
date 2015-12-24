@@ -18,10 +18,12 @@ import (
 
 var limitFlag int
 var offsetFlag int
+var orderbyFlag string
 
 const (
-	limitDefault  = 9999999999
-	offsetDefault = 0
+	limitDefault   = 9999999999
+	offsetDefault  = 0
+	orderbyDefault = ""
 )
 
 func init() {
@@ -38,6 +40,7 @@ func init() {
 
 	flag.IntVar(&limitFlag, "limit", limitDefault, "Number of rows that we are going to import at a time")
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "Offset for the sql query")
+	flag.StringVar(&orderbyFlag, "orderby", orderbyDefault, "Order by field of the query on external source")
 	flag.Parse()
 }
 
@@ -65,7 +68,7 @@ func main() {
 
 		// Get the data
 		log.User("main", "main", "### Reading data from table '%s'. \n", modelName)
-		data, err := mysql.GetData(modelName, offsetFlag, limitFlag)
+		data, err := mysql.GetData(modelName, offsetFlag, limitFlag, orderbyFlag)
 		if err != nil {
 			log.Error("main", "main", err, "Get external MySQL data")
 			//continue
