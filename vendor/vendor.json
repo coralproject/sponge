@@ -3,6 +3,16 @@
 	"ignore": "",
 	"package": [
 		{
+			"path": "github.com/ardanlabs/kit/cfg",
+			"revision": "272eb4c250f53119c91778e8ab3acf0a5a70c4b2",
+			"revisionTime": "2015-12-12T03:50:02-05:00"
+		},
+		{
+			"path": "github.com/ardanlabs/kit/log",
+			"revision": "272eb4c250f53119c91778e8ab3acf0a5a70c4b2",
+			"revisionTime": "2015-12-12T03:50:02-05:00"
+		},
+		{
 			"path": "github.com/coralproject/shelf/pkg/cfg",
 			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
 			"revisionTime": "2015-12-09T01:47:32-05:00"
