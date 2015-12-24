@@ -5,13 +5,11 @@ package strategy
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
+	"os"
 
-	"github.com/ardanlabs/kit/log"
-)
-
-const (
-	strategyFile = "strategy.json"
+	"github.com/coralproject/sponge/pkg/log"
 )
 
 // func init() {
@@ -130,10 +128,16 @@ func New() Strategy {
 	var strategy Strategy
 	var err error
 
-	strategy, err = readConfigFile(strategyFile)
+	//read STRATEGY_CONF env variable
+	strategyFile := os.Getenv("STRATEGY_CONF")
+	if strategyFile == "" {
+		log.Error("strategy", "new", errors.New("STRATEGY_CONF not found"), "Strategy conf not found")
+		os.Exit(1)
+	}
 
+	strategy, err = readConfigFile(strategyFile)
 	if err != nil {
-		log.Error("setting", "new", err, "Getting strategy file")
+		log.Error("strategy", "new", err, "Getting strategy file")
 	}
 
 	// err = validate(strategy)
@@ -158,7 +162,7 @@ func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
 		}
 	}
 
-	//	log.Error("startup", "getCredentials", errors.New("Credential not found."), "Getting strategy")
+	log.Error("strategy", "getCredentials", errors.New("Credential not found."), "Getting strategy")
 
 	return cred
 }
@@ -193,7 +197,7 @@ func unmarshal(content []byte) (Strategy, error) {
 
 	err := json.Unmarshal(content, &s)
 	if err != nil {
-		log.Error("startup", "unmarshal", err, "Getting strategy")
+		log.Error("strategy", "unmarshal", err, "Getting strategy")
 		return Strategy{}, err
 	}
 
@@ -202,19 +206,22 @@ func unmarshal(content []byte) (Strategy, error) {
 
 func readConfigFile(f string) (Strategy, error) {
 
-	//log.Dev("startup", "readConfigFile", "Reading Config File : %s", f)
+	//log.User("strategy", "readConfigFile", "Reading Config File.")
+
+	var strategy Strategy
 
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
-		log.Error("startup", "readConfigFile", err, "Getting strategy")
+		log.Error("strategy", "readConfigFile", err, "Getting strategy")
 
-		return Strategy{}, err
+		return strategy, err
 	}
 
-	strategy, err := unmarshal(content)
+	strategy, err = unmarshal(content)
 	if err != nil {
-		log.Error("startup", "readConfigFile", err, "Getting strategy")
-		return Strategy{}, err
+		log.Error("strategy", "readConfigFile", err, "Getting strategy")
+
+		return strategy, err
 	}
 
 	return strategy, err
