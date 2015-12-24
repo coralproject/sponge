@@ -18,9 +18,11 @@ import (
 )
 
 var limitFlag int
+var offsetFlag int
 
 const (
-	limitDefault = 100
+	limitDefault  = 10000
+	offsetDefault = 0
 )
 
 func init() {
@@ -34,7 +36,8 @@ func init() {
 
 	log.Init(os.Stderr, logLevel)
 
-	flag.IntVar(&limitFlag, "count", limitDefault, "Number of rows that we are going to import at a time")
+	flag.IntVar(&limitFlag, "limit", limitDefault, "Number of rows that we are going to import at a time")
+	flag.IntVar(&offsetFlag, "offset", offsetDefault, "Offset for the sql query")
 	flag.Parse()
 }
 
@@ -61,7 +64,7 @@ func main() {
 
 		// Get the data
 		log.User("main", "main", "### Reading data from table '%s'. \n", modelName)
-		data, err := mysql.GetData(modelName, limitFlag)
+		data, err := mysql.GetData(modelName, offsetFlag, limitFlag)
 		if err != nil {
 			log.Error("main", "main", err, "Get external MySQL data")
 			//continue
@@ -109,9 +112,10 @@ func main() {
 				log.Error("main", "main", err, "Error when adding the row %s.", row)
 			}
 
+			//record the date of the last record that was succesfully sent
+			//log.Record("dateUpdated", modelName, dateUpdated)
+
 		}
 	}
-	log.User("main", "main", "### Complete on %v seconds")
-
 	log.Dev("shutdown", "main", "Complete")
 }

@@ -27,7 +27,7 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 	// Convert to Json
 	dataCoral, err := json.Marshal(newRow)
 	if err != nil {
-		log.Error("transform", "Transform", err, "Transform Data")
+		log.Error("transform", "TransformRow", err, "Transform Data")
 		return nil, err
 	}
 
@@ -66,12 +66,8 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 			} else { // special case when I'm looking into a source relationship
 				// {
 				//	"source":
-				//				[
 				//					{ "asset_id": xxx},
-				//				]
 				// }
-				// append a field to the slice source, newValue's example: { "asset_id": xxx }
-				//source = appendField(source, newValue)
 				source[f["local"]] = newValue
 			}
 		}
