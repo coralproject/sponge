@@ -8,14 +8,18 @@ External possible sources:
 */
 package source
 
-import str "github.com/coralproject/sponge/strategy"
+import (
+	"errors"
+
+	str "github.com/coralproject/sponge/strategy"
+)
 
 // global variables related to strategy
 var strategy = str.New() // Reads the strategy file
 
 // Sourcer is where the data is coming from (mysql, api)
 type Sourcer interface {
-	GetData(string, int) ([]map[string]interface{}, error)
+	GetData(string, int, int) ([]map[string]interface{}, error)
 	GetTables() ([]string, error)
 }
 
@@ -31,5 +35,5 @@ func New(d string) (Sourcer, error) {
 		return MongoDB{Connection: connectionMongoDB(), Database: nil}, nil
 	}
 
-	return nil, notFoundError{dbms: d}
+	return nil, errors.New("Configuration not found for source database.")
 }

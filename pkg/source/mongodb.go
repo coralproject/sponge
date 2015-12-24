@@ -9,7 +9,7 @@ import (
 )
 
 // Global configuration variables that holds the credentials for mysql
-var credentialMongo = strategy.GetCredential("mongodb", "source")
+var credentialMongo = strategy.GetCredential("mongodb", "foreign")
 
 /* Implementing the Sources */
 
@@ -31,7 +31,7 @@ func (m MongoDB) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(coralTableName string, limit int) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(coralTableName string, limit int, offset int) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	var dat []map[string]interface{}
 

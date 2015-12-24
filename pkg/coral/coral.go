@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/ardanlabs/kit/cfg"
@@ -50,6 +51,15 @@ func init() {
 		//log.Error("coral", "init", err, "Getting COMMENT_URL env variable")
 	}
 
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.USER
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
 }
 
 // AddRow send the row to pillar based on which collection is
