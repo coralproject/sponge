@@ -20,7 +20,7 @@ var limitFlag int
 var offsetFlag int
 
 const (
-	limitDefault  = 10000
+	limitDefault  = 9999999999
 	offsetDefault = 0
 )
 
