@@ -10,10 +10,9 @@ import (
 	"time"
 
 	"github.com/ardanlabs/kit/cfg"
-	"github.com/ardanlabs/kit/log"
-
 	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
+	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/source"
 )
 
@@ -26,6 +25,7 @@ const (
 )
 
 func init() {
+
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
@@ -43,20 +43,21 @@ func init() {
 
 func main() {
 
-	log.Dev("startup", "main", "Start")
+	log.Dev("main", "main", "Start")
 
 	// Connect to external source
 	log.User("main", "main", "### Connecting to external database...")
+
 	mysql, err := source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
-		log.Error("startup", "main", err, "Connect to external MySQL")
+		log.Error("main", "main", err, "Connect to external MySQL")
 		return
 	}
 
 	//Get All the tables's names that we have in the strategy json file
 	tables, err := mysql.GetTables()
 	if err != nil {
-		log.Error("startup", "main", err, "Get external MySQL tables")
+		log.Error("main", "main", err, "Get external MySQL tables")
 		return
 	}
 
