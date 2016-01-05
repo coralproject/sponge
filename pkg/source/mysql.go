@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
-	"github.com/elgs/gosqljson"
+	"github.com/gabelula/gosqljson"
 	// using mysql driver
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -69,7 +69,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
 	//query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
 
-	data, err := gosqljson.QueryDbToMapJson(db, "lower", query)
+	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
 		log.Error("import", "GetData", err, "Running SQL query")
 		return nil, err

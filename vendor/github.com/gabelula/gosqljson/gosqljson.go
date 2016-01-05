@@ -7,8 +7,12 @@ import (
 	"strings"
 )
 
-func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
+// QueryDbToArrayJSON gets to return a json array
+func QueryDbToArrayJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	headers, data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
+	if err != nil {
+		return "", err
+	}
 	var result = map[string]interface{}{
 		"headers": headers,
 		"data":    data,
@@ -17,13 +21,17 @@ func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlPara
 	return string(jsonString), err
 }
 
-func QueryDbToMapJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
+// QueryDbToMapJSON gets to return a json map
+func QueryDbToMapJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	data, err := QueryDbToMap(db, theCase, sqlStatement, sqlParams...)
+	if err != nil {
+		return "", err
+	}
 	jsonString, err := json.Marshal(data)
 	return string(jsonString), err
 }
 
-// headers, data, error
+// QueryDbToArray returns an array: headers, data, error
 func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -64,7 +72,7 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -83,7 +91,7 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	return headers, data, nil
 }
 
-// headers, data, error
+// QueryTxToArray headers, data, error
 func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -124,7 +132,7 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -143,17 +151,18 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 	return headers, data, nil
 }
 
+// QueryDbToMap returns a query in a map
 func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
+	var results []map[string]string
+
 	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in QueryDbToMap ", r)
 		}
 	}()
 
-	var results []map[string]string
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
 		return results, err
 	}
 	cols, _ := rows.Columns()
@@ -177,7 +186,7 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -212,6 +221,7 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	return results, nil
 }
 
+// QueryTxToMap converts to map the query
 func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -246,7 +256,7 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -281,21 +291,21 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 	return results, nil
 }
 
+// ExecDb executes
 func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, error) {
 	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in ExecDb", r)
 		}
 	}()
 	result, err := db.Exec(sqlStatement, sqlParams...)
 	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
-		fmt.Println(err)
 		return 0, err
 	}
 	return result.RowsAffected()
 }
 
+// ExecTx executes
 func ExecTx(tx *sql.Tx, sqlStatement string, sqlParams ...interface{}) (int64, error) {
 	defer func() {
 		if err := recover(); err != nil {
