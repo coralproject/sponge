@@ -13,6 +13,7 @@ import (
 	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
 	"github.com/coralproject/sponge/pkg/log"
+	"github.com/coralproject/sponge/pkg/report"
 	"github.com/coralproject/sponge/pkg/source"
 )
 
@@ -41,7 +42,11 @@ func init() {
 	flag.IntVar(&limitFlag, "limit", limitDefault, "Number of rows that we are going to import at a time")
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "Offset for the sql query")
 	flag.StringVar(&orderbyFlag, "orderby", orderbyDefault, "Order by field of the query on external source")
+
 	flag.Parse()
+
+	// Initialize the report and write it down at the end
+	report.Init()
 }
 
 func main() {
@@ -71,7 +76,9 @@ func main() {
 		data, err := mysql.GetData(modelName, offsetFlag, limitFlag, orderbyFlag)
 		if err != nil {
 			log.Error("main", "main", err, "Get external MySQL data")
-			//continue
+			//RECORD to report about failing modelName
+			report.Record(modelName, "", nil, "Failing getting data", err)
+			continue
 		}
 
 		//Transform the data row by row
@@ -108,18 +115,26 @@ func main() {
 			newRow, err := fiddler.TransformRow(row, modelName)
 			if err != nil {
 				log.Error("main", "main", err, "Error when transforming the row %s.", row)
+				//RECORD to report about failing transformation
+				report.Record(modelName, row["ID"], row, "Failing transform data", err)
 			}
 
 			// send the row to pillar
 			err = coral.AddRow(newRow, modelName)
 			if err != nil {
 				log.Error("main", "main", err, "Error when adding the row %s.", row)
+				//RECORD to report about failing adding row to coral db
+				report.Record(modelName, row["ID"], row, "Failing add row to coral", err)
 			}
 
-			//record the date of the last record that was succesfully sent
+			//RECORD the date of the last record that was succesfully sent
 			//log.Record("dateUpdated", modelName, dateUpdated)
 
 		}
 	}
+
+	// Write report on failures (if any)
+	report.Write()
+
 	log.Dev("shutdown", "main", "Complete")
 }
