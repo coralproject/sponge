@@ -36,6 +36,7 @@ type Table struct {
 	Foreign string              `json:"foreign"`
 	Local   string              `json:"local"`
 	OrderBy string              `json:"orderby"`
+	ID      string              `json:"id"`
 	Fields  []map[string]string `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
 }
 
@@ -192,6 +193,11 @@ func (s Strategy) GetTableForeignFields(coralName string) []map[string]string {
 // GetOrderBy returns the order by field definied in the strategy
 func (s Strategy) GetOrderBy(coralName string) string {
 	return s.Map.Tables[coralName].OrderBy
+}
+
+// GetIDField returns the identifier for the table coralname setup in the strategy file
+func (s Strategy) GetIDField(coralName string) string {
+	return s.Map.Tables[coralName].ID
 }
 
 /* Not Exported Functions */
