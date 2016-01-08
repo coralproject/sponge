@@ -70,6 +70,11 @@ func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby s
 	return dat, nil
 }
 
+// GetQueryData needs to be implemented for mongodb to implement the sourcer interface
+func (m MongoDB) GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error) {
+	return nil, nil
+}
+
 //////* Not exported functions *//////
 
 // ConnectionMongoDB returns the connection string
