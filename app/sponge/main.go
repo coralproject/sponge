@@ -124,7 +124,7 @@ func main() {
 		log.User("main", "main", "Reading file of data to import.")
 
 		// get the data that needs to be imported
-		rowsToImport, err := report.Read() //[]map[string]interface{}
+		rowsToImport, err := report.ReadReport() //[]map[string]interface{}
 		if err != nil {
 			log.Error("main", "main", err, "Getting the rows that will be imported")
 		}

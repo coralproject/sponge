@@ -52,6 +52,11 @@ func Record(model string, id interface{}, row map[string]interface{}, note strin
 
 }
 
+// GetRecords returns the actual records that I'm recording
+func GetRecords() [][]string {
+	return records
+}
+
 // Write writes the report to disk
 func Write() {
 	// remove existing file
@@ -85,8 +90,10 @@ func Write() {
 	}
 }
 
-// Read gets the data that needs to be imported from the report already in disk and return the records in a way that can be easily read it
-func Read() ([]map[string]interface{}, error) {
+//* This functions are for the old report that is already save in disk. *//
+
+// ReadReport gets the data that needs to be imported from the report already in disk and return the records in a way that can be easily read it
+func ReadReport() ([]map[string]interface{}, error) {
 	// Read the CSV file
 	outfile, err := os.Open(filePath)
 	if err != nil {
