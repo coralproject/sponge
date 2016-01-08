@@ -38,7 +38,7 @@ func (m MySQL) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) {
 
 	// Get the corresponding table to the modelName
 	tableName := strategy.GetTableForeignName(coralTableName)
@@ -68,6 +68,66 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	// the query string . To Do. Select only the stuff you are going to use
 	query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
 	//query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
+
+	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
+	if err != nil {
+		log.Error("import", "GetData", err, "Running SQL query")
+		return nil, err
+	}
+
+	byt := []byte(data)
+
+	var dat []map[string]interface{}
+	err = json.Unmarshal(byt, &dat)
+	if err != nil {
+		log.Error("import", "GetData", err, "Unmarshalling the query")
+		return nil, err
+	}
+
+	return dat, nil
+}
+
+// GetQueryData returns the raw data from the tableName
+func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
+
+	// Get the corresponding table to the modelName
+	tableName := strategy.GetTableForeignName(coralTableName)
+	tableFields := strategy.GetTableForeignFields(coralTableName) // []map[string]string
+
+	// open a connection
+	db, err := m.open()
+	if err != nil {
+		log.Error("Connecting", "GetData", err, "Error connecting to database.")
+		return nil, err
+	}
+	defer m.close(db)
+
+	// Fields for that external source table
+	f := make([]string, 0, len(tableFields))
+	for _, field := range tableFields {
+		if field != nil {
+			f = append(f, field["foreign"])
+		}
+	}
+
+	// all the fields
+	fields := strings.Join(f, ", ")
+
+	// if we are ordering by
+	if len(orderby) == 0 {
+		orderby = strategy.GetOrderBy(coralTableName)
+	}
+
+	var queryWhere string
+	// if we are quering specifics recrords
+	if len(ids) > 0 {
+		idField := strategy.GetIDField(coralTableName)
+		queryWhere = fmt.Sprintf("where %s in (%s)", idField, strings.Join(ids, ", "))
+	}
+
+	// Get only the fields that we are going to use
+	// the query string . To Do. Select only the stuff you are going to use
+	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
