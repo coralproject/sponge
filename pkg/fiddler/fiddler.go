@@ -6,6 +6,7 @@ package fiddler
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -21,6 +22,10 @@ const longForm = "2015-11-02 12:26:05" // date format. To Do: it needs to be def
 func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
 
 	table := strategy.GetTables()[modelName]
+
+	if table.Local == "" {
+		return nil, errors.New("No table found in the strategy file.")
+	}
 
 	newRow, err := transformRow(row, table.Fields)
 
