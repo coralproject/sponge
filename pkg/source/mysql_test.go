@@ -1,112 +1,102 @@
 /* package source_test is doing unit tests for the source package */
-package source_test
+package source
 
-import "testing"
+import (
+	"fmt"
+	"os"
+	"testing"
+)
 
-// Mock this global configuration variables
-// var strategy = strategy.Strategy{}
-// var credential = strategy.Credential{}
-// var config *strategy.Config
+var m Sourcer
+var mm MySQL
 
-// NewSource returns a new MySQL struct
-// Signature: NewSource() *MySQL
-// It depends on the credentials to get the connection string
-func TestNewSource(t *testing.T) {
+func setup() {
 
-	// credential.Database = "test"
-	// credential.Username = "testuser"
-	// credential.Password = "testpassword"
-	// credential.Host = ""
-	// credential.Port = ""
-	// credential.Adapter = ""
-	// credential.Type = "mysql"
-	//
-	// config.Name = "Test"
-	// config.Strategy = strategy
-	// config.Credentials[0] = credential
-	//
-	// var m *source.MySQL
-	//
-	// m = source.NewSource() // function being tested
-	//
-	// // m should have a valid connection string
-	// if m.Connection == "" {
-	// 	t.Error("Connection string should not be nil.")
-	// }
-	//
-	// // m should not have a database connection
-	// if m.Database != nil {
-	// 	t.Error("Database should be nil.")
-	// }
+	//setup environment variable
+	// strategy File
+	// create mysql db
+
+	// MOCK STRATEGY CONF
+	strategyConf := "../../tests/strategy_test.json"
+	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
+	var ok bool
+
+	m, e = New("mysql") // function being tested
+	if e != nil {
+		fmt.Printf("error when calling the function, %v.\n", e)
+	}
+
+	mm, ok = m.(MySQL)
+	if !ok {
+		fmt.Println("it should return a type MySQL")
+	}
 }
 
-// GetData returns the raw data from the tableName
-// Signature (m *MySQL) GetData(tableName string, modelName string) util.Data
+func teardown() {
+}
+
+//Signature: (m MySQL) GetTables() ([]string, error)
+func TestGetTables(t *testing.T) {
+
+	setup()
+
+	s, e := mm.GetTables()
+	if e != nil {
+		t.Fatalf("error when getting tables, %v.", e)
+	}
+
+	if len(s) != 4 { // 4 is in the seeds when creating the test strategy file
+		t.Fatalf("got %s, it should be 4", len(s))
+	}
+}
+
+// Signature: (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error)
 func TestGetData(t *testing.T) {
+	setup()
 
-	// credential.Database = "test"
-	// credential.Username = "testuser"
-	// credential.Password = "testpassword"
-	// credential.Host = ""
-	// credential.Port = ""
-	// credential.Adapter = ""
-	// credential.Type = "mysql"
-	//
-	// config.Name = "Test"
-	// config.Strategy = strategy
-	// config.Credentials[0] = credential
-	//
-	// var m *source.MySQL
-	// m = source.NewSource()
-	//
-	// d := m.GetData("testModel") // function being tested
-	//
-	// if d.Error != nil {
-	// 	t.Error("Error should be nil.")
-	// }
-	//
-	// if d.Type != "testModel" {
-	// 	t.Error("The type should be the model name.")
-	// }
-	//
-	// // Check that d.Rows has the fixtures in it
+	// Default Flags
+	coralTableName := "comment"
+	offset := 0
+	limit := 9999999999
+	orderby := ""
+
+	// no error
+	data, err := mm.GetData(coralTableName, offset, limit, orderby)
+	if err != nil {
+		t.Fatalf("it should have no error %s.", err)
+	}
+
+	// data should be []map[string]interface{}
+	if len(data) != 99 { // this is a setup for the seed data
+		t.Fatalf("got %d, it should be 99", len(data))
+	}
+
 }
 
-// runQuery run the query on the Database
-// Signature runQuery(db *sql.DB, model string, query string) ([]models.Model, error)
-func TestRunQuery(t *testing.T) {
-	//
-	// credential.Database = "test"
-	// credential.Username = "testuser"
-	// credential.Password = "testpassword"
-	// credential.Host = ""
-	// credential.Port = ""
-	// credential.Adapter = ""
-	// credential.Type = "mysql"
-	//
-	// config.Name = "Test"
-	// config.Strategy = strategy
-	// config.Credentials[0] = credential
-	//
-	// var db *sql.DB //mock the db
-	// model := "testModel"
-	// query := "a query to test"
-	//
-	// var models []models.Model
-	// var err error
-	//
-	// models, err = source.RunQuery(db, model, query)
-	//
-	// if err != nil {
-	// 	t.Error("Error should be nil.")
-	// }
-	// // check models is not empty
-	// if models[0] == nil {
-	// 	t.Error("Models does not have models...")
-	// }
-}
+// Signature: (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error)
+func TestGetQueryData(t *testing.T) {
+	setup()
 
-// other func to test?
-// connection
-// open
-// close
+	// Default Flags
+	coralTableName := "comment"
+	offset := 0
+	limit := 9999999999
+	orderby := ""
+
+	ids := []string{"16570043", "16570056", "16570088", "16570101", "16570134"}
+
+	// no error
+	data, err := mm.GetQueryData(coralTableName, offset, limit, orderby, ids)
+	if err != nil {
+		t.Fatalf("it should have no error %s.", err)
+	}
+
+	// data should be []map[string]interface{}
+	if len(data) != 5 { // this is a setup for the seed data
+		t.Fatalf("got %d, it should be 5", len(data))
+	}
+}
