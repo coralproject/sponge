@@ -111,16 +111,22 @@ func fakeStrategy() Strategy {
 				"Comment": Table{
 					Foreign: "crnr_comment",
 					Local:   "comment",
+					OrderBy: "commentid",
+					ID:      "commentid",
 					Fields:  cfields,
 				},
 				"Asset": Table{
 					Foreign: "crnr_asset",
 					Local:   "asset",
+					OrderBy: "assetid",
+					ID:      "assetid",
 					Fields:  afields,
 				},
 				"User": Table{
 					Foreign: "crnr_comment",
 					Local:   "user",
+					OrderBy: "userid",
+					ID:      "commentid",
 					Fields:  ufields,
 				},
 			},
@@ -134,6 +140,19 @@ func fakeStrategy() Strategy {
 }
 
 // Not Testing New() *Config as it is only reading the file and unmarshalling it...
+
+// Signature GetIDField(coralName string) string {
+func TestGetID(t *testing.T) {
+	fakeConf := fakeStrategy()
+	modelName := "Comment"
+
+	id := fakeConf.GetIDField(modelName)
+
+	if id != "commentid" {
+		t.Fatalf("Expected commentid, got %v", id)
+	}
+
+}
 
 // GetCredential returns the credentials for connection with the external source
 // Signature  GetCredential(adapter string) Credential

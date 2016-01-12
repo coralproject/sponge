@@ -91,10 +91,12 @@ func process(modelName string, data []map[string]interface{}) {
 
 		// transform the row
 		newRow, err := fiddler.TransformRow(row, modelName)
+		id := fiddler.GetID(modelName)
 		if err != nil {
 			log.Error("main", "process", err, "Error when transforming the row %s.", row)
+
 			//RECORD to report about failing transformation
-			report.Record(modelName, "ID", row, "Failing transform data", err) // <--- I NEED TO GET THE VALUE FOR THE ID FROM STRATEGY
+			report.Record(modelName, row[id], row, "Failing transform data", err)
 		}
 
 		// send the row to pillar
@@ -102,7 +104,7 @@ func process(modelName string, data []map[string]interface{}) {
 		if err != nil {
 			log.Error("main", "process", err, "Error when adding the row %s.", row)
 			//RECORD to report about failing adding row to coral db
-			report.Record(modelName, row["ID"], row, "Failing add row to coral", err) // <--- I NEED TO GET THE VALUE FOR THE ID FROM STRATEGY
+			report.Record(modelName, row[id], row, "Failing add row to coral", err)
 		}
 	}
 }
