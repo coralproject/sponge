@@ -2,6 +2,7 @@ package coral
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -129,6 +130,10 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 		if err != nil {
 			log.Error("coral", "doRequest", err, "Processing request")
 		} else {
+			if response.StatusCode != 200 {
+				err := errors.New(response.Status)
+				log.Error("coral", "doRequest", err, "Processing request")
+			}
 			defer response.Body.Close()
 			break
 		}
