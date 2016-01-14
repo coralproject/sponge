@@ -2,7 +2,7 @@ package coral
 
 import (
 	"bytes"
-	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -32,25 +32,6 @@ var Config struct {
 }
 
 func init() {
-	var err error
-	// look for configuration urls
-	Config.urlUser, err = cfg.String("USER_URL")
-	if err != nil {
-		Config.urlUser = "http://localhost:8080/api/import/user"
-		//log.Error("coral", "init", err, "Getting USER_URL env variable")
-	}
-
-	Config.urlAsset, err = cfg.String("ASSET_URL")
-	if err != nil {
-		Config.urlAsset = "http://localhost:8080/api/import/asset"
-		//log.Error("coral", "init", err, "Getting ASSET_URL env variable")
-	}
-
-	Config.urlComment, err = cfg.String("COMMENT_URL")
-	if err != nil {
-		Config.urlComment = "http://localhost:8080/api/import/comment"
-		//log.Error("coral", "init", err, "Getting COMMENT_URL env variable")
-	}
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -63,17 +44,44 @@ func init() {
 	log.Init(os.Stderr, logLevel)
 }
 
+func setConfig() {
+
+	// look for configuration urls
+	Config.urlUser = os.Getenv("USER_URL")
+	if Config.urlUser == "" {
+		Config.urlUser = "http://localhost:8080/api/import/user"
+		//log.Error("coral", "init", err, "Getting USER_URL env variable")
+	}
+
+	Config.urlAsset = os.Getenv("ASSET_URL")
+	if Config.urlAsset == "" {
+		Config.urlAsset = "http://localhost:8080/api/import/asset"
+		//log.Error("coral", "init", err, "Getting ASSET_URL env variable")
+	}
+
+	Config.urlComment = os.Getenv("COMMENT_URL")
+	if Config.urlComment == "" {
+		Config.urlComment = "http://localhost:8080/api/import/comment"
+		//log.Error("coral", "init", err, "Getting COMMENT_URL env variable")
+	}
+}
+
 // AddRow send the row to pillar based on which collection is
-func AddRow(data []byte, modelName string) error {
+func AddRow(data []byte, tableName string) error {
+
+	setConfig()
+
 	var err error
 
-	switch modelName {
+	switch tableName {
 	case "user":
 		err = addUser(data)
 	case "comment":
 		err = addComment(data)
 	case "asset":
 		err = addAsset(data)
+	default:
+		err = fmt.Errorf("No model %s in the coral systems.", tableName)
 	}
 
 	return err
@@ -115,6 +123,7 @@ func addUser(juser []byte) error {
 
 func doRequest(method string, urlStr string, payload io.Reader) error {
 
+	var err error
 	request, err := http.NewRequest(method, urlStr, payload)
 	if err != nil {
 		log.Error("coral", "doRequest", err, "New request")
@@ -131,16 +140,16 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 			log.Error("coral", "doRequest", err, "Processing request")
 		} else {
 			if response.StatusCode != 200 {
-				err := errors.New(response.Status)
+				err = fmt.Errorf("Not succesful status code: %s.", response.Status)
 				log.Error("coral", "doRequest", err, "Processing request")
+			} else {
+				defer response.Body.Close()
+				break
 			}
-			defer response.Body.Close()
-			break
 		}
 
 		// wait and retry to do the request
 		time.Sleep(250 * time.Millisecond)
 	}
-
 	return err
 }
