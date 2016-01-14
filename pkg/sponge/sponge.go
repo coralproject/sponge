@@ -77,7 +77,6 @@ func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
 		log.Error("sponge", "importAll", err, "Get external MySQL tables")
 		return
 	}
-
 	for _, modelName := range tables {
 
 		// Get the data
@@ -135,6 +134,13 @@ func process(modelName string, data []map[string]interface{}) {
 			//RECORD to report about failing transformation
 			report.Record(modelName, row[id], row, "Failing transform data", err)
 		}
+
+		// To Do: acquire meta-data
+		/*
+		   hit API
+		   sponge.API.GetData(row)
+		   store result in newrow.metadata
+		*/
 
 		// send the row to pillar
 		err = coral.AddRow(newRow, modelName)
