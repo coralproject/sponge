@@ -1,115 +1,164 @@
 {
-	"Name": "New York Times",
-	"Strategy": {
-		"Typesource": "mysql",
-		"Tables": {
-			"Comment": {
-				"name": "crnr_comment",
-				"fields": {
-					"ID": "CommentID",
-					"Body": "CommentBody",
-					"ParentID": "ParentID",
-					"AssetID": "AssetID",
-					"StatusID": "StatusID",
-					"CreateDate": "CreateDate",
-					"UpdateDate": "UpdateDate",
-					"ApproveDate": "ApproveDate"
-				}
-			},
-			"Asset": {
-				"name": "crnr_asset",
-				"fields": {
-					"ID":"AssetID",
-					"VendorID": "VendorID",
-					"SourceID": "SourceID",
-					"AssetURL": "AssetURL",
-					"CreateDate": "CreateDate",
-					"UpdateDate": "UpdateDate",
-					"Taxonomy": ""
-				}
-			},
-			"Note": {
-				"name": "crnr_comment_notes",
-				"fields": {
-					"ID": "commentNoteID",
-					"CommentID": "CommentID",
-					"CommentNote": "CommentNote",
-					"CreateDate": "CreateDate",
-					"UpdateDate": "UpdateDate"
-				}
-			},
-			"User": {
-				"name": "crnr_comment",
-				"fields": {
-					"id": "UserID",
-					"displayname": "UserDisplayName",
-					"name": "",
-					"avatar": "",
-					"email": ""
-				}
-			}
-		},
-		"Action": [
-			{
-				"name": "crnr_comment_notes",
-				"fields": {
-					"type": "Note",
-					"userID": "UserID",
-					"value": "CommentNoteID",
-					"CreateDate": ""
-				}
-			},
-			{
-				"name": "crnr_comment",
-				"fields": {
-					"type": "Comment",
-					"userid": "UserID",
-					"value": "CommentID",
-					"CredateDate": ""
-				}
-			}
-		]
-	},
-	"Credentials": {
-		"Databases": [
-			{
-				"database":  "",
-				"username":  "",
-				"password":  "",
-				"host":      "",
-				"port":     "5432",
-				"adapter":  "mysql",
-				"type": "source"
-			},
-			{
-				"database":  "",
-				"username":  "",
-				"password":  "",
-				"host":      "",
-				"port":     "27017",
-				"adapter":  "mongodb",
-				"type": "source"
-			},
-			{
-				"database":  "",
-				"username":  "",
-				"password":  "",
-				"host":      "",
-				"port":     "27017",
-				"adapter":  "mongodb",
-				"type": "local"
-			}
-		],
-		"APIs": [
-			{
-				"username":  "",
-				"password":  "",
-				"adapter":   "shelf",
-				"endpoints": {
-					"authentication": "/API/authenticate",
-					"users": "/API/users"
-				}
-			}
-		]
-	}
+  "Name": "New York Times",
+  "Map": {
+    "Foreign": "mysql",
+    "Tables": {
+      "asset": {
+        "Foreign": "crnr_asset",
+        "Local": "asset",
+        "OrderBy": "assetid",
+        "ID": "assetid",
+        "Fields": [
+          {
+            "foreign": "assetid",
+            "local": "src_id",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "asseturl",
+            "local": "url",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timeDate"
+          }
+        ]
+      },
+      "user": {
+        "Foreign": "crnr_comment",
+        "Local": "user",
+        "OrderBy": "userid",
+        "ID": "userid",
+        "Fields": [
+          {
+            "foreign": "userid",
+            "local": "src_id",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "userdisplayname",
+            "local": "user_name",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          }
+        ]
+      },
+      "comment": {
+        "Foreign": "crnr_comment",
+        "Local": "comment",
+        "OrderBy": "commentid",
+        "ID": "commentid",
+        "Fields": [
+          {
+            "foreign": "commentid",
+            "local": "id",
+            "relation": "Source",
+						"type": "int"
+          },
+          {
+            "foreign": "commentbody",
+            "local": "body",
+            "relation": "Identity",
+						"type": "[]byte"
+          },
+          {
+            "foreign": "userid",
+            "local": "user_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "assetid",
+            "local": "asset_id",
+            "relation": "Source",
+						"type": "int"
+          },
+          {
+            "foreign": "statusid",
+            "local": "status",
+            "relation": "Identity",
+						"type": "int"
+          },
+          {
+            "foreign": "parentid",
+            "local": "parent_id",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "createdate",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+						"type": "timedate"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+						"type": "timedate"
+          },
+          {
+            "foreign": "approvedate",
+            "local": "date_approved",
+            "relation": "ParseTimeDate",
+						"type": "timedate"
+          }
+        ]
+      },
+      "note": {
+        "Foreign": "crnr_comment_notes",
+        "Local": "note",
+        "OrderBy": "userid",
+        "ID": "userid",
+        "Fields": [
+          {
+            "foreign": "userid",
+            "local": "user_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "commentNote",
+            "local": "body",
+            "relation": "Identity",
+            "type": "[]byte"
+          }
+        ]
+      }
+    }
+  },
+  "Credentials": {
+    "Databases": [
+      {
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": "",
+        "adapter": "mysql",
+        "type": "foreign"
+      },
+      {
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": "",
+        "adapter": "mongodb",
+        "type": "foreign"
+      }
+    ]
+  }
 }
