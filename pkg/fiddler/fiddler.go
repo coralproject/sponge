@@ -6,6 +6,7 @@ package fiddler
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -17,10 +18,19 @@ var strategy = str.New() // Reads the strategy file
 
 const longForm = "2015-11-02 12:26:05" // date format. To Do: it needs to be defined in the strategy file for the publisher
 
+// GetID returns the identifier for modelName
+func GetID(modelName string) string {
+	return strategy.GetIDField(modelName)
+}
+
 // TransformRow transform a row of data into the coral schema
 func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
 
 	table := strategy.GetTables()[modelName]
+
+	if table.Local == "" {
+		return nil, errors.New("No table found in the strategy file.")
+	}
 
 	newRow, err := transformRow(row, table.Fields)
 

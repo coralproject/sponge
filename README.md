@@ -1,4 +1,4 @@
-# Sponge 
+# Sponge
 
 Move your existing community to Coral.
 
@@ -15,6 +15,9 @@ Strategies are json configuration files that contain all the information Sponge 
 
 The strategy spec is still not complete. [Here's the living example](https://github.com/coralproject/sponge/blob/master/strategy/strategy.json.example)
 
+## Code of conduct
+
+Please be civil when discussing contributions to the Sponge code and the Coral Project. If in doubt, please consult our [Code of Conduct](https://the-coral-project.gitbooks.io/coral-bible/content/codeofconduct.html).
 
 ## Source support
 

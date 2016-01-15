@@ -142,11 +142,11 @@
   "Credentials": {
     "Databases": [
       {
-        "database": "",
-        "username": "",
+        "database": "coral_test",
+        "username": "root",
         "password": "",
-        "host": "",
-        "port": "",
+        "host": "localhost",
+        "port": "5432",
         "adapter": "mysql",
         "type": "foreign"
       },

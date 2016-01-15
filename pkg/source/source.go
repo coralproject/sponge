@@ -20,6 +20,7 @@ var strategy = str.New() // Reads the strategy file
 // Sourcer is where the data is coming from (mysql, api)
 type Sourcer interface {
 	GetData(string, int, int, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
+	GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error)
 	GetTables() ([]string, error)
 }
 
