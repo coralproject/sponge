@@ -175,22 +175,9 @@ func addRecord(results []map[string]interface{}, table string, id string) []map[
 		item := map[string]interface{}{"table": table, "ids": []string{id}}
 		results[n] = item
 	} else {
-		results[pos]["ids"] = addID(original[pos]["ids"], id) // adds id to the original value
+		ids := original[pos]["ids"].([]string)
+		results[pos]["ids"] = append(ids, id)
 	}
 
 	return results
-}
-
-func addID(a interface{}, i string) []string {
-	var r []string
-
-	o := a.([]string)
-
-	n := len(o)
-
-	r = make([]string, n+1)
-	copy(r[:n], o)
-	r[n] = i
-
-	return r
 }
