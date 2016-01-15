@@ -1,7 +1,8 @@
-/*
-Package fiddler transform, through a strategy file, data from external source into our local coral schema.
-
-*/
+// Package fiddler transform, through a strategy file, data from external source into our local coral schema.
+//
+// It gets a map[string]interface{} as a row and the coral's model that is going to convert it to.
+// With that model goes to the strategy file to see what is the transformation that needs to do.
+//
 package fiddler
 
 import (
@@ -108,9 +109,7 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 		case "Source":
 			return oldValue
 		case "ParseTimeDate":
-			var newValue time.Time
-			newValue = parseDate(oldValue.(string))
-
+			newValue := parseDate(oldValue.(string))
 			return newValue
 		}
 	}
@@ -146,4 +145,17 @@ func appendField(source []map[string]interface{}, item interface{}) []map[string
 	source = source[:total]
 
 	return source
+}
+
+// isoDate is a helper function to convert the internal extension for dates
+// into a BSON date. We convert the following string
+// ISODate('2013-01-16T00:00:00.000Z') to a Go time value.
+func isoDate(script string) time.Time {
+	dateTime, err := time.Parse("2006-01-02 15:04:05", script)
+	if err != nil {
+		log.Error("fiddler", "isoDate", err, "When parsing date %s.", script)
+		return time.Now().UTC()
+	}
+
+	return dateTime
 }
