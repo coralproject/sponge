@@ -1,3 +1,25 @@
+// Package coral is a package to interact with pillar endpoints
+//
+// Coral System
+//
+// Pillar is the service to get data into the coral system.  Each endpoint is documented in https://github.com/coralproject/pillar/tree/master/server
+// In this package we are using:
+//
+// Assets
+//
+// The endpoint is setup in the ASSET_URL environment variable. It receives one document per POST.
+// The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
+//
+// Users
+//
+// The endpoint is setup in the USER_URL environment variable. It receives one document per POST.
+// The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
+//
+// Comments
+//
+// The endpoint is setup in the COMMENT_URL environment variable. It receives one document per POST.
+// The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
+//
 package coral
 
 import (
