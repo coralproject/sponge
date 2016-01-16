@@ -1,6 +1,6 @@
 # Strategy configuration
 
-This is a json file that describes the transformations that need to happen to the external data to get into the coral system.
+Explaining how to write a strategy file.
 
 ## Name
 

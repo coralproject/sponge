@@ -5,7 +5,6 @@ package strategy
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"os"
 
@@ -43,31 +42,26 @@ type Map struct {
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
-	Foreign  string              `json:"foreign"`
-	Local    string              `json:"local"`
-	Priority int                 `json:"priority"`
-	OrderBy  string              `json:"orderby"`
-	ID       string              `json:"id"`
-	Fields   []map[string]string `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
-	Endpoint string              `json:"endpoint"`
+	Foreign  string                 `json:"foreign"`
+	Local    string                 `json:"local"`
+	Priority int                    `json:"priority"`
+	OrderBy  string                 `json:"orderby"`
+	ID       string                 `json:"id"`
+	IndexBy  map[string]interface{} `json:"indexby"`
+	Fields   []map[string]string    `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+	Endpoint string                 `json:"endpoint"`
 }
 
-// ^
-//Fields has maps in the style
-// {
-// 	"foreign": "parentid",
-// 	"local": "ParentID",
-// 	"relation": "Identity",
-// 	"type": "int"
-// }
+///////////////////////////////////////////////////////////////////////////////
 
+//** CREDENTIALS TO EXTERNAL SOURCES **//
 // Credentials are all the credentials for external and internal data sources
 type Credentials struct {
 	Databases []CredentialDatabase
 	APIs      []CredentialAPI
 }
 
-// Credential is the interface for APIs or Database Sources
+// Credential is the interface that CredentialDatabase and CredentialAPI will implement
 type Credential interface {
 	GetAdapter() string
 }
@@ -134,10 +128,12 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 	return "", endpointError{key: "authentication"}
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 /* Exported Functions */
 
-// New creates a new strategy from configuration file
-func New() Strategy {
+// New creates a new strategy struct variable from the json file
+func New() (Strategy, error) {
 
 	var strategy Strategy
 	var err error
@@ -146,19 +142,23 @@ func New() Strategy {
 	strategyFile := os.Getenv("STRATEGY_CONF")
 	if strategyFile == "" {
 		log.Fatal("strategy", "new", "Enviromental variable STRATEGY_CONF not setup.")
+		return strategy, err
 	}
 
-	strategy, err = readConfigFile(strategyFile)
+	strategy, err = read(strategyFile)
 	if err != nil {
-		log.Error("strategy", "new", err, "Getting strategy file")
+		//log.Error("strategy", "new", err, "Getting strategy file")
+		return strategy, err
 	}
 
-	// err = validate(strategy)
-	// if err != nil {
-	// 	log.Error("setting", "new", err, "Validating strategy file")
-	// }
+	return strategy, err
+}
 
-	return strategy
+// Validate checks that the strategy file is correct
+// the tables are part of the coral system
+// it has at least one external source credential
+func (s Strategy) Validate() error {
+	return nil
 }
 
 // GetCredential returns the credentials for connection with the external source adapter a, type t
@@ -175,7 +175,7 @@ func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
 		}
 	}
 
-	log.Error("strategy", "getCredentials", errors.New("Credential not found."), "Getting strategy")
+	//log.Error("strategy", "getCredentials", errors.New("Credential not found."), "Getting credential %s for strategy.", a)
 
 	return cred
 }
@@ -225,6 +225,18 @@ func (s Strategy) GetOrderBy(coralName string) string {
 	return s.Map.Tables[coralName].OrderBy
 }
 
+// GetIndexBy returns the structure to use to create indexes for the coral table
+func (s Strategy) GetIndexBy(coralName string) map[string]interface{} {
+	// IndexBy: {
+	// 	"keys": {
+	// 		"asseturl": "text"
+	// 	},
+	// 	"options": {}
+	// },
+
+	return s.Map.Tables[coralName].IndexBy
+}
+
 // GetIDField returns the identifier for the table coralname setup in the strategy file
 func (s Strategy) GetIDField(coralName string) string {
 	return s.Map.Tables[coralName].ID
@@ -244,38 +256,20 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 
 /* Not Exported Functions */
 
-// Read the configuration file and load it into the Config
-func unmarshal(content []byte) (Strategy, error) {
-
-	s := Strategy{}
-
-	err := json.Unmarshal(content, &s)
-	if err != nil {
-		log.Error("strategy", "unmarshal", err, "Getting strategy")
-		return Strategy{}, err
-	}
-
-	return s, nil
-}
-
-func readConfigFile(f string) (Strategy, error) {
-
-	//log.User("strategy", "readConfigFile", "Reading Config File.")
+// Read the strategy file and do the validation into the Strategy struct
+func read(f string) (Strategy, error) {
 
 	var strategy Strategy
 
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
-		log.Error("strategy", "readConfigFile", err, "Getting strategy")
-
+		//log.Error("strategy", "read", err, "Reading strategy file")
 		return strategy, err
 	}
 
-	strategy, err = unmarshal(content)
+	err = json.Unmarshal(content, &strategy)
 	if err != nil {
-		log.Error("strategy", "readConfigFile", err, "Getting strategy")
-
-		return strategy, err
+		log.Error("strategy", "read", err, "Getting strategy")
 	}
 
 	return strategy, err
