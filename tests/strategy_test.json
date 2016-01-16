@@ -19,7 +19,7 @@
         "Fields": [
           {
             "foreign": "assetid",
-            "local": "asset_id",
+            "local": "id",
             "relation": "Source",
             "type": "int"
           },
@@ -59,7 +59,7 @@
         "Fields": [
           {
             "foreign": "userid",
-            "local": "user_id",
+            "local": "id",
             "relation": "Source",
             "type": "int"
           },
@@ -76,7 +76,7 @@
         "Foreign": "crnr_comment",
         "Local": "comment",
         "Priority": 3,
-        "OrderBy": "commentid",
+        "OrderBy": "createdate",
         "ID": "commentid",
         "IndexBy": {
           "keys": {
@@ -118,7 +118,7 @@
           {
             "foreign": "parentid",
             "local": "parent_id",
-            "relation": "Identity",
+            "relation": "Source",
             "type": "int"
           },
           {
@@ -131,7 +131,8 @@
             "foreign": "updatedate",
             "local": "date_updated",
             "relation": "ParseTimeDate",
-            "type": "timedate"
+            "type": "timedate",
+            "datetimeformat": "2006-01-02 15:04:05"
           },
           {
             "foreign": "approvedate",
