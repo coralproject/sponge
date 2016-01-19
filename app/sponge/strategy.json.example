@@ -7,6 +7,13 @@
         "Foreign": "crnr_asset",
         "Local": "asset",
         "OrderBy": "assetid",
+        "ID": "assetid",
+        "IndexBy": {
+          "keys": {
+            "asseturl": "text"
+          },
+          "options": {}
+        },
         "Fields": [
           {
             "foreign": "assetid",
@@ -32,6 +39,13 @@
         "Foreign": "crnr_comment",
         "Local": "user",
         "OrderBy": "userid",
+        "ID": "userid",
+        "IndexBy": {
+          "keys": {
+            "user_name": "text"
+          },
+          "options": {}
+        },
         "Fields": [
           {
             "foreign": "userid",
@@ -57,6 +71,13 @@
         "Foreign": "crnr_comment",
         "Local": "comment",
         "OrderBy": "commentid",
+        "ID": "commentid",
+        "IndexBy": {
+          "keys": {
+            "commentid": "text"
+          },
+          "options": {}
+        },
         "Fields": [
           {
             "foreign": "commentid",
@@ -113,25 +134,6 @@
 						"type": "timedate"
           }
         ]
-      },
-      "note": {
-        "Foreign": "crnr_comment_notes",
-        "Local": "note",
-        "OrderBy": "userid",
-        "Fields": [
-          {
-            "foreign": "userid",
-            "local": "user_id",
-            "relation": "Source",
-            "type": "int"
-          },
-          {
-            "foreign": "commentNote",
-            "local": "body",
-            "relation": "Identity",
-            "type": "[]byte"
-          }
-        ]
       }
     }
   },
@@ -142,7 +144,7 @@
         "username": "",
         "password": "",
         "host": "",
-        "port": "5432",
+        "port": "",
         "adapter": "mysql",
         "type": "foreign"
       },
@@ -151,7 +153,7 @@
         "username": "",
         "password": "",
         "host": "",
-        "port": "27017",
+        "port": "",
         "adapter": "mongodb",
         "type": "foreign"
       }
