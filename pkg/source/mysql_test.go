@@ -31,12 +31,12 @@ func setup() {
 
 	m, e = New("mysql") // function being tested
 	if e != nil {
-		fmt.Printf("error when calling the function, %v.\n", e)
+		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
 
 	mm, ok = m.(MySQL)
 	if !ok {
-		fmt.Println("it should return a type MySQL")
+		fmt.Println("It should return a type MySQL")
 	}
 }
 
@@ -54,7 +54,7 @@ func TestGetTables(t *testing.T) {
 
 	s, e := mm.GetTables()
 	if e != nil {
-		t.Fatalf("error when getting tables, %v.", e)
+		t.Fatalf("expected no error, got %s.", e)
 	}
 
 	expectedLen := 3
@@ -67,48 +67,49 @@ func TestGetTables(t *testing.T) {
 
 // Signature: (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error)
 func TestGetData(t *testing.T) {
+
 	setup()
 
 	// Default Flags
-	coralTableName := "comment"
+	coralName := "comment"
 	offset := 0
 	limit := 9999999999
 	orderby := ""
 
 	// no error
-	data, err := mm.GetData(coralTableName, offset, limit, orderby)
+	data, err := mm.GetData(coralName, offset, limit, orderby)
 	if err != nil {
-		t.Fatalf("it should have no error %s.", err)
+		t.Fatalf("expected no error, got %s.", err)
 	}
 
-	expectedLen := 24999
 	// data should be []map[string]interface{}
-	if len(data) != expectedLen { // this is a setup for the seed data
-		t.Fatalf("got %d, it should be %d", len(data), expectedLen)
+	expectedlen := 24999
+	if len(data) != expectedlen { // this is a setup for the seed data
+		t.Fatalf("exptected %d, got %d", expectedlen, len(data))
 	}
 
 }
 
 // Signature: (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error)
-func TestGetQueryData(t *testing.T) {
-	setup()
-
-	// Default Flags
-	coralTableName := "comment"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
-
-	ids := []string{"16570043", "16570056", "16570088", "16570101", "16570134"}
-
-	// no error
-	data, err := mm.GetQueryData(coralTableName, offset, limit, orderby, ids)
-	if err != nil {
-		t.Fatalf("it should have no error %s.", err)
-	}
-
-	// data should be []map[string]interface{}
-	if len(data) != 5 { // this is a setup for the seed data
-		t.Fatalf("got %d, it should be 5", len(data))
-	}
-}
+// func TestGetQueryData(t *testing.T) {
+// 	setup()
+//
+// 	// Default Flags
+// 	coralTableName := "comment"
+// 	offset := 0
+// 	limit := 9999999999
+// 	orderby := ""
+//
+// 	ids := []string{"16570043", "16570056", "16570088", "16570101", "16570134"}
+//
+// 	// no error
+// 	data, err := mm.GetQueryData(coralTableName, offset, limit, orderby, ids)
+// 	if err != nil {
+// 		t.Fatalf("it should have no error %s.", err)
+// 	}
+//
+// 	// data should be []map[string]interface{}
+// 	if len(data) != 5 { // this is a setup for the seed data
+// 		t.Fatalf("got %d, it should be 5", len(data))
+// 	}
+// }

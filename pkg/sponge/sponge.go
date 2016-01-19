@@ -11,17 +11,6 @@ import (
 	"github.com/coralproject/sponge/pkg/source"
 )
 
-var mysql source.Sourcer
-
-func init() {
-	var err error
-
-	mysql, err = source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
-	if err != nil {
-		log.Error("sponge", "import", err, "Connect to external MySQL")
-	}
-}
-
 // Import gets data, transform it and send it to pillar
 func Import(limit int, offset int, orderby string, table string, importonlyfailed bool) {
 
@@ -33,8 +22,13 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 	// Connect to external source
 	log.User("main", "import", "### Connecting to external database...")
 
+	mysql, err := source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
+	if err != nil {
+		log.Error("sponge", "import", err, "Connect to external MySQL")
+	}
+
 	if importonlyfailed { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(limit, offset, orderby)
+		importOnlyFailedRecords(mysql, limit, offset, orderby)
 	} else { // import everything that is in the strategy
 		if table != "" {
 			importTable(mysql, limit, offset, orderby, table)
@@ -46,7 +40,7 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
-func importOnlyFailedRecords(limit int, offset int, orderby string) {
+func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderby string) {
 
 	log.User("sponge", "importOnlyFailedRecords", "### Reading file of data to import.")
 
@@ -77,7 +71,7 @@ func importOnlyFailedRecords(limit int, offset int, orderby string) {
 }
 
 // Import gets ALL data, transform it and send it to pillar
-func importAll(limit int, offset int, orderby string) {
+func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
 
 	log.User("sponge", "importAll", "### Reading tables to import from strategy file.")
 

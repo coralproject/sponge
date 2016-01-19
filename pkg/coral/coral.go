@@ -20,6 +20,9 @@
 // The endpoint is setup in the COMMENT_URL environment variable. It receives one document per POST.
 // The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
 //
+// CreateIndex
+//
+// The endpoint is setup in the CREATE_INDEX_URL environment variable. It receives information about what indexes to create.
 package coral
 
 import (
@@ -63,6 +66,7 @@ func init() {
 
 	s := strategy.New()
 	endpoints = s.GetPillarEndpoints()
+
 }
 
 // AddRow send the row to pillar based on which collection is
@@ -73,7 +77,7 @@ func AddRow(data []byte, tableName string) error {
 
 		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(data))
 		if err != nil {
-			log.Error("coral", "Addrow", err, "Error on sending request with row.")
+			log.Error("coral", "Addrow", err, "Sending request to PILLAR with %v.", bytes.NewBuffer(data))
 		}
 	} else {
 		err = fmt.Errorf("No %s in the endpoints.", tableName)

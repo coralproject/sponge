@@ -10,12 +10,28 @@ package source
 
 import (
 	"errors"
+	"os"
 
+	"github.com/ardanlabs/kit/cfg"
+	"github.com/ardanlabs/kit/log"
 	str "github.com/coralproject/sponge/pkg/strategy"
 )
 
 // global variables related to strategy
-var strategy = str.New() // Reads the strategy file
+var strategy = str.New()
+
+func init() {
+
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.USER
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
+}
 
 // Sourcer is where the data is coming from (mysql, api)
 type Sourcer interface {

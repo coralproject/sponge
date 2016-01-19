@@ -55,6 +55,7 @@ type Table struct {
 ///////////////////////////////////////////////////////////////////////////////
 
 //** CREDENTIALS TO EXTERNAL SOURCES **//
+
 // Credentials are all the credentials for external and internal data sources
 type Credentials struct {
 	Databases []CredentialDatabase
@@ -133,7 +134,7 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 /* Exported Functions */
 
 // New creates a new strategy struct variable from the json file
-func New() (Strategy, error) {
+func New() Strategy {
 
 	var strategy Strategy
 	var err error
@@ -142,16 +143,15 @@ func New() (Strategy, error) {
 	strategyFile := os.Getenv("STRATEGY_CONF")
 	if strategyFile == "" {
 		log.Fatal("strategy", "new", "Enviromental variable STRATEGY_CONF not setup.")
-		return strategy, err
+		return strategy
 	}
 
 	strategy, err = read(strategyFile)
 	if err != nil {
-		//log.Error("strategy", "new", err, "Getting strategy file")
-		return strategy, err
+		log.Error("strategy", "new", err, "Getting strategy file")
 	}
 
-	return strategy, err
+	return strategy
 }
 
 // Validate checks that the strategy file is correct
