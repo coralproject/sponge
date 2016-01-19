@@ -8,6 +8,9 @@ Sponge is Coral's Data Import Layer.  It is designed to read data from a foreign
 
 Where to get the data and how to translate it is expressed through _strategies_.
 
+## Install
+
+Read the [INSTALL file](https://github.com/coralproject/sponge/blob/master/INSTALL.md)
 
 ## Strategies
 

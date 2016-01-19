@@ -24,7 +24,7 @@ export STRATEGY_CONF=/path/to/my/strategy.json
 There is one strategy file for publisher. It tells us how to do the transformation between the publisher's data and the coral data schema. It also tells us how to connect to the external publisher's source. There is a strategy file example in app/sponge/strategy.json.example.
 
 ```
-cp app/sponge/strategy.json.example app/sponge/strategy.json
+cp app/sponge/strategy.json.example /path/to/my/strategy.json
 ```
 
 ### How to run
