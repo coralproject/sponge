@@ -11,7 +11,7 @@ import (
 
 	"github.com/ardanlabs/kit/log"
 	"github.com/gabelula/gosqljson"
-	// using mysql driver
+	// importing mysql
 	_ "github.com/go-sql-driver/mysql"
 )
 

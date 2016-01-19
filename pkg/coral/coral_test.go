@@ -3,6 +3,7 @@ package coral
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -11,10 +12,12 @@ import (
 	"testing"
 
 	"github.com/coralproject/pillar/server/model"
+	"github.com/coralproject/sponge/pkg/strategy"
 )
 
 var server *httptest.Server
 var path string
+var fakeStr strategy.Strategy
 
 func init() {
 
@@ -23,6 +26,10 @@ func init() {
 	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+	fakeStr, e = strategy.New()
+	if e != nil {
+		fmt.Println(e)
 	}
 
 	// Initialization of server
@@ -47,6 +54,10 @@ func init() {
 			// decode the comment
 			comment := model.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
+		case "/api/createindex":
+			// r.Body is the index to create with the tableName
+		default:
+			err = errors.New("Bad request")
 		}
 
 		if err != nil {
@@ -202,3 +213,25 @@ func TestAddUserRow(t *testing.T) {
 // }
 
 // test that data is being send in the right format
+
+// test the request on create index
+func TestCreateIndex(t *testing.T) {
+
+	// get the endpoint from the strategy file
+	createindexURL := server.URL + "/api/createindex"
+	os.Setenv("CREATE_INDEX_URL", createindexURL)
+
+	tableName := "comment"
+
+	indexes := fakeStr.GetIndexBy(tableName)
+
+	data, e := json.Marshal(indexes)
+	if e != nil {
+		t.Fatalf("error with the test data: %s.", e)
+	}
+
+	e = CreateIndex(data, tableName)
+	if e != nil {
+		t.Fatalf("expecting not error but got one %v.", e)
+	}
+}
