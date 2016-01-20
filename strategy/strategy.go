@@ -9,12 +9,21 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/ardanlabs/kit/cfg"
 	"github.com/coralproject/sponge/pkg/log"
 )
 
-// func init() {
-//  // validate CONFIGURATION
-// }
+func init() {
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.DEV
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
+}
 
 //* Strategy Structure *//
 
@@ -133,8 +142,7 @@ func New() Strategy {
 	//read STRATEGY_CONF env variable
 	strategyFile := os.Getenv("STRATEGY_CONF")
 	if strategyFile == "" {
-		log.Error("strategy", "new", errors.New("STRATEGY_CONF not found"), "Strategy conf not found")
-		os.Exit(1)
+		log.Fatal("strategy", "new", "Enviromental variable STRATEGY_CONF not setup.")
 	}
 
 	strategy, err = readConfigFile(strategyFile)
