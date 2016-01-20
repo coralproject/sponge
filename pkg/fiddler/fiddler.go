@@ -7,6 +7,7 @@ package fiddler
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -14,9 +15,13 @@ import (
 )
 
 // global variables related to strategy
-var strategy = str.New() // Reads the strategy file
+var strategy str.Strategy
 
-const longForm = "2015-11-02 12:26:05" // date format. To Do: it needs to be defined in the strategy file for the publisher
+func init() {
+
+	strategy = str.New() // Reads the strategy file
+
+}
 
 // GetID returns the identifier for modelName
 func GetID(modelName string) string {
@@ -67,7 +72,7 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 	for _, f := range fields {
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		newValue := transformField(row[f["foreign"]], f["relation"], f["local"])
+		newValue := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
 
 		if newValue != nil {
 
@@ -98,15 +103,10 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 		switch relation {
 		case "Identity":
 			return oldValue
-		case "Source": // this is dirty! look at this again please
-			// var newValue []map[string]interface{}
-			// newValue = make([]map[string]interface{}, 1)
-			// newValue[0] = make(map[string]interface{})
-			// newValue[0][local] = oldValue
+		case "Source":
 			return oldValue
 		case "ParseTimeDate":
 			var newValue time.Time
-
 			// TODO: move time format into strategy file
 			newValue, _ = time.Parse("2006-01-02", oldValue.(string))
 

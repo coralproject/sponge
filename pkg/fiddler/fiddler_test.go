@@ -13,7 +13,7 @@ func TestTransformRow(t *testing.T) {
 	}
 	r := string(result)
 
-	expectedResult := "{\"date_updated\":\"0001-01-01T00:00:00Z\",\"src_id\":\"3416344\",\"url\":\"http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html\"}"
+	expectedResult := "{\"date_updated\":\"0001-01-01T00:00:00Z\",\"source\":{\"asset_id\":\"3416344\"},\"url\":\"http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html\"}"
 
 	if r != expectedResult {
 		t.Fatalf("got %s , want %s", r, expectedResult)
