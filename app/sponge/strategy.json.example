@@ -17,8 +17,8 @@
         "Fields": [
           {
             "foreign": "assetid",
-            "local": "src_id",
-            "relation": "Identity",
+            "local": "asset_id",
+            "relation": "Source",
             "type": "int"
           },
           {
