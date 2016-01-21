@@ -30,9 +30,9 @@ type MySQL struct {
 
 // GetTables gets all the tables names from this data source
 func (m MySQL) GetTables() ([]string, error) {
-	keys := []string{}
-	for k := range strategy.Map.Tables {
-		keys = append(keys, k)
+	keys := make([]string, len(strategy.Map.Tables)+1)
+	for k, val := range strategy.Map.Tables {
+		keys[val.Priority] = k
 	}
 	return keys, nil
 }
