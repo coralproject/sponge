@@ -11,7 +11,7 @@ package source
 import (
 	"errors"
 
-	str "github.com/coralproject/sponge/strategy"
+	str "github.com/coralproject/sponge/pkg/strategy"
 )
 
 // global variables related to strategy
