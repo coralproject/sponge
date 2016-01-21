@@ -2,6 +2,7 @@
   "Name": "New York Times",
   "Map": {
     "Foreign": "mysql",
+    "DateTimeFormat": "2006-01-02 15:04:05",
     "Tables": {
       "asset": {
         "Foreign": "crnr_asset",
@@ -31,9 +32,16 @@
             "foreign": "updatedate",
             "local": "date_updated",
             "relation": "ParseTimeDate",
-            "type": "timeDate"
+            "type": "dateTime"
+          },
+          {
+            "foreign": "createdate",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
           }
-        ]
+        ],
+        "Endpoint": "http://localhost:8080/api/import/asset"
       },
       "user": {
         "Foreign": "crnr_comment",
@@ -49,23 +57,18 @@
         "Fields": [
           {
             "foreign": "userid",
-            "local": "src_id",
-            "relation": "Identity",
+            "local": "user_id",
+            "relation": "Source",
             "type": "int"
           },
           {
             "foreign": "userdisplayname",
-            "local": "user_name",
+            "local": "name",
             "relation": "Identity",
             "type": "[]byte"
-          },
-          {
-            "foreign": "updatedate",
-            "local": "date_updated",
-            "relation": "ParseTimeDate",
-            "type": "timedate"
           }
-        ]
+        ],
+        "Endpoint": "http://localhost:8080/api/import/user"
       },
       "comment": {
         "Foreign": "crnr_comment",
@@ -83,13 +86,13 @@
             "foreign": "commentid",
             "local": "id",
             "relation": "Source",
-						"type": "int"
+            "type": "int"
           },
           {
             "foreign": "commentbody",
             "local": "body",
             "relation": "Identity",
-						"type": "[]byte"
+            "type": "[]byte"
           },
           {
             "foreign": "userid",
@@ -101,13 +104,13 @@
             "foreign": "assetid",
             "local": "asset_id",
             "relation": "Source",
-						"type": "int"
+            "type": "int"
           },
           {
             "foreign": "statusid",
             "local": "status",
             "relation": "Identity",
-						"type": "int"
+            "type": "int"
           },
           {
             "foreign": "parentid",
@@ -119,21 +122,22 @@
             "foreign": "createdate",
             "local": "date_created",
             "relation": "ParseTimeDate",
-						"type": "timedate"
+            "type": "timedate"
           },
           {
             "foreign": "updatedate",
             "local": "date_updated",
             "relation": "ParseTimeDate",
-						"type": "timedate"
+            "type": "timedate"
           },
           {
             "foreign": "approvedate",
             "local": "date_approved",
             "relation": "ParseTimeDate",
-						"type": "timedate"
+            "type": "timedate"
           }
-        ]
+        ],
+        "Endpoint": "http://localhost:8080/api/import/comment"
       }
     }
   },
@@ -146,15 +150,6 @@
         "host": "",
         "port": "",
         "adapter": "mysql",
-        "type": "foreign"
-      },
-      {
-        "database": "",
-        "username": "",
-        "password": "",
-        "host": "",
-        "port": "",
-        "adapter": "mongodb",
         "type": "foreign"
       }
     ]
