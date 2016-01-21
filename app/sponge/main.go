@@ -13,21 +13,26 @@ import (
 	"github.com/coralproject/sponge/pkg/sponge"
 )
 
-// Limit on query
-var limitFlag int
-var offsetFlag int
+var (
+	// Limit on query
+	limitFlag  int
+	offsetFlag int
 
-// Order by field
-var orderbyFlag string
+	// Order by field
+	orderbyFlag string
 
-// Import from report on failed records (or not)
-var importonlyfailedFlag bool
+	// Import from report on failed records (or not)
+	importonlyfailedFlag bool
+
+	tableFlag string
+)
 
 const (
 	limitDefault            = 9999999999
 	offsetDefault           = 0
 	orderbyDefault          = ""
 	importonlyfailedDefault = false
+	tableDefault            = ""
 )
 
 // Initialize log, get flag variables, initialize report
@@ -36,7 +41,7 @@ func init() {
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
-			return log.USER
+			return log.DEV
 		}
 		return ll
 	}
@@ -47,16 +52,16 @@ func init() {
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "-offset= Offset for the sql query")
 	flag.StringVar(&orderbyFlag, "orderby", orderbyDefault, "-orderby= Order by field of the query on external source")
 	flag.BoolVar(&importonlyfailedFlag, "onlyfails", importonlyfailedDefault, "-onlyfails Import only the failed documents recorded in report")
+	flag.StringVar(&tableFlag, "table", tableDefault, "Import only the table")
 
 	flag.Parse()
 
 }
 
 func main() {
+	log.Dev("cmd", "main", "Start")
 
-	log.Dev("main", "main", "Start")
+	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag)
 
-	sponge.Import(limitFlag, offsetFlag, orderbyFlag, importonlyfailedFlag)
-
-	log.Dev("shutdown", "main", "Complete")
+	log.Dev("cmd", "main", "Complete")
 }
