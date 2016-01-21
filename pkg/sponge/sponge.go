@@ -12,7 +12,7 @@ import (
 )
 
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, importonlyfailed bool) {
+func Import(limit int, offset int, orderby string, table string, importonlyfailed bool) {
 
 	// Initialize the report and write it down at the end (it does not create the file until the end)
 	report.Init()
@@ -28,7 +28,11 @@ func Import(limit int, offset int, orderby string, importonlyfailed bool) {
 	if importonlyfailed { // import only what is in the report of failed importeda
 		importOnlyFailedRecords(mysql, limit, offset, orderby)
 	} else { // import everything that is in the strategy
-		importAll(mysql, limit, offset, orderby)
+		if table != "" {
+			importTable(mysql, limit, offset, orderby, table)
+		} else {
+			importAll(mysql, limit, offset, orderby)
+		}
 	}
 
 	// Write report on failures (if any)
@@ -94,6 +98,23 @@ func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
 	}
 }
 
+// ImportTable gets ony data related to table, transform it and send it to pillar
+func importTable(mysql source.Sourcer, limit int, offset int, orderby string, modelName string) {
+
+	// Get the data
+	log.User("sponge", "importTable", "### Reading data from table '%s'. \n", modelName)
+	data, err := mysql.GetData(modelName, offset, limit, orderby)
+	if err != nil {
+		log.Error("sponge", "importAll", err, "Get external MySQL data")
+		//RECORD to report about failing modelName
+		report.Record(modelName, "", nil, "Failing getting data", err)
+		return
+	}
+
+	//transform and send to pillar
+	process(modelName, data)
+}
+
 func process(modelName string, data []map[string]interface{}) {
 	//Transform the data row by row
 	log.User("sponge", "process", "# Transforming data to the coral schema.\n")
@@ -141,6 +162,8 @@ func process(modelName string, data []map[string]interface{}) {
 		   sponge.API.GetData(row)
 		   store result in newrow.metadata
 		*/
+
+		log.Dev("sponge", "process", "Transform: %v -> %v", row, string(newRow))
 
 		// send the row to pillar
 		err = coral.AddRow(newRow, modelName)
