@@ -11,16 +11,18 @@ import (
 	"time"
 
 	"github.com/ardanlabs/kit/log"
-	str "github.com/coralproject/sponge/strategy"
+	str "github.com/coralproject/sponge/pkg/strategy"
 )
 
 // global variables related to strategy
-var strategy str.Strategy
+var (
+	strategy   str.Strategy
+	dateLayout string
+)
 
 func init() {
-
 	strategy = str.New() // Reads the strategy file
-
+	dateLayout = strategy.GetDateTimeFormat()
 }
 
 // GetID returns the identifier for modelName
@@ -107,13 +109,24 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 			return oldValue
 		case "ParseTimeDate":
 			var newValue time.Time
-			// TODO: move time format into strategy file
-			newValue, _ = time.Parse("2006-01-02", oldValue.(string))
+			newValue = parseDate(oldValue.(string))
 
 			return newValue
 		}
 	}
 	return nil
+}
+
+func parseDate(val string) time.Time {
+	// on format https://golang.org/pkg/time/#Parse
+	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
+
+	dt, err := time.Parse(dateLayout, val)
+	if err != nil {
+		log.Error("fiddler", "parseDate", err, "Parsing date %s.", val)
+	}
+
+	return dt
 }
 
 // source is [ { "asset_id": xxx}, { "comment_id": xxx} ]
