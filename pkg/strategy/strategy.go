@@ -186,7 +186,16 @@ func (s Strategy) GetMap() Map {
 }
 
 // GetDateTimeFormat returns the datetime format for this strategy
-func (s Strategy) GetDateTimeFormat() string {
+func (s Strategy) GetDateTimeFormat(table string, field string) string {
+
+	for _, f := range s.Map.Tables[table].Fields {
+		if f["local"] == field {
+			val, exists := f["datetimeformat"]
+			if exists {
+				return val
+			}
+		}
+	}
 	return s.Map.DateTimeFormat
 }
 
