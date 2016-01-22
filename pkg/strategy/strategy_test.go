@@ -106,7 +106,8 @@ func fakeStrategy() Strategy {
 	var fakeConf = Strategy{
 		Name: "New York Times",
 		Map: Map{
-			Foreign: "mysql",
+			Foreign:        "mysql",
+			DateTimeFormat: "2006-01-02 15:04:05",
 			Tables: map[string]Table{
 				"Comment": Table{
 					Foreign:  "crnr_comment",
@@ -232,4 +233,17 @@ func TestGetPillarEndpoints(t *testing.T) {
 	if endpoints["comment"] != "http://localhost:8080/api/import/comment" {
 		t.Errorf("Expected http://localhost:8080/api/import/comment, got %s", endpoints["Comment"])
 	}
+}
+
+func TestGetDatetimeFormat(t *testing.T) {
+	fakeConf := fakeStrategy()
+
+	expectedDTformat := "2006-01-02 15:04:05"
+	dtformat := fakeConf.GetDateTimeFormat() //table, field)
+
+	if dtformat != expectedDTformat {
+		t.Errorf("Expected %s, got %s", expectedDTformat, dtformat)
+	}
+
+	//
 }
