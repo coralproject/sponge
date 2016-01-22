@@ -17,6 +17,8 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 	// Initialize the report and write it down at the end (it does not create the file until the end)
 	report.Init()
 
+	defer report.Write()
+
 	// Connect to external source
 	log.User("main", "import", "### Connecting to external database...")
 
@@ -35,8 +37,6 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 		}
 	}
 
-	// Write report on failures (if any)
-	report.Write()
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
