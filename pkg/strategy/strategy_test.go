@@ -51,10 +51,11 @@ func fakeStrategy() Strategy {
 		"type":     "int",
 	}
 	cfields[5] = map[string]string{
-		"foreign":  "createdate",
-		"local":    "DateCreated",
-		"relation": "Parse",
-		"type":     "timedate",
+		"foreign":        "createdate",
+		"local":          "DateCreated",
+		"relation":       "Parse",
+		"type":           "timedate",
+		"datetimeformat": "February 1st, 2006",
 	}
 	cfields[6] = map[string]string{
 		"foreign":  "updatedate",
@@ -238,12 +239,24 @@ func TestGetPillarEndpoints(t *testing.T) {
 func TestGetDatetimeFormat(t *testing.T) {
 	fakeConf := fakeStrategy()
 
+	table := "Comment"
+
+	// It should get the format for the strategy
+	field := "DateUpdated"
 	expectedDTformat := "2006-01-02 15:04:05"
-	dtformat := fakeConf.GetDateTimeFormat() //table, field)
+	dtformat := fakeConf.GetDateTimeFormat(table, field)
 
 	if dtformat != expectedDTformat {
 		t.Errorf("Expected %s, got %s", expectedDTformat, dtformat)
 	}
 
-	//
+	// // It should get the format for the field
+	field = "DateCreated"
+	expectedDTformat = "February 1st, 2006"
+	dtformat = fakeConf.GetDateTimeFormat(table, field)
+
+	if dtformat != expectedDTformat {
+		t.Errorf("Expected %s, got %s", expectedDTformat, dtformat)
+	}
+
 }
