@@ -7,6 +7,7 @@
       "asset": {
         "Foreign": "crnr_asset",
         "Local": "asset",
+        "Priority": 1,
         "OrderBy": "assetid",
         "ID": "assetid",
         "IndexBy": {
@@ -18,7 +19,7 @@
         "Fields": [
           {
             "foreign": "assetid",
-            "local": "asset_id",
+            "local": "id",
             "relation": "Source",
             "type": "int"
           },
@@ -46,6 +47,7 @@
       "user": {
         "Foreign": "crnr_comment",
         "Local": "user",
+        "Priority": 2,
         "OrderBy": "userid",
         "ID": "userid",
         "IndexBy": {
@@ -57,7 +59,7 @@
         "Fields": [
           {
             "foreign": "userid",
-            "local": "user_id",
+            "local": "id",
             "relation": "Source",
             "type": "int"
           },
@@ -73,7 +75,8 @@
       "comment": {
         "Foreign": "crnr_comment",
         "Local": "comment",
-        "OrderBy": "commentid",
+        "Priority": 3,
+        "OrderBy": "createdate",
         "ID": "commentid",
         "IndexBy": {
           "keys": {
@@ -115,7 +118,7 @@
           {
             "foreign": "parentid",
             "local": "parent_id",
-            "relation": "Identity",
+            "relation": "Source",
             "type": "int"
           },
           {
@@ -150,6 +153,15 @@
         "host": "",
         "port": "",
         "adapter": "mysql",
+        "type": "foreign"
+      },
+      {
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": "",
+        "adapter": "mongodb",
         "type": "foreign"
       }
     ]
