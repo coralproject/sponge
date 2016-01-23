@@ -22,7 +22,7 @@ var (
 
 func init() {
 	strategy = str.New() // Reads the strategy file
-	dateLayout = strategy.GetDateTimeFormat()
+	dateLayout = strategy.GetDefaultDateTimeFormat()
 }
 
 // GetID returns the identifier for modelName
