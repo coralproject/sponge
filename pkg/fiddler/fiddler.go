@@ -53,16 +53,7 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 }
 
 // Convert a row into the comment coral structure
-func transformRow(row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) { //([]byte, error) {
-	// "fields": [
-	// 	{
-	// 		"foreign": "commentid",
-	// 		"local": "CommentID",
-	// 		"relation": "Identity",
-	// 		"type": "int"
-	// 	},
-	// 	... ]
-
+func transformRow(row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) {
 	// newRow will hold the transformed row
 	var newRow map[string]interface{}
 	newRow = make(map[string]interface{})
