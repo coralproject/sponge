@@ -131,7 +131,8 @@
             "foreign": "updatedate",
             "local": "date_updated",
             "relation": "ParseTimeDate",
-            "type": "timedate"
+            "type": "timedate",
+            "datetimeformat": "2006-01-02 15:04:05"
           },
           {
             "foreign": "approvedate",
