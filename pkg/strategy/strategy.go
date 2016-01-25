@@ -185,6 +185,10 @@ func (s Strategy) GetMap() Map {
 	return s.Map
 }
 
+func (s Strategy) GetDefaultDateTimeFormat() string {
+	return s.Map.DateTimeFormat
+}
+
 // GetDateTimeFormat returns the datetime format for this strategy
 func (s Strategy) GetDateTimeFormat(table string, field string) string {
 
@@ -196,7 +200,7 @@ func (s Strategy) GetDateTimeFormat(table string, field string) string {
 			}
 		}
 	}
-	return s.Map.DateTimeFormat
+	return s.GetDefaultDateTimeFormat()
 }
 
 // GetTables returns a list of tables to be imported
