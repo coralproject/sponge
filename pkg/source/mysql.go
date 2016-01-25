@@ -30,7 +30,8 @@ type MySQL struct {
 
 // GetTables gets all the tables names from this data source
 func (m MySQL) GetTables() ([]string, error) {
-	keys := make([]string, len(strategy.Map.Tables)+1)
+	keys := make([]string, len(strategy.Map.Tables))
+
 	for k, val := range strategy.Map.Tables {
 		keys[val.Priority] = k
 	}
@@ -64,10 +65,10 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	if orderby == "" {
 		orderby = strategy.GetOrderBy(coralTableName)
 	}
+
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
 	query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
-	//query := strings.Join([]string{"SELECT", fields, "from", tableName}, " ")
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
