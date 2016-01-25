@@ -78,7 +78,7 @@ The collection to where we are importing this table into.
 
 ##### Priority
 
-This is a number that specifies which table to import first.
+This is a number that specifies which table to import first. The first priority starts in Zero.
 
 ##### OrderBy
 
