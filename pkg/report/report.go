@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	filePath = "failed_import.csv"
+	filePathDefault = "failed_import.csv"
 )
 
 var records [][]string
@@ -58,9 +58,9 @@ func GetRecords() [][]string {
 }
 
 // Write writes the report to disk
-func Write() {
+func Write(filePath string) {
 	// remove existing file
-	os.Remove(filePath)
+	//os.Remove(filePath)
 
 	// only write the file if there is any report to write
 	if len(records) > 1 {
@@ -93,7 +93,7 @@ func Write() {
 //* This functions are for the old report that is already save in disk. *//
 
 // ReadReport gets the data that needs to be imported from the report already in disk and return the records in a way that can be easily read it
-func ReadReport() ([]map[string]interface{}, error) {
+func ReadReport(filePath string) ([]map[string]interface{}, error) {
 	// Read the CSV file
 	outfile, err := os.Open(filePath)
 	if err != nil {
