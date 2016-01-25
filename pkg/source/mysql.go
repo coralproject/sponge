@@ -68,7 +68,8 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
-	query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
+	//query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
+	query := fmt.Sprintf("SELECT %s from %s order by %s limit %v, %v", fields, tableName, orderby, offset, limit)
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
