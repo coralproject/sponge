@@ -73,6 +73,8 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 	client := &http.Client{}
 	var response *http.Response
 
+	// only retry if there is a network Errorf
+
 	// Retry retryTimes times if it fails to do the request
 	for i := 0; i < retryTimes; i++ {
 		response, err = client.Do(request)
@@ -81,15 +83,13 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 		} else {
 			if response.StatusCode != 200 {
 				err = fmt.Errorf("Not succesful status code: %s.", response.Status)
-				log.Error("coral", "doRequest", err, "Processing request")
+				// wait and retry to do the request
+				time.Sleep(250 * time.Millisecond)
 			} else {
 				defer response.Body.Close()
 				break
 			}
 		}
-
-		// wait and retry to do the request
-		time.Sleep(250 * time.Millisecond)
 	}
 	return err
 }
