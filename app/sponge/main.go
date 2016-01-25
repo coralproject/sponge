@@ -52,7 +52,7 @@ func init() {
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "-offset= Offset for the sql query")
 	flag.StringVar(&orderbyFlag, "orderby", orderbyDefault, "-orderby= Order by field of the query on external source")
 	flag.BoolVar(&importonlyfailedFlag, "onlyfails", importonlyfailedDefault, "-onlyfails Import only the failed documents recorded in report")
-	flag.StringVar(&tableFlag, "type", tableDefault, "Import only that type of data.")
+	flag.StringVar(&tableFlag, "type", tableDefault, "Import only this type")
 
 	flag.Parse()
 
