@@ -100,9 +100,7 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 		case "Source":
 			return oldValue
 		case "ParseTimeDate":
-			var newValue time.Time
-			newValue = parseDate(oldValue.(string))
-
+			newValue := parseDate(oldValue.(string))
 			return newValue
 		}
 	}
