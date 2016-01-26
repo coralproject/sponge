@@ -27,6 +27,7 @@ package coral
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -81,6 +82,28 @@ func AddRow(data []byte, tableName string) error {
 		}
 	} else {
 		err = fmt.Errorf("No %s in the endpoints.", tableName)
+	}
+
+	return err
+}
+
+// CreateIndex calls the service to create index
+func CreateIndex(collection string) error {
+	// get Endpoint
+	createindexurl := os.Getenv("CREATE_INDEX")
+
+	// get index
+	s := strategy.New()
+	index := s.GetIndexBy(collection)
+
+	var data []byte
+	err := json.Unmarshal(data, index)
+	if err != nil {
+		log.Error("coral", "CreateIndex", err, "Creating Index.")
+	}
+	err = doRequest(methodPost, createindexurl, bytes.NewBuffer(data))
+	if err != nil {
+		log.Error("coral", "CreateIndex", err, "Creating Index.")
 	}
 
 	return err
