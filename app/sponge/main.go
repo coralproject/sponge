@@ -25,6 +25,8 @@ var (
 	importonlyfailedFlag bool
 
 	tableFlag string
+
+	createindexFlag bool
 )
 
 const (
@@ -33,6 +35,7 @@ const (
 	orderbyDefault          = ""
 	importonlyfailedDefault = false
 	tableDefault            = ""
+	createindexDefault      = false
 )
 
 // Initialize log, get flag variables, initialize report
@@ -54,6 +57,8 @@ func init() {
 	flag.BoolVar(&importonlyfailedFlag, "onlyfails", importonlyfailedDefault, "-onlyfails Import only the failed documents recorded in report")
 	flag.StringVar(&tableFlag, "type", tableDefault, "Import only this type")
 
+	flag.BoolVar(&createindexFlag, "index", createindexDefault, "-index Create index for all the tables or only for the one specifies")
+
 	flag.Parse()
 
 }
@@ -62,6 +67,10 @@ func main() {
 	log.Dev("cmd", "main", "Start")
 
 	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag)
+
+	if createindexFlag {
+		sponge.CreateIndex(tableFlag)
+	}
 
 	log.Dev("cmd", "main", "Complete")
 }
