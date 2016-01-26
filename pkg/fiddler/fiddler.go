@@ -31,6 +31,16 @@ func GetID(modelName string) string {
 	return strategy.GetIDField(modelName)
 }
 
+// GetCollections give the names of all the collections in the strategy file
+func GetCollections() []string {
+	tables := strategy.GetTables() // map[string]Table
+	keys := []string{}
+	for k := range tables {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // TransformRow transform a row of data into the coral schema
 func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
 
