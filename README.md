@@ -16,7 +16,7 @@ Read the [INSTALL file](https://github.com/coralproject/sponge/blob/master/INSTA
 
 Strategies are json configuration files that contain all the information Sponge needs to get data from a source, translate it to the coral schema and send it to the service layer.
 
-The strategy spec is still not complete. [Here's the living example](https://github.com/coralproject/sponge/blob/master/strategy/strategy.json.example)
+The strategy spec is still not complete. You can read this [living example](https://github.com/coralproject/sponge/blob/master/strategy/strategy.json.example) or [more information on Strategies](https://github.com/coralproject/sponge/tree/master/pkg/strategy).
 
 ## Code of conduct
 
