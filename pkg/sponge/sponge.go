@@ -39,6 +39,25 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 
 }
 
+// CreateIndex will read the strategy file and create index that are mentioned there for each collection
+func CreateIndex(collection string) {
+
+	if collection == "" {
+		//create index for everybody
+
+		// get data from strategy file
+		tables := fiddler.GetCollections()
+		// for each table
+		for t := range tables {
+			coral.CreateIndex(tables[t])
+		}
+		return
+	}
+
+	//create index only for collection
+	coral.CreateIndex(collection)
+}
+
 // Import gets data from report on failed import, transform it and send it to pillar
 func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderby string) {
 
