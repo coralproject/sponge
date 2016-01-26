@@ -32,12 +32,14 @@ Example:
   "Priority": 1,
   "OrderBy": "assetid",
   "ID": "assetid",
-  "IndexBy": {
-    "keys": {
-      "asseturl": "text"
-    },
-    "options": {}
-  },
+  "Index": [
+    {
+      "name": "asset-url",
+      "key": "asseturl",
+      "unique": "true",
+      "dropdups": "true"
+    }
+  ],
   "Fields": [
     {
       "foreign": "assetid",

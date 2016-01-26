@@ -42,14 +42,14 @@ type Map struct {
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
-	Foreign  string                 `json:"foreign"`
-	Local    string                 `json:"local"`
-	Priority int                    `json:"priority"`
-	OrderBy  string                 `json:"orderby"`
-	ID       string                 `json:"id"`
-	IndexBy  map[string]interface{} `json:"indexby"`
-	Fields   []map[string]string    `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
-	Endpoint string                 `json:"endpoint"`
+	Foreign  string                   `json:"foreign"`
+	Local    string                   `json:"local"`
+	Priority int                      `json:"priority"`
+	OrderBy  string                   `json:"orderby"`
+	ID       string                   `json:"id"`
+	Index    []map[string]interface{} `json:"index"`
+	Fields   []map[string]string      `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+	Endpoint string                   `json:"endpoint"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,6 +185,7 @@ func (s Strategy) GetMap() Map {
 	return s.Map
 }
 
+// GetDefaultDateTimeFormat gets the default datetime format
 func (s Strategy) GetDefaultDateTimeFormat() string {
 	return s.Map.DateTimeFormat
 }
@@ -226,15 +227,8 @@ func (s Strategy) GetOrderBy(coralName string) string {
 }
 
 // GetIndexBy returns the structure to use to create indexes for the coral table
-func (s Strategy) GetIndexBy(coralName string) map[string]interface{} {
-	// IndexBy: {
-	// 	"keys": {
-	// 		"asseturl": "text"
-	// 	},
-	// 	"options": {}
-	// },
-
-	return s.Map.Tables[coralName].IndexBy
+func (s Strategy) GetIndexBy(coralName string) []map[string]interface{} {
+	return s.Map.Tables[coralName].Index
 }
 
 // GetIDField returns the identifier for the table coralname setup in the strategy file

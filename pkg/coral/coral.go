@@ -23,6 +23,25 @@
 // CreateIndex
 //
 // The endpoint is setup in the CREATE_INDEX_URL environment variable. It receives information about what indexes to create.
+// In the strategy file, for each collection, we are getting
+// "Index": [{
+// 	"name": "asset-url",
+// 	"key": "asseturl",
+// 	"unique": true,
+// 	"dropdups": true
+// }],
+// And we want to send to Pillar
+// 	 {
+// 			"target": "asset",
+// 			"index": {
+// 					"name": "asset-url",
+// 					"key": ["url"],
+// 					"unique": true,
+// 					"dropdups": true
+// 			}
+// 	 },
+//
+//
 package coral
 
 import (
@@ -89,21 +108,37 @@ func AddRow(data []byte, tableName string) error {
 
 // CreateIndex calls the service to create index
 func CreateIndex(collection string) error {
+	var err error
 	// get Endpoint
 	createindexurl := os.Getenv("CREATE_INDEX")
 
 	// get index
 	s := strategy.New()
-	index := s.GetIndexBy(collection)
+	is := s.GetIndexBy(collection) // []map[string]interface{}
 
-	var data []byte
-	err := json.Unmarshal(data, index)
-	if err != nil {
-		log.Error("coral", "CreateIndex", err, "Creating Index.")
-	}
-	err = doRequest(methodPost, createindexurl, bytes.NewBuffer(data))
-	if err != nil {
-		log.Error("coral", "CreateIndex", err, "Creating Index.")
+	indexes := make([]map[string]interface{}, len(is))
+	for i := range is {
+		indexes[i] = make(map[string]interface{})
+		indexes[i]["target"] = collection
+
+		indexes[i]["index"] = map[string]interface{}{
+			"name":     is[i]["name"].(string),
+			"key":      is[i]["keys"],
+			"unique":   is[i]["unique"].(string),
+			"dropdups": is[i]["dropdups"].(string),
+		}
+
+		var data []byte
+		data, err = json.Marshal(indexes[i])
+		if err != nil {
+			log.Error("coral", "CreateIndex", err, "Creating Index.")
+		}
+
+		err = doRequest(methodPost, createindexurl, bytes.NewBuffer(data))
+		if err != nil {
+			log.Error("coral", "CreateIndex", err, "Creating Index.")
+		}
+
 	}
 
 	return err

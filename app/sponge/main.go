@@ -66,11 +66,11 @@ func init() {
 func main() {
 	log.Dev("cmd", "main", "Start")
 
-	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag)
-
 	if createindexFlag {
 		sponge.CreateIndex(tableFlag)
 	}
+
+	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag)
 
 	log.Dev("cmd", "main", "Complete")
 }

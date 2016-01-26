@@ -42,6 +42,8 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 // CreateIndex will read the strategy file and create index that are mentioned there for each collection
 func CreateIndex(collection string) {
 
+	log.User("main", "createindex", "###  Create Index.")
+
 	if collection == "" {
 		//create index for everybody
 
@@ -49,11 +51,13 @@ func CreateIndex(collection string) {
 		tables := fiddler.GetCollections()
 		// for each table
 		for t := range tables {
+			log.User("main", "createindex", "### Index for collection %s.", tables[t])
 			coral.CreateIndex(tables[t])
 		}
 		return
 	}
 
+	log.User("main", "createindex", "### Index for collection %s.", collection)
 	//create index only for collection
 	coral.CreateIndex(collection)
 }

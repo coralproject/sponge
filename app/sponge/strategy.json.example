@@ -7,15 +7,17 @@
       "asset": {
         "Foreign": "crnr_asset",
         "Local": "asset",
-        "Priority": 1,
+        "Priority": 0,
         "OrderBy": "assetid",
         "ID": "assetid",
-        "IndexBy": {
-          "keys": {
-            "asseturl": "text"
-          },
-          "options": {}
-        },
+        "Index": [
+          {
+            "name": "asset-url",
+            "keys": ["asseturl"],
+            "unique": "true",
+            "dropdups": "true"
+          }
+        ],
         "Fields": [
           {
             "foreign": "assetid",
@@ -47,15 +49,17 @@
       "user": {
         "Foreign": "crnr_comment",
         "Local": "user",
-        "Priority": 2,
+        "Priority": 1,
         "OrderBy": "userid",
         "ID": "userid",
-        "IndexBy": {
-          "keys": {
-            "user_name": "text"
-          },
-          "options": {}
-        },
+        "Index": [
+          {
+            "name": "user-name",
+            "keys": ["name"],
+            "unique": "true",
+            "dropdups": "true"
+          }
+        ],
         "Fields": [
           {
             "foreign": "userid",
@@ -75,15 +79,17 @@
       "comment": {
         "Foreign": "crnr_comment",
         "Local": "comment",
-        "Priority": 3,
+        "Priority": 2,
         "OrderBy": "createdate",
         "ID": "commentid",
-        "IndexBy": {
-          "keys": {
-            "commentid": "text"
-          },
-          "options": {}
-        },
+        "Index": [
+          {
+            "name": "commentid",
+            "keys": ["commentid"],
+            "unique": "true",
+            "dropdups": "true"
+          }
+        ],
         "Fields": [
           {
             "foreign": "commentid",
