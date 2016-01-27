@@ -85,7 +85,7 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue, err := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
 		if err != nil {
-			break
+			log.Error("fiddler", "transformRow", err, "Transforming field %s.", f["foreign"])
 		}
 
 		if newValue != nil {
