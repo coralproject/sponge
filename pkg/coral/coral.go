@@ -81,12 +81,12 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 		if err != nil {
 			log.Error("coral", "doRequest", err, "Processing request")
 		} else {
+			defer response.Body.Close()
 			if response.StatusCode != 200 {
 				err = fmt.Errorf("Not succesful status code: %s.", response.Status)
 				// wait and retry to do the request
 				time.Sleep(250 * time.Millisecond)
 			} else {
-				defer response.Body.Close()
 				break
 			}
 		}
