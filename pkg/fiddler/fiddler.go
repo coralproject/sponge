@@ -8,6 +8,7 @@ package fiddler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -51,6 +52,10 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 	}
 
 	newRow, err := transformRow(row, table.Fields)
+	if err != nil {
+		log.Error("transform", "TransformRow", err, "Transform Data")
+		return nil, err
+	}
 
 	// Convert to Json
 	dataCoral, err := json.Marshal(newRow)
@@ -64,6 +69,8 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 
 // Convert a row into the comment coral structure
 func transformRow(row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) {
+
+	var err error
 	// newRow will hold the transformed row
 	var newRow map[string]interface{}
 	newRow = make(map[string]interface{})
@@ -76,7 +83,10 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 	for _, f := range fields {
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		newValue := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
+		newValue, err := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
+		if err != nil {
+			break
+		}
 
 		if newValue != nil {
 
@@ -96,28 +106,30 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 		newRow["source"] = source
 	}
 
-	return newRow, nil
+	return newRow, err
 }
 
 //Here we transform the record into what we want (based on the configuration in the strategy)
 // 1. convert types (values are all strings) into the struct
-func transformField(oldValue interface{}, relation string, local string) interface{} {
+func transformField(oldValue interface{}, relation string, local string) (interface{}, error) {
 
 	if oldValue != nil {
 		switch relation {
 		case "Identity":
-			return oldValue
+			return oldValue, nil
 		case "Source":
-			return oldValue
+			return oldValue, nil
 		case "ParseTimeDate":
-			newValue := parseDate(oldValue.(string))
-			return newValue
+			newValue, err := parseDate(oldValue.(string))
+			return newValue, err
 		}
 	}
-	return nil
+
+	err := fmt.Errorf("Type of transformation %s not found for %s.", relation, oldValue)
+	return nil, err
 }
 
-func parseDate(val string) time.Time {
+func parseDate(val string) (time.Time, error) {
 	// on format https://golang.org/pkg/time/#Parse
 	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
 
@@ -126,7 +138,7 @@ func parseDate(val string) time.Time {
 		log.Error("fiddler", "parseDate", err, "Parsing date %s.", val)
 	}
 
-	return dt
+	return dt, err
 }
 
 // source is [ { "asset_id": xxx}, { "comment_id": xxx} ]
