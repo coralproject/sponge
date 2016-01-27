@@ -250,7 +250,7 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 	}
 
 	// adds CREATE_INDEX endpoints
-	endpoints["CREATE_INDEX"] = pillarURL + "/api/import/index"
+	endpoints["index"] = pillarURL + "/api/import/index"
 
 	return endpoints
 }

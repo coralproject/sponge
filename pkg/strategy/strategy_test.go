@@ -116,7 +116,7 @@ func fakeStrategy() Strategy {
 					OrderBy:  "commentid",
 					ID:       "commentid",
 					Fields:   cfields,
-					Endpoint: "http://localhost:8080/api/import/comment",
+					Endpoint: "/api/import/comment",
 				},
 				"Asset": Table{
 					Foreign:  "crnr_asset",
@@ -124,7 +124,7 @@ func fakeStrategy() Strategy {
 					OrderBy:  "assetid",
 					ID:       "assetid",
 					Fields:   afields,
-					Endpoint: "http://localhost:8080/api/import/asset",
+					Endpoint: "/api/import/asset",
 				},
 				"User": Table{
 					Foreign:  "crnr_comment",
@@ -132,7 +132,7 @@ func fakeStrategy() Strategy {
 					OrderBy:  "userid",
 					ID:       "commentid",
 					Fields:   ufields,
-					Endpoint: "http://localhost:8080/api/import/user",
+					Endpoint: "/api/import/user",
 				},
 			},
 		},
@@ -228,11 +228,17 @@ func TestGetPillarEndpoints(t *testing.T) {
 	fakeConf := fakeStrategy()
 	endpoints := fakeConf.GetPillarEndpoints()
 
-	if len(endpoints) != 3 {
-		t.Errorf("Expected 3 endpoints, got %v", len(endpoints))
+	expectedEndpoints := 4
+	if len(endpoints) != expectedEndpoints { // the 3 on strategy plus create index
+		t.Errorf("Expected %d endpoints, got %v", expectedEndpoints, len(endpoints))
 	}
 	if endpoints["comment"] != "http://localhost:8080/api/import/comment" {
 		t.Errorf("Expected http://localhost:8080/api/import/comment, got %s", endpoints["Comment"])
+	}
+
+	val, exists := endpoints["index"]
+	if !exists {
+		t.Errorf("Expected to have endpoint 'index'. Got %v.", val)
 	}
 }
 
