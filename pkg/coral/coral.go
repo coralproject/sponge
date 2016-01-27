@@ -70,7 +70,9 @@ type restResponse struct {
 	payload string
 }
 
-var endpoints map[string]string // model -> endpoint
+var (
+	endpoints map[string]string // model -> endpoint
+)
 
 func init() {
 
@@ -109,12 +111,13 @@ func AddRow(data []byte, tableName string) error {
 // CreateIndex calls the service to create index
 func CreateIndex(collection string) error {
 	var err error
-	// get Endpoint
-	createindexurl := os.Getenv("CREATE_INDEX")
 
 	// get index
 	s := strategy.New()
 	is := s.GetIndexBy(collection) // []map[string]interface{}
+
+	// get Endpoint
+	createIndexURL := s.GetPillarEndpoints()["CREATE_INDEX"]
 
 	indexes := make([]map[string]interface{}, len(is))
 	for i := range is {
@@ -134,7 +137,7 @@ func CreateIndex(collection string) error {
 			log.Error("coral", "CreateIndex", err, "Creating Index.")
 		}
 
-		err = doRequest(methodPost, createindexurl, bytes.NewBuffer(data))
+		err = doRequest(methodPost, createIndexURL, bytes.NewBuffer(data))
 		if err != nil {
 			log.Error("coral", "CreateIndex", err, "Creating Index.")
 		}

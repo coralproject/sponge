@@ -12,6 +12,8 @@ import (
 	"github.com/coralproject/sponge/pkg/log"
 )
 
+var pillarURL string
+
 func init() {
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -22,6 +24,8 @@ func init() {
 	}
 
 	log.Init(os.Stderr, logLevel)
+
+	pillarURL = os.Getenv("PILLAR_URL")
 }
 
 //* Strategy Structure *//
@@ -242,8 +246,11 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 
 	tables := s.GetTables()
 	for _, table := range tables {
-		endpoints[table.Local] = table.Endpoint
+		endpoints[table.Local] = pillarURL + table.Endpoint
 	}
+
+	// adds CREATE_INDEX endpoints
+	endpoints["CREATE_INDEX"] = pillarURL + "/api/import/index"
 
 	return endpoints
 }
