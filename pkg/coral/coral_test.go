@@ -11,6 +11,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ardanlabs/kit/cfg"
+	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/pillar/server/model"
 	"github.com/coralproject/sponge/pkg/strategy"
 )
@@ -23,7 +25,15 @@ var (
 
 func setup() {
 
-	fmt.Println("SETUP :|")
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.DEV
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
 
 	// MOCK STRATEGY CONF
 	strategyConf := "../../tests/strategy_test.json"
@@ -31,7 +41,7 @@ func setup() {
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
-	fakeStr = strategy.New()
+	//fakeStr = strategy.New()
 
 	// Initialization of server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +62,6 @@ func setup() {
 			// decode the comment
 			comment := model.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
-			fmt.Println(err)
 		case "/api/import/index":
 			// decode the index
 			index := model.Index{}
@@ -77,14 +86,15 @@ func setup() {
 	// mock pillar url
 	os.Setenv("PILLAR_URL", server.URL)
 
+	// Initialize coral
+	Init()
+
 }
 
 func teardown() {
 }
 
 func TestMain(m *testing.M) {
-
-	fmt.Println("WTH :|")
 
 	setup()
 	code := m.Run()
@@ -223,30 +233,19 @@ func TestAddCommentRow(t *testing.T) {
 
 }
 
-// //test that data is being send in the right format
-//
-// // test the request on create index
-// func TestCreateIndex(t *testing.T) {
-//
-// 	Init()
-//
-// 	fmt.Println("RUN INDEX")
-//
-// 	// get the endpoint from the strategy file
-// 	createindexURL := server.URL + "/api/createindex"
-// 	os.Setenv("CREATE_INDEX_URL", createindexURL)
-//
-// 	tableName := "comment"
-//
-// 	//indexes := fakeStr.GetIndexBy(tableName)
-//
-// 	// data, e := json.Marshal(indexes)
-// 	// if e != nil {
-// 	// 	t.Fatalf("error with the test data: %s.", e)
-// 	// }
-//
-// 	e := CreateIndex(tableName)
-// 	if e != nil {
-// 		t.Fatalf("expecting not error but got one %v.", e)
-// 	}
-// }
+//test that data is being send in the right format
+
+// test the request on create index
+func TestCreateIndex(t *testing.T) {
+
+	// get the endpoint from the strategy file
+	//createindexURL := server.URL + "/api/import/index"
+	//os.Setenv("CREATE_INDEX_URL", createindexURL)
+
+	tableName := "comment"
+
+	e := CreateIndex(tableName)
+	if e != nil {
+		t.Fatalf("expecting not error but got one %v.", e)
+	}
+}

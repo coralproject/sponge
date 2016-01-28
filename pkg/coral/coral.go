@@ -73,10 +73,8 @@ var (
 )
 
 // Init initialization of logs and strategy
-func init() {
-
-	s := strategy.New()
-	endpoints = s.GetPillarEndpoints()
+func Init() {
+	endpoints = strategy.New().GetPillarEndpoints()
 }
 
 // AddRow send the row to pillar based on which collection is
@@ -113,12 +111,14 @@ func CreateIndex(collection string) error {
 		indexes[i] = make(map[string]interface{})
 		indexes[i]["target"] = collection
 
-		indexes[i]["index"] = map[string]interface{}{
-			"name":     is[i]["name"].(string),
-			"key":      is[i]["keys"],
-			"unique":   is[i]["unique"].(string),
-			"dropdups": is[i]["dropdups"].(string),
-		}
+		// indexes[i]["index"] = map[string]interface{}{
+		// 	"name":     is[i]["name"].(string),
+		// 	"key":      is[i]["keys"],
+		// 	"unique":   is[i]["unique"].(string),
+		// 	"dropdups": is[i]["dropdups"].(string),
+		// }
+
+		indexes[i]["index"] = is[i]
 
 		var data []byte
 		data, err = json.Marshal(indexes[i])
