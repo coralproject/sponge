@@ -14,11 +14,13 @@ import (
 
 var pillarURL string
 
-func init() {
+// Init initialize log and get pillar url env variable
+func Init() {
+
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
-			return log.DEV
+			return log.USER
 		}
 		return ll
 	}
@@ -139,6 +141,8 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 
 // New creates a new strategy struct variable from the json file
 func New() Strategy {
+
+	Init()
 
 	var strategy Strategy
 	var err error
