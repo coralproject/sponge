@@ -22,7 +22,6 @@ var (
 
 func init() {
 	strategy = str.New() // Reads the strategy file
-	dateLayout = strategy.GetDefaultDateTimeFormat()
 }
 
 // GetID returns the identifier for modelName
@@ -39,7 +38,7 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 		return nil, errors.New("No table found in the strategy file.")
 	}
 
-	newRow, err := transformRow(row, table.Fields)
+	newRow, err := transformRow(modelName, row, table.Fields)
 
 	// Convert to Json
 	dataCoral, err := json.Marshal(newRow)
@@ -52,7 +51,7 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 }
 
 // Convert a row into the comment coral structure
-func transformRow(row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) { //([]byte, error) {
+func transformRow(modelName string, row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) { //([]byte, error) {
 	// "fields": [
 	// 	{
 	// 		"foreign": "commentid",
@@ -72,6 +71,8 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 
 	// Loop on the fields for the transformation
 	for _, f := range fields {
+
+		dateLayout = strategy.GetDateTimeFormat(modelName, f["local"])
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
@@ -108,22 +109,19 @@ func transformField(oldValue interface{}, relation string, local string) interfa
 		case "Source":
 			return oldValue
 		case "ParseTimeDate":
-			var newValue time.Time
-			newValue = parseDate(oldValue.(string))
-
-			return newValue
+			return parseDate(oldValue.(string))
 		}
 	}
 	return nil
 }
 
-func parseDate(val string) time.Time {
+func parseDate(value string) time.Time {
 	// on format https://golang.org/pkg/time/#Parse
 	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
 
-	dt, err := time.Parse(dateLayout, val)
+	dt, err := time.Parse(dateLayout, value)
 	if err != nil {
-		log.Error("fiddler", "parseDate", err, "Parsing date %s.", val)
+		log.Error("fiddler", "parseDate", err, "Parsing date %s.", value)
 	}
 
 	return dt
