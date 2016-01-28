@@ -50,10 +50,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/strategy"
 )
@@ -74,21 +72,11 @@ var (
 	endpoints map[string]string // model -> endpoint
 )
 
+// Init initialization of logs and strategy
 func init() {
-
-	logLevel := func() int {
-		ll, err := cfg.Int("LOGGING_LEVEL")
-		if err != nil {
-			return log.USER
-		}
-		return ll
-	}
-
-	log.Init(os.Stderr, logLevel)
 
 	s := strategy.New()
 	endpoints = s.GetPillarEndpoints()
-
 }
 
 // AddRow send the row to pillar based on which collection is
@@ -110,6 +98,7 @@ func AddRow(data []byte, tableName string) error {
 
 // CreateIndex calls the service to create index
 func CreateIndex(collection string) error {
+
 	var err error
 
 	// get index
@@ -117,7 +106,7 @@ func CreateIndex(collection string) error {
 	is := s.GetIndexBy(collection) // []map[string]interface{}
 
 	// get Endpoint
-	createIndexURL := s.GetPillarEndpoints()["CREATE_INDEX"]
+	createIndexURL := s.GetPillarEndpoints()["index"]
 
 	indexes := make([]map[string]interface{}, len(is))
 	for i := range is {

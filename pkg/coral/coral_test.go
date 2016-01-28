@@ -15,11 +15,15 @@ import (
 	"github.com/coralproject/sponge/pkg/strategy"
 )
 
-var server *httptest.Server
-var path string
-var fakeStr strategy.Strategy
+var (
+	server  *httptest.Server
+	path    string
+	fakeStr strategy.Strategy
+)
 
-func init() {
+func setup() {
+
+	fmt.Println("SETUP :|")
 
 	// MOCK STRATEGY CONF
 	strategyConf := "../../tests/strategy_test.json"
@@ -27,18 +31,12 @@ func init() {
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
-	fakeStr, e = strategy.New()
-	if e != nil {
-		fmt.Println(e)
-	}
+	fakeStr = strategy.New()
 
 	// Initialization of server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var err error
-
-		fmt.Println("\nURI ", r.RequestURI)
-		fmt.Println("BODY ", r.Body)
 
 		// check that the row is what we want it to be
 		switch r.RequestURI {
@@ -54,8 +52,11 @@ func init() {
 			// decode the comment
 			comment := model.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
-		case "/api/createindex":
-			// r.Body is the index to create with the tableName
+			fmt.Println(err)
+		case "/api/import/index":
+			// decode the index
+			index := model.Index{}
+			err = json.NewDecoder(r.Body).Decode(&index)
 		default:
 			err = errors.New("Bad request")
 		}
@@ -73,11 +74,27 @@ func init() {
 
 	path = os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/fixtures/"
 
-	// rewrite strategyConf file with new endpoints
+	// mock pillar url
+	os.Setenv("PILLAR_URL", server.URL)
 
 }
 
+func teardown() {
+}
+
+func TestMain(m *testing.M) {
+
+	fmt.Println("WTH :|")
+
+	setup()
+	code := m.Run()
+	teardown()
+
+	os.Exit(code)
+}
+
 func TestMockupServer(t *testing.T) {
+
 	method := "POST"
 	urlStr := server.URL + "/api/import/user"
 	row := map[string]interface{}{"juan": 3, "pepe": "what"}
@@ -124,6 +141,7 @@ func GetFixture(fileName string) (map[string]interface{}, error) {
 // expected an Error
 // Signature: AddRow(data []byte, tableName string) error
 func TestAddRowWrongTable(t *testing.T) {
+
 	var data []byte
 
 	tableName := "wrongTable"
@@ -137,9 +155,6 @@ func TestAddRowWrongTable(t *testing.T) {
 
 // test that is sent to the right collection if it is User
 func TestAddUserRow(t *testing.T) {
-
-	// We need to setup where the request is going to
-	//urlStr := server.URL + "/api/import/user"
 
 	// Test Data
 	newrow, e := GetFixture("users.json")
@@ -161,77 +176,77 @@ func TestAddUserRow(t *testing.T) {
 	}
 }
 
-// // test that is sent to the right collection if it is Asset
-// func TestAddAssetRow(t *testing.T) {
-//
-// We need to setup where the request is going to
-// urlStr := server.URL + "/api/import/asset"
+// test that is sent to the right collection if it is Asset
+func TestAddAssetRow(t *testing.T) {
 
-// 	// Test Data
-// 	newrow, e := GetFixture("assets.json")
-// 	if e != nil {
-// 		t.Fatalf("error with the test data: %s.", e)
-// 	}
-//
-// 	var data []byte
-// 	data, e = json.Marshal(newrow)
-// 	if e != nil {
-// 		t.Fatalf("error with the test data: %s.", e)
-// 	}
-//
-// 	tableName := "asset"
-//
-// 	e = AddRow(data, tableName)
-// 	if e != nil {
-// 		t.Fatalf("expecting not error but got one %v.", e)
-// 	}
-// }
-
-//
-// // test that is sent to the right collection if it is Comment
-// func TestAddCommentRow(t *testing.T) {
-//
-// 	// Test Data
-// 	newrow, e := GetFixture("comments.json")
-// 	if e != nil {
-// 		t.Fatalf("error with the test data: %s.", e)
-// 	}
-//
-// 	var data []byte
-// 	data, e = json.Marshal(newrow)
-// 	if e != nil {
-// 		t.Fatalf("error with the test data: %s.", e)
-// 	}
-//
-// 	tableName := "comment"
-//
-// 	e = AddRow(data, tableName)
-// 	if e != nil {
-// 		t.Fatalf("expecting not error but got one %v.", e)
-// 	}
-//
-// }
-
-// test that data is being send in the right format
-
-// test the request on create index
-func TestCreateIndex(t *testing.T) {
-
-	// get the endpoint from the strategy file
-	createindexURL := server.URL + "/api/createindex"
-	os.Setenv("CREATE_INDEX_URL", createindexURL)
-
-	tableName := "comment"
-
-	indexes := fakeStr.GetIndexBy(tableName)
-
-	data, e := json.Marshal(indexes)
+	// Test Data
+	newrow, e := GetFixture("assets.json")
 	if e != nil {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	e = CreateIndex(data, tableName)
+	var data []byte
+	data, e = json.Marshal(newrow)
+	if e != nil {
+		t.Fatalf("error with the test data: %s.", e)
+	}
+
+	tableName := "asset"
+
+	e = AddRow(data, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}
 }
+
+// test that is sent to the right collection if it is Comment
+func TestAddCommentRow(t *testing.T) {
+
+	// Test Data
+	newrow, e := GetFixture("comments.json")
+	if e != nil {
+		t.Fatalf("error with the test data: %s.", e)
+	}
+
+	var data []byte
+	data, e = json.Marshal(newrow)
+	if e != nil {
+		t.Fatalf("error with the test data: %s.", e)
+	}
+
+	tableName := "comment"
+
+	e = AddRow(data, tableName)
+	if e != nil {
+		t.Fatalf("expecting not error but got one %v.", e)
+	}
+
+}
+
+// //test that data is being send in the right format
+//
+// // test the request on create index
+// func TestCreateIndex(t *testing.T) {
+//
+// 	Init()
+//
+// 	fmt.Println("RUN INDEX")
+//
+// 	// get the endpoint from the strategy file
+// 	createindexURL := server.URL + "/api/createindex"
+// 	os.Setenv("CREATE_INDEX_URL", createindexURL)
+//
+// 	tableName := "comment"
+//
+// 	//indexes := fakeStr.GetIndexBy(tableName)
+//
+// 	// data, e := json.Marshal(indexes)
+// 	// if e != nil {
+// 	// 	t.Fatalf("error with the test data: %s.", e)
+// 	// }
+//
+// 	e := CreateIndex(tableName)
+// 	if e != nil {
+// 		t.Fatalf("expecting not error but got one %v.", e)
+// 	}
+// }

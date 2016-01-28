@@ -37,7 +37,7 @@ const (
 	tableDefault            = ""
 )
 
-// Initialize log, get flag variables, initialize report
+// Init initialize log, get flag variables, initialize report
 func init() {
 
 	logLevel := func() int {
@@ -61,6 +61,7 @@ func init() {
 }
 
 func main() {
+
 	log.Dev("cmd", "main", "Start")
 
 	sponge.CreateIndex(tableFlag)
