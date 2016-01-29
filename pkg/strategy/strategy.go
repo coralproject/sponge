@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"gopkg.in/mgo.v2"
+
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/coralproject/sponge/pkg/log"
 )
@@ -48,14 +50,14 @@ type Map struct {
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
-	Foreign  string                   `json:"foreign"`
-	Local    string                   `json:"local"`
-	Priority int                      `json:"priority"`
-	OrderBy  string                   `json:"orderby"`
-	ID       string                   `json:"id"`
-	Index    []map[string]interface{} `json:"index"`
-	Fields   []map[string]string      `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
-	Endpoint string                   `json:"endpoint"`
+	Foreign  string              `json:"foreign"`
+	Local    string              `json:"local"`
+	Priority int                 `json:"priority"`
+	OrderBy  string              `json:"orderby"`
+	ID       string              `json:"id"`
+	Index    []mgo.Index         `json:"index"`  //map[string]interface{} `json:"index"`
+	Fields   []map[string]string `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+	Endpoint string              `json:"endpoint"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,8 +143,6 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 
 // New creates a new strategy struct variable from the json file
 func New() Strategy {
-
-	Init()
 
 	var strategy Strategy
 	var err error
@@ -235,7 +235,7 @@ func (s Strategy) GetOrderBy(coralName string) string {
 }
 
 // GetIndexBy returns the structure to use to create indexes for the coral table
-func (s Strategy) GetIndexBy(coralName string) []map[string]interface{} {
+func (s Strategy) GetIndexBy(coralName string) []mgo.Index { //map[string]interface{} {
 	return s.Map.Tables[coralName].Index
 }
 
