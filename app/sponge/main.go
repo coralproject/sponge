@@ -50,6 +50,8 @@ func init() {
 
 	log.Init(os.Stderr, logLevel)
 
+	sponge.Init()
+
 	flag.IntVar(&limitFlag, "limit", limitDefault, "-limit= Number of rows that we are going to import at a time")
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "-offset= Offset for the sql query")
 	flag.StringVar(&orderbyFlag, "orderby", orderbyDefault, "-orderby= Order by field of the query on external source")
