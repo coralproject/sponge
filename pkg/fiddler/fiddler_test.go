@@ -1,6 +1,48 @@
 package fiddler
 
-import "testing"
+import (
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/ardanlabs/kit/cfg"
+	"github.com/ardanlabs/kit/log"
+)
+
+func setup() {
+
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.DEV
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
+
+	// MOCK STRATEGY CONF
+	strategyConf := "../../tests/strategy_test.json"
+	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
+	// Initialize coral
+	Init()
+}
+
+func teardown() {
+}
+
+func TestMain(m *testing.M) {
+
+	setup()
+	code := m.Run()
+	teardown()
+
+	os.Exit(code)
+}
 
 // Signature: TransformRow(row map[string]interface{}, modelName string) ([]byte, error)
 func TestTransformRow(t *testing.T) {
@@ -9,7 +51,7 @@ func TestTransformRow(t *testing.T) {
 
 	result, err := TransformRow(row, modelName)
 	if err != nil {
-		t.Fatalf("error should be nil instead of %v", err)
+		t.Fatalf("error should be nil. Error is %v", err)
 	}
 	r := string(result)
 

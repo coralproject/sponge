@@ -22,7 +22,10 @@ var (
 	dateLayout string
 )
 
-func init() {
+// Init initialize needed variables
+func Init() {
+
+	str.Init()
 	strategy = str.New() // Reads the strategy file
 	dateLayout = strategy.GetDefaultDateTimeFormat()
 }
@@ -113,6 +116,8 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 // 1. convert types (values are all strings) into the struct
 func transformField(oldValue interface{}, relation string, local string) (interface{}, error) {
 
+	var err error
+
 	if oldValue != nil {
 		switch relation {
 		case "Identity":
@@ -120,16 +125,17 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 		case "Source":
 			return oldValue, nil
 		case "ParseTimeDate":
-			newValue, err := parseDate(oldValue.(string))
-			return newValue, err
+			return parseDate(oldValue.(string))
 		}
+		err = fmt.Errorf("Type of transformation %s not found for %v.", relation, oldValue)
+		// } else {
+		// 	err = fmt.Errorf("Empty value for %s field.", local)
 	}
 
-	err := fmt.Errorf("Type of transformation %s not found for %s.", relation, oldValue)
 	return nil, err
 }
 
-func parseDate(val string) (time.Time, error) {
+func parseDate(val string) (string, error) {
 	// on format https://golang.org/pkg/time/#Parse
 	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
 
@@ -138,7 +144,9 @@ func parseDate(val string) (time.Time, error) {
 		log.Error("fiddler", "parseDate", err, "Parsing date %s.", val)
 	}
 
-	return dt, err
+	dtRFC3339 := dt.Format(time.RFC3339)
+
+	return dtRFC3339, err
 }
 
 // source is [ { "asset_id": xxx}, { "comment_id": xxx} ]
@@ -158,17 +166,4 @@ func appendField(source []map[string]interface{}, item interface{}) []map[string
 	source = source[:total]
 
 	return source
-}
-
-// isoDate is a helper function to convert the internal extension for dates
-// into a BSON date. We convert the following string
-// ISODate('2013-01-16T00:00:00.000Z') to a Go time value.
-func isoDate(script string) time.Time {
-	dateTime, err := time.Parse("2006-01-02 15:04:05", script)
-	if err != nil {
-		log.Error("fiddler", "isoDate", err, "When parsing date %s.", script)
-		return time.Now().UTC()
-	}
-
-	return dateTime
 }
