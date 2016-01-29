@@ -11,14 +11,6 @@ import (
 	"github.com/coralproject/sponge/pkg/source"
 )
 
-// Init initialize stuff related with this package
-func Init() {
-	// To Do: refactor to not having to get the strategy file so many times..
-	fiddler.Init()
-	coral.Init()
-	source.Init()
-}
-
 // Import gets data, transform it and send it to pillar
 func Import(limit int, offset int, orderby string, table string, importonlyfailed bool) {
 
@@ -29,10 +21,15 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 	// Connect to external source
 	log.User("main", "import", "### Connecting to external database...")
 
+	// Initialize the source
+	source.Init()
 	mysql, err := source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
 		log.Error("sponge", "import", err, "Connect to external MySQL")
 	}
+
+	fiddler.Init()
+	coral.Init()
 
 	if importonlyfailed { // import only what is in the report of failed importeda
 		importOnlyFailedRecords(mysql, limit, offset, orderby)

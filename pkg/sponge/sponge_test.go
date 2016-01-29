@@ -7,6 +7,8 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
+	"github.com/coralproject/sponge/pkg/coral"
+	"github.com/coralproject/sponge/pkg/fiddler"
 )
 
 func setup() {
@@ -28,8 +30,6 @@ func setup() {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
 
-	// Initialize coral
-	Init()
 }
 
 func teardown() {
@@ -46,6 +46,9 @@ func TestMain(m *testing.M) {
 
 // Signature: process(modelName string, data []map[string]interface{})
 func TestProcess(t *testing.T) {
+
+	fiddler.Init()
+	coral.Init()
 
 	modelName := "comment"
 	var data []map[string]interface{}

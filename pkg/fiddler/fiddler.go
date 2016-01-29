@@ -142,6 +142,7 @@ func parseDate(val string) (string, error) {
 	dt, err := time.Parse(dateLayout, val)
 	if err != nil {
 		log.Error("fiddler", "parseDate", err, "Parsing date %s.", val)
+		return "", err
 	}
 
 	dtRFC3339 := dt.Format(time.RFC3339)

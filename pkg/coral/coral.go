@@ -50,8 +50,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/strategy"
 )
@@ -74,6 +76,16 @@ var (
 
 // Init initialization of logs and strategy
 func Init() {
+
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.USER
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
 
 	strategy.Init()
 	endpoints = strategy.New().GetPillarEndpoints()

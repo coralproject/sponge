@@ -38,7 +38,7 @@ const (
 )
 
 // Init initialize log, get flag variables, initialize report
-func init() {
+func Init() {
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -49,8 +49,6 @@ func init() {
 	}
 
 	log.Init(os.Stderr, logLevel)
-
-	sponge.Init()
 
 	flag.IntVar(&limitFlag, "limit", limitDefault, "-limit= Number of rows that we are going to import at a time")
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "-offset= Offset for the sql query")
@@ -63,6 +61,8 @@ func init() {
 }
 
 func main() {
+
+	Init()
 
 	log.Dev("cmd", "main", "Start")
 

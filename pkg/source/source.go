@@ -17,18 +17,16 @@ import (
 // global variables related to strategy
 var strategy str.Strategy
 
+// Global configuration variables that holds the credentials for mysql
+var credentialMysql str.CredentialDatabase
+
 // Init initialize the needed variables
 func Init() {
+
+	str.Init()
+
 	strategy = str.New()
-	// logLevel := func() int {
-	// 	ll, err := cfg.Int("LOGGING_LEVEL")
-	// 	if err != nil {
-	// 		return log.USER
-	// 	}
-	// 	return ll
-	// }
-	//
-	// log.Init(os.Stderr, logLevel)
+	credentialMysql = strategy.GetCredential("mysql", "foreign")
 }
 
 // Sourcer is where the data is coming from (mysql, api)

@@ -15,9 +15,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Global configuration variables that holds the credentials for mysql
-var credentialMysql = strategy.GetCredential("mysql", "foreign")
-
 /* Implementing the Sources */
 
 // MySQL is the struct that has the connection string to the external mysql database
