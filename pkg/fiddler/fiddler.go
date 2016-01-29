@@ -119,6 +119,12 @@ func parseDate(value string) time.Time {
 	// on format https://golang.org/pkg/time/#Parse
 	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
 
+	var dt time.Time
+
+	if value == "" {
+		return dt
+	}
+
 	dt, err := time.Parse(dateLayout, value)
 	if err != nil {
 		log.Error("fiddler", "parseDate", err, "Parsing date %s.", value)
