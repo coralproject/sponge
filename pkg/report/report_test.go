@@ -1,10 +1,8 @@
 package report
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 )
 
@@ -16,6 +14,9 @@ func TestRecord(t *testing.T) {
 	row := map[string]interface{}{"id": "1", "body": "comment"}
 	note := "This is a note"
 	e := errors.New("an error")
+	filePathTest := "errorsTest.csv"
+
+	Init(filePathTest)
 
 	Record(model, id, row, note, e)
 
@@ -49,53 +50,58 @@ func TestRecord(t *testing.T) {
 
 }
 
-//func Write() {
-func TestWrite(t *testing.T) {
-
-	model := "comment"
-	id := "1"
-	row := map[string]interface{}{"id": "1", "body": "comment"}
-	note := "This is a note"
-	e := errors.New("an error")
-
-	Record(model, id, row, note, e)
-
-	Write()
-
-	// test the file was written
-	filePath := "failed_import.csv"
-	outfile, err := os.Open(filePath)
-	if err != nil {
-		t.Fatalf("unable to open file %s.", filePath)
-	}
-	defer outfile.Close()
-
-	// test how many rows it wrote
-	f := csv.NewReader(outfile)
-	f.FieldsPerRecord = 5
-	r, err := f.ReadAll()
-	if err != nil {
-		t.Fatalf("fails at reading the report %s.", filePath)
-	}
-
-	if len(r) != 2 { //headers and first row
-		t.Fatalf("got %v, it should be 2", len(r))
-	}
-}
+// //func Write() {
+// func TestWrite(t *testing.T) {
+//
+// 	filePath := "failed_import.csv"
+// 	model := "comment"
+// 	id := "1"
+// 	row := map[string]interface{}{"id": "1", "body": "comment"}
+// 	note := "This is a note"
+// 	e := errors.New("an error")
+// 	filePathTest := "errorsTest.csv"
+//
+// 	report.Init(filePathTest)
+//
+// 	Record(model, id, row, note, e)
+//
+// 	Write()
+//
+// 	// test the file was written
+// 	outfile, err := os.Open(filePath)
+// 	if err != nil {
+// 		t.Fatalf("unable to open file %s.", filePath)
+// 	}
+// 	defer outfile.Close()
+//
+// 	// test how many rows it wrote
+// 	f := csv.NewReader(outfile)
+// 	f.FieldsPerRecord = 5
+// 	r, err := f.ReadAll()
+// 	if err != nil {
+// 		t.Fatalf("fails at reading the report %s.", filePath)
+// 	}
+//
+// 	if len(r) != 2 { //headers and first row
+// 		t.Fatalf("got %v, it should be 2", len(r))
+// 	}
+// }
 
 func TestReadReport(t *testing.T) {
 
+	filePath := "failed_import.csv"
 	model := "comment"
 	id := "1"
 	row := map[string]interface{}{"id": "1", "body": "comment"}
 	note := "This is a note"
 	e := errors.New("an error")
+	filePathTest := "errorsTest.csv"
+
+	Init(filePathTest)
 
 	Record(model, id, row, note, e)
 
-	Write()
-
-	records, err := ReadReport()
+	records, err := ReadReport(filePath)
 	if err != nil {
 		t.Fatalf("got an error when reading report")
 	}

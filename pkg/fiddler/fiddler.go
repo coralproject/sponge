@@ -27,7 +27,6 @@ func Init() {
 
 	str.Init()
 	strategy = str.New() // Reads the strategy file
-	dateLayout = strategy.GetDefaultDateTimeFormat()
 }
 
 // GetID returns the identifier for modelName
@@ -54,12 +53,11 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 		return nil, errors.New("No table found in the strategy file.")
 	}
 
-	newRow, err := transformRow(row, table.Fields)
+	newRow, err := transformRow(modelName, row, table.Fields)
 	if err != nil {
 		log.Error("transform", "TransformRow", err, "Transform Data")
 		return nil, err
 	}
-
 	// Convert to Json
 	dataCoral, err := json.Marshal(newRow)
 	if err != nil {
@@ -71,7 +69,8 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 }
 
 // Convert a row into the comment coral structure
-func transformRow(row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) {
+
+func transformRow(modelName string, row map[string]interface{}, fields []map[string]string) (map[string]interface{}, error) {
 
 	var err error
 	// newRow will hold the transformed row
@@ -84,6 +83,8 @@ func transformRow(row map[string]interface{}, fields []map[string]string) (map[s
 
 	// Loop on the fields for the transformation
 	for _, f := range fields {
+
+		dateLayout = strategy.GetDateTimeFormat(modelName, f["local"])
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue, err := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
@@ -135,14 +136,18 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 	return nil, err
 }
 
-func parseDate(val string) (string, error) {
+func parseDate(value string) (string, error) {
+
 	// on format https://golang.org/pkg/time/#Parse
 	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
 
-	dt, err := time.Parse(dateLayout, val)
+	if value == "" {
+		return "", nil
+	}
+
+	dt, err := time.Parse(dateLayout, value)
 	if err != nil {
-		log.Error("fiddler", "parseDate", err, "Parsing date %s.", val)
-		return "", err
+		log.Error("fiddler", "parseDate", err, "Parsing date %s.", value)
 	}
 
 	dtRFC3339 := dt.Format(time.RFC3339)
