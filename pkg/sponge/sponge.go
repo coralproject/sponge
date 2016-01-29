@@ -11,12 +11,19 @@ import (
 	"github.com/coralproject/sponge/pkg/source"
 )
 
+// Init initialize stuff related with this package
+func Init() {
+	// To Do: refactor to not having to get the strategy file so many times..
+	fiddler.Init()
+	coral.Init()
+	source.Init()
+}
+
 // Import gets data, transform it and send it to pillar
 func Import(limit int, offset int, orderby string, table string, importonlyfailed bool) {
 
 	// Initialize the report and write it down at the end (it does not create the file until the end)
 	report.Init()
-
 	defer report.Write()
 
 	// Connect to external source

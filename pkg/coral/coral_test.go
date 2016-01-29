@@ -41,7 +41,6 @@ func setup() {
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
-	//fakeStr = strategy.New()
 
 	// Initialization of server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

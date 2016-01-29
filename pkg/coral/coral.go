@@ -74,6 +74,8 @@ var (
 
 // Init initialization of logs and strategy
 func Init() {
+
+	strategy.Init()
 	endpoints = strategy.New().GetPillarEndpoints()
 }
 
