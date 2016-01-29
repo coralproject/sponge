@@ -39,10 +39,6 @@ func TestRecord(t *testing.T) {
 		srow = srow + "/" + key + ":" + value.(string)
 	}
 
-	if records[0][2] != srow {
-		t.Fatalf("got %s, it should be %s", records[0][2], srow)
-	}
-
 	if records[0][3] != note {
 		t.Fatalf("got %s, it should be %s", records[1][3], note)
 	}
