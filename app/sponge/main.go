@@ -22,7 +22,8 @@ var (
 	orderbyFlag string
 
 	// Import from report on failed records (or not)
-	importonlyfailedFlag bool
+	importonlyfailedFlag string
+	errorsfileFlag       string
 
 	tableFlag string
 )
@@ -31,7 +32,8 @@ const (
 	limitDefault            = 9999999999
 	offsetDefault           = 0
 	orderbyDefault          = ""
-	importonlyfailedDefault = false
+	importonlyfailedDefault = ""
+	errorsfileDefault       = "failed_import.csv"
 	tableDefault            = ""
 )
 
@@ -51,8 +53,9 @@ func init() {
 	flag.IntVar(&limitFlag, "limit", limitDefault, "-limit= Number of rows that we are going to import at a time")
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "-offset= Offset for the sql query")
 	flag.StringVar(&orderbyFlag, "orderby", orderbyDefault, "-orderby= Order by field of the query on external source")
-	flag.BoolVar(&importonlyfailedFlag, "onlyfails", importonlyfailedDefault, "-onlyfails Import only the failed documents recorded in report")
-	flag.StringVar(&tableFlag, "type", tableDefault, "Import only that type of data.")
+	flag.StringVar(&importonlyfailedFlag, "onlyfails", importonlyfailedDefault, "-onlyfails Import only the failed documents recorded in report")
+	flag.StringVar(&errorsfileFlag, "errors", errorsfileDefault, "-errors Set the path to the file path where to record errors to")
+	flag.StringVar(&tableFlag, "type", tableDefault, "-type Import only that type of data.")
 
 	flag.Parse()
 
@@ -61,7 +64,7 @@ func init() {
 func main() {
 	log.Dev("cmd", "main", "Start")
 
-	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag)
+	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag, errorsfileFlag)
 
 	log.Dev("cmd", "main", "Complete")
 }

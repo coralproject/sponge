@@ -12,12 +12,12 @@ import (
 )
 
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, table string, importonlyfailed bool) {
+func Import(limit int, offset int, orderby string, table string, importonlyfailed string, errorsfile string) {
 
 	// Initialize the report and write it down at the end (it does not create the file until the end)
 	report.Init()
 
-	defer report.Write()
+	defer report.Write(errorsfile)
 
 	// Connect to external source
 	log.User("main", "import", "### Connecting to external database...")
@@ -27,8 +27,8 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 		log.Error("sponge", "import", err, "Connect to external MySQL")
 	}
 
-	if importonlyfailed { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(mysql, limit, offset, orderby)
+	if importonlyfailed != "" { // import only what is in the report of failed importeda
+		importOnlyFailedRecords(mysql, limit, offset, orderby, importonlyfailed)
 	} else { // import everything that is in the strategy
 		if table != "" {
 			importTable(mysql, limit, offset, orderby, table)
@@ -40,12 +40,12 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
-func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderby string) {
+func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderby string, importonlyfailed string) {
 
 	log.User("sponge", "importOnlyFailedRecords", "### Reading file of data to import.")
 
 	// get the data that needs to be imported
-	rowsToImport, err := report.ReadReport() //[]map[string]interface{}
+	rowsToImport, err := report.ReadReport(importonlyfailed) //[]map[string]interface{}
 	if err != nil {
 		log.Error("sponge", "importOnlyFailedRecords", err, "Getting the rows that will be imported")
 	}

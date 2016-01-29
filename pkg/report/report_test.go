@@ -56,6 +56,7 @@ func TestRecord(t *testing.T) {
 //func Write() {
 func TestWrite(t *testing.T) {
 
+	filePath := "failed_import.csv"
 	model := "comment"
 	id := "1"
 	row := map[string]interface{}{"id": "1", "body": "comment"}
@@ -64,10 +65,9 @@ func TestWrite(t *testing.T) {
 
 	Record(model, id, row, note, e)
 
-	Write()
+	Write(filePath)
 
 	// test the file was written
-	filePath := "failed_import.csv"
 	outfile, err := os.Open(filePath)
 	if err != nil {
 		t.Fatalf("unable to open file %s.", filePath)
@@ -89,6 +89,7 @@ func TestWrite(t *testing.T) {
 
 func TestReadReport(t *testing.T) {
 
+	filePath := "failed_import.csv"
 	model := "comment"
 	id := "1"
 	row := map[string]interface{}{"id": "1", "body": "comment"}
@@ -97,9 +98,9 @@ func TestReadReport(t *testing.T) {
 
 	Record(model, id, row, note, e)
 
-	Write()
+	Write(filePath)
 
-	records, err := ReadReport()
+	records, err := ReadReport(filePath)
 	if err != nil {
 		t.Fatalf("got an error when reading report")
 	}
