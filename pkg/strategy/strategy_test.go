@@ -1,7 +1,10 @@
 /* package source_test is doing unit tests for the source package */
 package strategy
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 // Stubing the Config
 func fakeStrategy() Strategy {
@@ -225,15 +228,21 @@ func TestGetTables(t *testing.T) {
 
 // Signature GetPillarEndpoints() map[string]string {
 func TestGetPillarEndpoints(t *testing.T) {
+
+	os.Setenv("PILLAR_URL", "http://localhost:8080")
 	fakeConf := fakeStrategy()
+	Init()
+
 	endpoints := fakeConf.GetPillarEndpoints()
 
 	expectedEndpoints := 4
 	if len(endpoints) != expectedEndpoints { // the 3 on strategy plus create index
 		t.Errorf("Expected %d endpoints, got %v", expectedEndpoints, len(endpoints))
 	}
-	if endpoints["comment"] != "http://localhost:8080/api/import/comment" {
-		t.Errorf("Expected http://localhost:8080/api/import/comment, got %s", endpoints["Comment"])
+
+	expectedCommentEndpoint := "http://localhost:8080/api/import/comment"
+	if endpoints["comment"] != expectedCommentEndpoint {
+		t.Errorf("Expected %s, got %s", expectedCommentEndpoint, endpoints["Comment"])
 	}
 
 	val, exists := endpoints["index"]
