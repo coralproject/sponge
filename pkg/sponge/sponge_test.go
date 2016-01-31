@@ -11,8 +11,18 @@ import (
 	"github.com/coralproject/sponge/pkg/fiddler"
 )
 
+var (
+	oStrategy  string
+	oPillarURL string
+)
+
 func setup() {
 
+	// Save original enviroment variables
+	oStrategy = os.Getenv("STRATEGY_CONF")
+	oPillarURL = os.Getenv("PILLAR_URL")
+
+	// Initializing the log
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
@@ -33,6 +43,11 @@ func setup() {
 }
 
 func teardown() {
+
+	// recover the environment variables
+
+	os.Setenv("STRATEGY_CONF", oStrategy)
+	os.Setenv("PILLAR_URL", oPillarURL)
 }
 
 func TestMain(m *testing.M) {
@@ -53,39 +68,29 @@ func TestProcess(t *testing.T) {
 	modelName := "comment"
 	var data []map[string]interface{}
 
-	// mock up pillar
-
 	process(modelName, data)
 
 	// check data is sent to pillar with the right transformations
 
 }
 
-// func TestImportAll(t *testing.T) {
-//
-// }
+// Signature: func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
+func TestImportAll(t *testing.T) {
 
-//
-// func TestImportFailedRecordsWholeTable(t *testing.T) {
-//
-// }
-//
-// func TestImportFailedRecordsOneRecord(t *testing.T) {
-//
-// }
-//
-// func TestImportFailedRecordsTwoRecords(t *testing.T) {
-//
-// }
-//
-// func TestImportFailedRecordsTwoRecordsSeveralTables(t *testing.T) {
-//
-// }
-//
-// func TestProcess(t *testing.T) {
-//
-// }
-//
-// func ExampleProcess() {
-//
-// }
+}
+
+func TestImportFailedRecordsWholeTable(t *testing.T) {
+
+}
+
+func TestImportFailedRecordsOneRecord(t *testing.T) {
+
+}
+
+func TestImportFailedRecordsTwoRecords(t *testing.T) {
+
+}
+
+func TestImportFailedRecordsTwoRecordsSeveralTables(t *testing.T) {
+
+}

@@ -5,6 +5,7 @@ package strategy
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -123,7 +124,7 @@ func (c CredentialAPI) GetEndpoint(modelName string) (string, error) {
 		}
 	}
 
-	return "", endpointError{key: modelName}
+	return "", fmt.Errorf("Error when trying to get endpoint %s.", modelName)
 }
 
 // GetAuthenticationEndpoint returns the authentication url
@@ -134,7 +135,7 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 		}
 	}
 
-	return "", endpointError{key: "authentication"}
+	return "", fmt.Errorf("Error when trying to get endpoint authentication.")
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,13 +161,6 @@ func New() Strategy {
 	}
 
 	return strategy
-}
-
-// Validate checks that the strategy file is correct
-// the tables are part of the coral system
-// it has at least one external source credential
-func (s Strategy) Validate() error {
-	return nil
 }
 
 // GetCredential returns the credentials for connection with the external source adapter a, type t

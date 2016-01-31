@@ -101,7 +101,7 @@ func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
 	log.User("sponge", "importAll", "### Reading tables to import from strategy file.")
 
 	//Get All the tables's names that we have in the strategy json file
-	tables, err := mysql.GetTables()
+	tables, err := source.GetTables()
 	if err != nil {
 		log.Error("sponge", "importAll", err, "Get external MySQL tables")
 		return

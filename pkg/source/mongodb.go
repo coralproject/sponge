@@ -4,12 +4,11 @@ Package source implements a way to get data from external MongoDB sources.
 package source
 
 import (
+	"fmt"
+
 	"github.com/coralproject/sponge/pkg/log"
 	"gopkg.in/mgo.v2"
 )
-
-// Global configuration variables that holds the credentials for mysql
-var credentialMongo = strategy.GetCredential("mongodb", "foreign")
 
 /* Implementing the Sources */
 
@@ -21,17 +20,8 @@ type MongoDB struct {
 
 /* Exported Functions */
 
-// GetTables gets all the tables names from this data source
-func (m MongoDB) GetTables() ([]string, error) {
-	keys := []string{}
-	for k := range strategy.Map.Tables {
-		keys = append(keys, k)
-	}
-	return keys, nil
-}
-
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby string) ([]map[string]interface{}, error) {
 
 	var dat []map[string]interface{}
 
@@ -61,11 +51,12 @@ func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby s
 	db := session.DB(credentialMongo.Database)
 	col := db.C(collectionName)
 
-	err = col.Find(dat).All(dat)
-	if err != nil {
-		log.Error("Importing", "GetData", err, "Get collection")
-		return nil, err
-	}
+	fmt.Println("TO DO ", col)
+	// err = col.Find(dat).All(dat)
+	// if err != nil {
+	// 	log.Error("Importing", "GetData", err, "Get collection")
+	// 	return nil, err
+	// }
 
 	return dat, nil
 }
