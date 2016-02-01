@@ -20,6 +20,9 @@ var strategy str.Strategy
 // Global configuration variables that holds the credentials for mysql
 var credentialMysql str.CredentialDatabase
 
+// Global configuration variables that holds the credentials for mongodb
+var credentialMongo = strategy.GetCredential("mongodb", "foreign")
+
 // Init initialize the needed variables
 func Init() {
 
@@ -27,6 +30,7 @@ func Init() {
 
 	strategy = str.New()
 	credentialMysql = strategy.GetCredential("mysql", "foreign")
+	credentialMongo = strategy.GetCredential("mongodb", "foreign")
 }
 
 // Sourcer is where the data is coming from (mysql, api)

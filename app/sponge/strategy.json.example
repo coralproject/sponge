@@ -13,9 +13,9 @@
         "Index": [
           {
             "name": "asset-url",
-            "keys": ["asseturl"],
-            "unique": "true",
-            "dropdups": "true"
+            "key": ["asseturl"],
+            "unique": true,
+            "dropdups": true
           }
         ],
         "Fields": [
@@ -44,7 +44,7 @@
             "type": "dateTime"
           }
         ],
-        "Endpoint": "http://localhost:8080/api/import/asset"
+        "Endpoint": "/api/import/asset"
       },
       "user": {
         "Foreign": "crnr_comment",
@@ -55,9 +55,9 @@
         "Index": [
           {
             "name": "user-name",
-            "keys": ["name"],
-            "unique": "true",
-            "dropdups": "true"
+            "key": ["name"],
+            "unique": true,
+            "dropdups": true
           }
         ],
         "Fields": [
@@ -74,7 +74,7 @@
             "type": "[]byte"
           }
         ],
-        "Endpoint": "http://localhost:8080/api/import/user"
+        "Endpoint": "/api/import/user"
       },
       "comment": {
         "Foreign": "crnr_comment",
@@ -85,9 +85,9 @@
         "Index": [
           {
             "name": "commentid",
-            "keys": ["commentid"],
-            "unique": "true",
-            "dropdups": "true"
+            "key": ["commentid"],
+            "unique": true,
+            "dropdups": true
           }
         ],
         "Fields": [
@@ -147,7 +147,7 @@
             "type": "timedate"
           }
         ],
-        "Endpoint": "http://localhost:8080/api/import/comment"
+        "Endpoint": "/api/import/comment"
       }
     }
   },

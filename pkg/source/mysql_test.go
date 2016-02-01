@@ -1,57 +1,12 @@
 /* package source_test is doing unit tests for the source package */
 package source
 
-import (
-	"fmt"
-	"os"
-	"testing"
-)
-
-var m Sourcer
-var mm MySQL
-
-var oStrategy string
-
-func setup() {
-
-	//setup environment variable
-	// strategy File
-	// create mysql db
-
-	oStrategy = os.Getenv("STRATEGY_CONF")
-
-	// MOCK STRATEGY CONF
-	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	var ok bool
-
-	Init()
-	m, e = New("mysql") // function being tested
-	if e != nil {
-		fmt.Printf("Error when calling the function, %v.\n", e)
-	}
-
-	mm, ok = m.(MySQL)
-	if !ok {
-		fmt.Println("It should return a type MySQL")
-	}
-}
-
-func teardown() {
-	e := os.Setenv("STRATEGY_CONF", oStrategy)
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-}
+import "testing"
 
 //Signature: (m MySQL) GetTables() ([]string, error)
 func TestGetTables(t *testing.T) {
 
-	setup()
+	setupMysql()
 
 	s, e := mm.GetTables()
 	if e != nil {
@@ -69,7 +24,7 @@ func TestGetTables(t *testing.T) {
 // Signature: (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error)
 func TestGetData(t *testing.T) {
 
-	setup()
+	setupMysql()
 
 	// Default Flags
 	coralName := "comment"

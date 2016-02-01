@@ -8,9 +8,6 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-// Global configuration variables that holds the credentials for mysql
-var credentialMongo = strategy.GetCredential("mongodb", "foreign")
-
 /* Implementing the Sources */
 
 // MongoDB is the struct that has the connection string to the external mysql database
@@ -21,7 +18,7 @@ type MongoDB struct {
 
 /* Exported Functions */
 
-// GetTables gets all the tables names from this data source
+// GetTables gets all the collections names from this data source
 func (m MongoDB) GetTables() ([]string, error) {
 	keys := []string{}
 	for k := range strategy.Map.Tables {
@@ -61,7 +58,7 @@ func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby s
 	db := session.DB(credentialMongo.Database)
 	col := db.C(collectionName)
 
-	err = col.Find(dat).All(dat)
+	err = col.Find(&dat).All(&dat)
 	if err != nil {
 		log.Error("Importing", "GetData", err, "Get collection")
 		return nil, err
