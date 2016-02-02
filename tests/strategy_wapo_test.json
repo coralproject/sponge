@@ -1,7 +1,7 @@
 {
-  "Name": "New York Times",
+  "Name": "Washington Post",
   "Map": {
-    "Foreign": "mysql",
+    "Foreign": "mongodb",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Tables": {
       "asset": {
@@ -154,11 +154,11 @@
   "Credentials": {
     "Databases": [
       {
-        "database": "",
+        "database": "coral_test",
         "username": "",
         "password": "",
-        "host": "",
-        "port": "",
+        "host": "127.0.0.1",
+        "port": "27017",
         "adapter": "mongodb",
         "type": "foreign"
       }

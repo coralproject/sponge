@@ -7,5 +7,4 @@ strategy_wapo.json
 strategy.json
 TODO.md
 *.out
-tests/strategy_wapo_test.json
-tests/strategy_nyt_test.json
+app/sponge/sponge
