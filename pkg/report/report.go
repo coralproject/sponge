@@ -14,7 +14,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 )
 
 const (

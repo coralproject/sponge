@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/ardanlabs/kit/cfg"
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/sponge"
 )
 

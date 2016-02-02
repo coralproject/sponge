@@ -11,7 +11,7 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"github.com/ardanlabs/kit/cfg"
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 )
 
 var pillarURL string

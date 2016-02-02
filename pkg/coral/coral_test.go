@@ -13,7 +13,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
-	"github.com/coralproject/pillar/server/model"
+	"github.com/coralproject/pillar/pkg/crud"
 	"github.com/coralproject/sponge/pkg/strategy"
 )
 
@@ -21,9 +21,15 @@ var (
 	server  *httptest.Server
 	path    string
 	fakeStr strategy.Strategy
+
+	oStrategy string
+	oPillar   string
 )
 
 func setup() {
+
+	oStrategy = os.Getenv("STRATEGY_CONF")
+	oPillar = os.Getenv("PILLAR_URL")
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -51,19 +57,19 @@ func setup() {
 		switch r.RequestURI {
 		case "/api/import/user": // if user, the payload should be a user kind of payload
 			// decode the user
-			user := model.User{}
+			user := crud.User{}
 			err = json.NewDecoder(r.Body).Decode(&user)
 		case "/api/import/asset": // if asset, the payload should be an asset kind of payload
 			// decode the asset
-			asset := model.Asset{}
+			asset := crud.Asset{}
 			err = json.NewDecoder(r.Body).Decode(&asset)
 		case "/api/import/comment": // if comment, the payload should be a comment kind of payload
 			// decode the comment
-			comment := model.Comment{}
+			comment := crud.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
-		case "/api/import/index":
+			// case "/api/import/index":
 			// decode the index
-			index := model.Index{}
+			index := crud.Index{}
 			err = json.NewDecoder(r.Body).Decode(&index)
 		default:
 			err = errors.New("Bad request")
@@ -91,6 +97,15 @@ func setup() {
 }
 
 func teardown() {
+	e := os.Setenv("STRATEGY_CONF", oStrategy)
+	if e != nil {
+		fmt.Println("It could not setup the strategy conf enviroment variable back.")
+	}
+
+	e = os.Setenv("PILLAR_URL", oPillar)
+	if e != nil {
+		fmt.Println("It could not setup the pillar home environment variable back.")
+	}
 }
 
 func TestMain(m *testing.M) {

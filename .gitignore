@@ -6,5 +6,6 @@ strategy_nyt.json
 strategy_wapo.json
 strategy.json
 TODO.md
-sponge
 *.out
+tests/strategy_wapo_test.json
+tests/strategy_nyt_test.json
