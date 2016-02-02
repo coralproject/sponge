@@ -31,8 +31,8 @@ func setupMysql() {
 
 	var ok bool
 
-	Init()
-	m, e := New("mysql") // function being tested
+	s := Init()
+	m, e := New(s) // function being tested
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
@@ -56,9 +56,9 @@ func setupMongo() {
 
 	var ok bool
 
-	Init()
+	s := Init()
 
-	m, e := New("mongodb") // function being tested
+	m, e := New(s) // function being tested
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}

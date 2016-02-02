@@ -4,9 +4,9 @@ package sponge
 import (
 	"time"
 
+	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
-	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/report"
 	"github.com/coralproject/sponge/pkg/source"
 )
@@ -20,22 +20,22 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 	log.User("main", "import", "### Connecting to external database...")
 
 	// Initialize the source
-	source.Init()
-	mysql, err := source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
+	foreignSource := source.Init()
+	dbsource, err := source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
-		log.Error("sponge", "import", err, "Connect to external MySQL")
+		log.Error("sponge", "import", err, "Connect to external Database")
 	}
 
 	fiddler.Init()
 	coral.Init()
 
 	if importonlyfailed != "" { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(mysql, limit, offset, orderby, importonlyfailed)
+		importOnlyFailedRecords(dbsource, limit, offset, orderby, importonlyfailed)
 	} else { // import everything that is in the strategy
 		if table != "" {
-			importTable(mysql, limit, offset, orderby, table)
+			importTable(dbsource, limit, offset, orderby, table)
 		} else {
-			importAll(mysql, limit, offset, orderby)
+			importAll(dbsource, limit, offset, orderby)
 		}
 	}
 
@@ -65,7 +65,7 @@ func CreateIndex(collection string) {
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
-func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderby string, importonlyfailed string) {
+func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, orderby string, importonlyfailed string) {
 
 	log.User("sponge", "importOnlyFailedRecords", "### Reading file of data to import.")
 
@@ -81,10 +81,10 @@ func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderb
 		if len(row["ids"].([]string)) < 1 {
 			// Get the data
 			log.User("sponge", "importOnlyFailedRecords", "### Reading data from table '%s'. \n", table)
-			data, err = mysql.GetData(table, offset, limit, orderby)
+			data, err = dbsource.GetData(table, offset, limit, orderby)
 		} else {
 			log.User("sponge", "importOnlyFailedRecords", "### Reading data from table '%s', quering '%s'. \n", table, row["ids"])
-			data, err = mysql.GetQueryData(table, offset, limit, orderby, row["ids"].([]string))
+			data, err = dbsource.GetQueryData(table, offset, limit, orderby, row["ids"].([]string))
 		}
 		if err != nil {
 			report.Record(table, row["ids"], row, "Failing getting data", err)
@@ -96,23 +96,23 @@ func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderb
 }
 
 // Import gets ALL data, transform it and send it to pillar
-func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
+func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 
 	log.User("sponge", "importAll", "### Reading tables to import from strategy file.")
 
 	//Get All the tables's names that we have in the strategy json file
-	tables, err := mysql.GetTables()
+	tables, err := dbsource.GetTables()
 	if err != nil {
-		log.Error("sponge", "importAll", err, "Get external MySQL tables")
+		log.Error("sponge", "importAll", err, "Get external tables")
 		return
 	}
 	for _, modelName := range tables {
 
 		// Get the data
 		log.User("sponge", "importAll", "### Reading data from table '%s'. \n", modelName)
-		data, err := mysql.GetData(modelName, offset, limit, orderby)
+		data, err := dbsource.GetData(modelName, offset, limit, orderby)
 		if err != nil {
-			log.Error("sponge", "importAll", err, "Get external MySQL data")
+			log.Error("sponge", "importAll", err, "Get external data")
 			//RECORD to report about failing modelName
 			report.Record(modelName, "", nil, "Failing getting data", err)
 			continue
@@ -124,13 +124,13 @@ func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
 }
 
 // ImportTable gets ony data related to table, transform it and send it to pillar
-func importTable(mysql source.Sourcer, limit int, offset int, orderby string, modelName string) {
+func importTable(dbsource source.Sourcer, limit int, offset int, orderby string, modelName string) {
 
 	// Get the data
 	log.User("sponge", "importTable", "### Reading data from table '%s'. \n", modelName)
-	data, err := mysql.GetData(modelName, offset, limit, orderby)
+	data, err := dbsource.GetData(modelName, offset, limit, orderby)
 	if err != nil {
-		log.Error("sponge", "importAll", err, "Get external MySQL data")
+		log.Error("sponge", "importAll", err, "Get external data")
 		//RECORD to report about failing modelName
 		report.Record(modelName, "", nil, "Failing getting data", err)
 		return

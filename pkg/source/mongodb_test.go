@@ -14,7 +14,7 @@ func TestMongoGetData(t *testing.T) {
 	// no error
 	data, err := mdb.GetData(coralName, offset, limit, orderby)
 	if err != nil {
-		t.Fatalf("expected no error, got %s.", err)
+		t.Fatalf("expected no error, got '%s'.", err)
 	}
 
 	// data should be []map[string]interface{}

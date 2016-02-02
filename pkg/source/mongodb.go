@@ -4,7 +4,7 @@ Package source implements a way to get data from external MongoDB sources.
 package source
 
 import (
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 	"gopkg.in/mgo.v2"
 )
 
@@ -45,8 +45,8 @@ func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby s
 	defer m.closeSession(session)
 
 	cred := mgo.Credential{
-		Username: credentialMongo.Username,
-		Password: credentialMongo.Password,
+		Username: credential.Username,
+		Password: credential.Password,
 	}
 
 	err = session.Login(&cred)
@@ -55,7 +55,7 @@ func (m MongoDB) GetData(coralTableName string, limit int, offset int, orderby s
 		return nil, err
 	}
 
-	db := session.DB(credentialMongo.Database)
+	db := session.DB(credential.Database)
 	col := db.C(collectionName)
 
 	err = col.Find(&dat).All(&dat)
@@ -76,7 +76,7 @@ func (m MongoDB) GetQueryData(string, int, int, string, []string) ([]map[string]
 
 // ConnectionMongoDB returns the connection string
 func connectionMongoDB() string {
-	return credentialMongo.Username + ":" + credentialMongo.Password + "@" + "/" + credentialMongo.Database
+	return credential.Username + ":" + credential.Password + "@" + "/" + credential.Database
 }
 
 // Open gives back a pointer to the DB
