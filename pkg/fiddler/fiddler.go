@@ -58,6 +58,7 @@ func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) 
 		log.Error("transform", "TransformRow", err, "Transform Data")
 		return nil, err
 	}
+
 	// Convert to Json
 	dataCoral, err := json.Marshal(newRow)
 	if err != nil {
@@ -126,7 +127,14 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 		case "Source":
 			return oldValue, nil
 		case "ParseTimeDate":
-			return parseDate(oldValue.(string))
+			switch v := oldValue.(type) {
+			case string:
+				return parseDate(oldValue.(string))
+			case time.Time:
+				return parseDate(v.String())
+			default:
+				return "", errors.New("Type of data not recognizable.")
+			}
 		}
 		err = fmt.Errorf("Type of transformation %s not found for %v.", relation, oldValue)
 		// } else {
