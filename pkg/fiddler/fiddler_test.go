@@ -49,7 +49,7 @@ func TestTransformRow(t *testing.T) {
 	row := map[string]interface{}{"assetid": "3416344", "asseturl": "http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html", "updatedate": "2014-12-04 00:01:11"}
 	modelName := "asset"
 
-	result, err := TransformRow(row, modelName)
+	id, result, err := TransformRow(row, modelName)
 	if err != nil {
 		t.Fatalf("error should be nil. Error is %v", err)
 	}
@@ -60,6 +60,11 @@ func TestTransformRow(t *testing.T) {
 	if r != expectedResult {
 		t.Fatalf("got %s , expected %s", r, expectedResult)
 	}
+
+	expectedID := "3416344"
+	if id != expectedID {
+		t.Fatalf("got %s, expected %s", id, expectedID)
+	}
 }
 
 // Test there is an error when model does not exist.
@@ -68,7 +73,7 @@ func TestTransformRowNoModel(t *testing.T) {
 	row := map[string]interface{}{}
 	modelName := "papafrita"
 
-	result, err := TransformRow(row, modelName)
+	_, result, err := TransformRow(row, modelName)
 	if err == nil {
 		t.Fatalf("It should give an error")
 	}

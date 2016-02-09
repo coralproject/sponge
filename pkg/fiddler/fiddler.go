@@ -45,28 +45,30 @@ func GetCollections() []string {
 }
 
 // TransformRow transform a row of data into the coral schema
-func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
+func TransformRow(row map[string]interface{}, modelName string) (interface{}, []byte, error) { // id row, transformation, error
 
 	table := strategy.GetTables()[modelName]
+	idField := GetID(modelName)
+	id := row[idField]
 
 	if table.Local == "" {
-		return nil, errors.New("No table found in the strategy file.")
+		return "", nil, errors.New("No table found in the strategy file.")
 	}
 
 	newRow, err := transformRow(modelName, row, table.Fields)
 	if err != nil {
 		log.Error("transform", "TransformRow", err, "Transform Data")
-		return nil, err
+		return id, nil, err
 	}
 
 	// Convert to Json
 	dataCoral, err := json.Marshal(newRow)
 	if err != nil {
 		log.Error("transform", "TransformRow", err, "Transform Data")
-		return nil, err
+		return id, nil, err
 	}
 
-	return dataCoral, err
+	return id, dataCoral, err
 }
 
 // Convert a row into the comment coral structure
