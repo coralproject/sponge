@@ -2,6 +2,7 @@
 package sponge
 
 import (
+	"strings"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -12,7 +13,7 @@ import (
 )
 
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, table string, importonlyfailed string, errorsfile string) {
+func Import(limit int, offset int, orderby string, types string, importonlyfailed string, errorsfile string) {
 
 	// Initialize the report and write it down at the end (it does not create the file until the end)
 	report.Init(errorsfile)
@@ -32,8 +33,10 @@ func Import(limit int, offset int, orderby string, table string, importonlyfaile
 	if importonlyfailed != "" { // import only what is in the report of failed importeda
 		importOnlyFailedRecords(dbsource, limit, offset, orderby, importonlyfailed)
 	} else { // import everything that is in the strategy
-		if table != "" {
-			importTable(dbsource, limit, offset, orderby, table)
+		if types != "" {
+			for _, t := range strings.Split(types, ",") {
+				importType(dbsource, limit, offset, orderby, strings.Trim(t, " ")) // removes any extra space
+			}
 		} else {
 			importAll(dbsource, limit, offset, orderby)
 		}
@@ -110,6 +113,7 @@ func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 
 		// Get the data
 		log.User("sponge", "importAll", "### Reading data from table '%s'. \n", modelName)
+
 		data, err := dbsource.GetData(modelName, offset, limit, orderby)
 		if err != nil {
 			log.Error("sponge", "importAll", err, "Get external data")
@@ -123,8 +127,8 @@ func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 	}
 }
 
-// ImportTable gets ony data related to table, transform it and send it to pillar
-func importTable(dbsource source.Sourcer, limit int, offset int, orderby string, modelName string) {
+// ImportType gets ony data related to table, transform it and send it to pillar
+func importType(dbsource source.Sourcer, limit int, offset int, orderby string, modelName string) {
 
 	// Get the data
 	log.User("sponge", "importTable", "### Reading data from table '%s'. \n", modelName)
@@ -172,13 +176,11 @@ func process(modelName string, data []map[string]interface{}) {
 		documents = documents + 1
 
 		// transform the row
-		newRow, err := fiddler.TransformRow(row, modelName)
-		id := fiddler.GetID(modelName)
+		id, newRow, err := fiddler.TransformRow(row, modelName)
 		if err != nil {
 			log.Error("sponge", "process", err, "Error when transforming the row %s.", row)
-
 			//RECORD to report about failing transformation
-			report.Record(modelName, row[id], row, "Failing transform data", err)
+			report.Record(modelName, id, row, "Failing transform data", err) // TO DO, needs to recalculate id
 		}
 
 		// To Do: acquire meta-data
@@ -193,9 +195,9 @@ func process(modelName string, data []map[string]interface{}) {
 		// send the row to pillar
 		err = coral.AddRow(newRow, modelName)
 		if err != nil {
-			log.Error("sponge", "process", err, "Error when adding the row %s.", row)
+			log.Error("sponge", "process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
 			//RECORD to report about failing adding row to coral db
-			report.Record(modelName, row[id], row, "Failing add row to coral", err)
+			report.Record(modelName, id, row, "Failing add row to coral", err)
 		}
 	}
 }
