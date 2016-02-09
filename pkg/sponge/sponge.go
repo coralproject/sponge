@@ -12,6 +12,24 @@ import (
 	"github.com/coralproject/sponge/pkg/source"
 )
 
+var dbsource source.Sourcer
+
+// Init initialize the packages that are going to be used by sponge
+func Init() {
+
+	var err error
+
+	// Initialize the source
+	foreignSource := source.Init()
+	dbsource, err = source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
+	if err != nil {
+		log.Error("sponge", "import", err, "Connect to external Database")
+	}
+
+	fiddler.Init()
+	coral.Init()
+}
+
 // Import gets data, transform it and send it to pillar
 func Import(limit int, offset int, orderby string, types string, importonlyfailed string, errorsfile string) {
 
@@ -19,16 +37,6 @@ func Import(limit int, offset int, orderby string, types string, importonlyfaile
 	report.Init(errorsfile)
 	// Connect to external source
 	log.User("main", "import", "### Connecting to external database...")
-
-	// Initialize the source
-	foreignSource := source.Init()
-	dbsource, err := source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
-	if err != nil {
-		log.Error("sponge", "import", err, "Connect to external Database")
-	}
-
-	fiddler.Init()
-	coral.Init()
 
 	if importonlyfailed != "" { // import only what is in the report of failed importeda
 		importOnlyFailedRecords(dbsource, limit, offset, orderby, importonlyfailed)
@@ -54,6 +62,7 @@ func CreateIndex(collection string) {
 
 		// get data from strategy file
 		tables := fiddler.GetCollections()
+
 		// for each table
 		for t := range tables {
 			log.User("main", "createindex", "### Index for collection %s.", tables[t])

@@ -71,6 +71,8 @@ func main() {
 
 	log.Dev("cmd", "main", "Start")
 
+	sponge.Init()
+
 	sponge.CreateIndex(tableFlag)
 
 	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag, errorsfileFlag)
