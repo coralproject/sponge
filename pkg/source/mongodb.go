@@ -23,9 +23,10 @@ type MongoDB struct {
 
 // GetTables gets all the collections names from this data source
 func (m MongoDB) GetTables() ([]string, error) {
-	keys := []string{}
-	for k := range strategy.Map.Tables {
-		keys = append(keys, k)
+	keys := make([]string, len(strategy.Map.Tables))
+
+	for k, val := range strategy.Map.Tables {
+		keys[val.Priority] = k
 	}
 	return keys, nil
 }

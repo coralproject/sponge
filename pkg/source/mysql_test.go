@@ -18,6 +18,14 @@ func TestGetTables(t *testing.T) {
 		t.Fatalf("got %d, it should be %d", len(s), expectedLen)
 	}
 
+	if s[0] != "asset" {
+		t.Fatalf("got %s, it should be asset", s[0])
+	}
+
+	if s[2] != "comment" {
+		t.Fatalf("got %s, it should be asset", s[0])
+	}
+
 	teardown()
 }
 
