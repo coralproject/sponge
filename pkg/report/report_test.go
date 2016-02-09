@@ -41,11 +41,11 @@ func TestRecord(t *testing.T) {
 	}
 
 	if records[0][3] != note {
-		t.Fatalf("got %s, it should be %s", records[1][3], note)
+		t.Fatalf("got %s, it should be %s", records[0][3], note)
 	}
 
 	if records[0][4] != fmt.Sprint(e) {
-		t.Fatalf("got %s, it should be %s", records[1][3], fmt.Sprint(e))
+		t.Fatalf("got %s, it should be %s", records[0][4], fmt.Sprint(e))
 	}
 
 }

@@ -28,7 +28,7 @@ func setup() {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
 
-	// Initialize coral
+	// Initialize fiddler
 	Init()
 }
 

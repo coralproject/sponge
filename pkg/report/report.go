@@ -10,6 +10,7 @@ package report
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -43,9 +44,14 @@ func Init(errorsfile string) {
 func Record(model string, id interface{}, row map[string]interface{}, note string, e error) {
 
 	// convertthe row to string
-	srow := ""
-	for key, value := range row {
-		srow = srow + "/" + key + ":" + value.(string)
+	// srow := ""
+	// for key, value := range row {
+	// 	srow = srow + "/" + key + ":" + value
+	// }
+
+	srow, err := json.Marshal(row)
+	if err != nil {
+		log.Error("Report", "Record", e, "Error when marshalling row.")
 	}
 
 	n := len(records)
@@ -56,7 +62,7 @@ func Record(model string, id interface{}, row map[string]interface{}, note strin
 
 	records = make([][]string, n+1)
 	copy(records[:n], original)
-	records[n] = []string{model, id.(string), srow, note, fmt.Sprint(e)}
+	records[n] = []string{model, fmt.Sprintf("%v", id), fmt.Sprintf("%v", string(srow)), note, fmt.Sprint(e)}
 
 	Write()
 
