@@ -13,6 +13,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
+	"github.com/coralproject/pillar/pkg/crud"
 	"github.com/coralproject/sponge/pkg/strategy"
 )
 
@@ -56,19 +57,20 @@ func setup() {
 		switch r.RequestURI {
 		case "/api/import/user": // if user, the payload should be a user kind of payload
 			// decode the user
-			user := User{}
+			user := crud.User{}
 			err = json.NewDecoder(r.Body).Decode(&user)
 		case "/api/import/asset": // if asset, the payload should be an asset kind of payload
 			// decode the asset
-			asset := Asset{}
+			asset := crud.Asset{}
 			err = json.NewDecoder(r.Body).Decode(&asset)
 		case "/api/import/comment": // if comment, the payload should be a comment kind of payload
 			// decode the comment
-			comment := Comment{}
+			comment := crud.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
-			// case "/api/import/index":
+
+		case "/api/import/index":
 			// decode the index
-			index := Index{}
+			index := crud.Index{}
 			err = json.NewDecoder(r.Body).Decode(&index)
 		default:
 			err = errors.New("Bad request")
