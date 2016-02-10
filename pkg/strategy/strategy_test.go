@@ -4,6 +4,8 @@ package strategy
 import (
 	"os"
 	"testing"
+
+	uuidimported "github.com/pborman/uuid"
 )
 
 // Stubing the Config
@@ -239,7 +241,8 @@ func TestGetPillarEndpoints(t *testing.T) {
 
 	os.Setenv("PILLAR_URL", "http://localhost:8080")
 	fakeConf := fakeStrategy()
-	Init()
+	u := uuidimported.New()
+	Init(u)
 
 	endpoints := fakeConf.GetPillarEndpoints()
 

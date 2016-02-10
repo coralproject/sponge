@@ -9,6 +9,7 @@ import (
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
+	uuidimported "github.com/pborman/uuid"
 )
 
 var oStrategy string
@@ -55,8 +56,10 @@ func TestMain(m *testing.M) {
 // Signature: process(modelName string, data []map[string]interface{})
 func TestProcess(t *testing.T) {
 
-	fiddler.Init()
-	coral.Init()
+	u := uuidimported.New()
+
+	fiddler.Init(u)
+	coral.Init(u)
 
 	modelName := "comment"
 	var data []map[string]interface{}

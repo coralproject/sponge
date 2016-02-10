@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	uuidimported "github.com/pborman/uuid"
 )
 
 //func Record(model string, id interface{}, row map[string]interface{}, note string, e error) {
@@ -15,8 +17,9 @@ func TestRecord(t *testing.T) {
 	note := "This is a note"
 	e := errors.New("an error")
 	filePathTest := "errorsTest.csv"
+	u := uuidimported.New()
 
-	Init(filePathTest)
+	Init(u, filePathTest)
 
 	Record(model, id, row, note, e)
 
@@ -96,8 +99,9 @@ func TestReadReport(t *testing.T) {
 	note := "This is a note"
 	e := errors.New("an error")
 	filePathTest := "errorsTest.csv"
+	u := uuidimported.New()
 
-	Init(filePathTest)
+	Init(u, filePathTest)
 
 	Record(model, id, row, note, e)
 

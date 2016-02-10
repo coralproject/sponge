@@ -43,7 +43,7 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 	// open a connection
 	session, err := m.initSession()
 	if err != nil {
-		log.Error("Importing", "GetData", err, "Init mongo session")
+		log.Error(uuid, "source.getdata", err, "Initializing mongo session.")
 		return nil, err
 	}
 	defer m.closeSession(session)
@@ -55,7 +55,7 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 
 	err = session.Login(&cred)
 	if err != nil {
-		log.Error("Importing", "GetData", err, "Login mongo session")
+		log.Error(uuid, "source.getdata", err, "Login mongo session.")
 		return nil, err
 	}
 
@@ -71,13 +71,13 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 	//.Select(query)
 	err = col.Find(nil).Limit(limit).All(&dat) // TO DO: CHECK TO SEE IF THERE IS ANY OTHER WAY TO GET THIS
 	if err != nil {
-		log.Error("Importing", "GetData", err, "Get collection")
+		log.Error(uuid, "source.getdata", err, "Getting collection %s.", collectionName)
 		return nil, err
 	}
 
 	datsm, err := normalizeData(dat)
 	if err != nil {
-		log.Error("Importing", "GetData", err, "Converting into simple structure")
+		log.Error(uuid, "source.getdata", err, "Normalizing data from mongo to fit into fiddler.")
 		return nil, err
 	}
 
@@ -101,7 +101,7 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 
 	database, err := mgo.Dial(m.Connection)
 	if err != nil {
-		log.Error("Importing", "initSession", err, "Dial into session")
+		log.Error(uuid, "source.initsession", err, "Dial into session.")
 		return nil, err
 	}
 
@@ -111,9 +111,8 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 }
 
 // Close closes the db
-func (m MongoDB) closeSession(session *mgo.Session) error {
+func (m MongoDB) closeSession(session *mgo.Session) {
 	session.Close()
-	return nil
 }
 
 // it prepares the data to have the transformations in fiddler

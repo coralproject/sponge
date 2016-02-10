@@ -11,6 +11,7 @@ import (
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/sponge"
+	"github.com/pborman/uuid"
 )
 
 var (
@@ -42,6 +43,8 @@ const (
 // Init initialize log, get flag variables, initialize report
 func Init() {
 
+	// Logs
+
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
@@ -51,6 +54,8 @@ func Init() {
 	}
 
 	log.Init(os.Stderr, logLevel)
+
+	// Flags
 
 	flag.IntVar(&limitFlag, "limit", limitDefault, "-limit= Number of rows that we are going to import at a time")
 	flag.IntVar(&offsetFlag, "offset", offsetDefault, "-offset= Offset for the sql query")
@@ -67,15 +72,18 @@ func Init() {
 
 func main() {
 
+	// Generate UUID to use with the logs
+	u := uuid.New()
+
 	Init()
 
-	log.Dev("cmd", "main", "Start")
+	log.Dev(u, "main", "Start")
 
-	sponge.Init()
+	sponge.Init(u)
 
 	sponge.CreateIndex(tableFlag)
 
 	sponge.Import(limitFlag, offsetFlag, orderbyFlag, tableFlag, importonlyfailedFlag, errorsfileFlag)
 
-	log.Dev("cmd", "main", "Complete")
+	log.Dev(u, "main", "Complete")
 }
