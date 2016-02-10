@@ -53,12 +53,19 @@ func TestTransformRow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should be nil. Error is %v", err)
 	}
-	r := string(result)
 
-	expectedResult := "{\"date_updated\":\"2014-12-04T00:01:11Z\",\"source\":{\"id\":\"3416344\"},\"url\":\"http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html\"}"
+	expectedResult := map[string]interface{}{"date_updated": "2014-12-04T00:01:11Z", "source": map[string]string{"id": "3416344"}, "url": "http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html"}
 
-	if r != expectedResult {
-		t.Fatalf("got %s , expected %s", r, expectedResult)
+	if len(result) != len(expectedResult) {
+		t.Fatalf("got %d , expected %d", len(result), len(expectedResult))
+	}
+
+	if result["date_updated"] != expectedResult["date_updated"] {
+		t.Fatalf("got %s , expected %s", result["date_updated"], expectedResult["date_updated"])
+	}
+
+	if result["url"] != expectedResult["url"] {
+		t.Fatalf("got %s , expected %s", result["url"], expectedResult["url"])
 	}
 
 	expectedID := "3416344"

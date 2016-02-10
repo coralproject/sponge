@@ -167,7 +167,7 @@ func GetFixture(fileName string) (map[string]interface{}, error) {
 // Signature: AddRow(data []byte, tableName string) error
 func TestAddRowWrongTable(t *testing.T) {
 
-	var data []byte
+	var data map[string]interface{}
 
 	tableName := "wrongTable"
 
@@ -187,15 +187,9 @@ func TestAddUserRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	var data []byte
-	data, e = json.Marshal(newrow)
-	if e != nil {
-		t.Fatalf("error with the test data: %s.", e)
-	}
-
 	tableName := "user"
 
-	e = AddRow(data, tableName)
+	e = AddRow(newrow, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}
@@ -210,15 +204,9 @@ func TestAddAssetRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	var data []byte
-	data, e = json.Marshal(newrow)
-	if e != nil {
-		t.Fatalf("error with the test data: %s.", e)
-	}
-
 	tableName := "asset"
 
-	e = AddRow(data, tableName)
+	e = AddRow(newrow, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}
@@ -233,15 +221,9 @@ func TestAddCommentRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	var data []byte
-	data, e = json.Marshal(newrow)
-	if e != nil {
-		t.Fatalf("error with the test data: %s.", e)
-	}
-
 	tableName := "comment"
 
-	e = AddRow(data, tableName)
+	e = AddRow(newrow, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}

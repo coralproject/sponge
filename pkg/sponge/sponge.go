@@ -199,7 +199,7 @@ func process(modelName string, data []map[string]interface{}) {
 		   store result in newrow.metadata
 		*/
 
-		log.Dev("sponge", "process", "Transform: %v -> %v", row, string(newRow))
+		log.Dev("sponge", "process", "Transform: %v -> %v", row, newRow)
 
 		// send the row to pillar
 		err = coral.AddRow(newRow, modelName)

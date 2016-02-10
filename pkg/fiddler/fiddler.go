@@ -6,7 +6,6 @@
 package fiddler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -45,7 +44,7 @@ func GetCollections() []string {
 }
 
 // TransformRow transform a row of data into the coral schema
-func TransformRow(row map[string]interface{}, modelName string) (interface{}, []byte, error) { // id row, transformation, error
+func TransformRow(row map[string]interface{}, modelName string) (interface{}, map[string]interface{}, error) { // id row, transformation, error
 
 	table := strategy.GetTables()[modelName]
 	idField := GetID(modelName)
@@ -61,14 +60,16 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, []
 		return id, nil, err
 	}
 
-	// Convert to Json
-	dataCoral, err := json.Marshal(newRow)
-	if err != nil {
-		log.Error("transform", "TransformRow", err, "Transform Data")
-		return id, nil, err
-	}
+	return id, newRow, err
 
-	return id, dataCoral, err
+	// // Convert to Json
+	// dataCoral, err := json.Marshal(newRow)
+	// if err != nil {
+	// 	log.Error("transform", "TransformRow", err, "Transform Data")
+	// 	return id, nil, err
+	// }
+
+	//return id, dataCoral, err
 }
 
 // Convert a row into the comment coral structure
