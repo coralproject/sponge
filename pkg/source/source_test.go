@@ -49,7 +49,7 @@ func setupMongo() {
 
 	// MOCK STRATEGY CONF
 	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_wapo_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
+	e := os.Setenv("STRATEGY_CONF", strategyConf)
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}

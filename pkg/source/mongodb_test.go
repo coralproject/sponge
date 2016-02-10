@@ -239,8 +239,8 @@ func TestNormalizeDocument(t *testing.T) {
 
 }
 
-// Signature: func (m MongoDB) normalizeData(mongoData []map[string]interface{}) ([]map[string]interface{}, error)
-func TestNormalizeData(t *testing.T) {
+// Signature: func (m MongoDB) flattenData(mongoData []map[string]interface{}) ([]map[string]interface{}, error)
+func TestFlattenData(t *testing.T) {
 
 	var k []map[string]interface{}
 
@@ -265,7 +265,11 @@ func TestNormalizeData(t *testing.T) {
 		},
 	}
 
+	//fields := []string{"_id", "object.context.0.uri", "object.published"}
+	//m, e := flattenData(fields, k)
+
 	m, e := normalizeData(k)
+
 	if e != nil {
 		t.Errorf("Expected not error, got %v", e)
 	}

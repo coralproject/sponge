@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
+	"github.com/stretchr/stew/objects"
 	"gopkg.in/mgo.v2"
 )
 
@@ -34,7 +35,7 @@ func (m MongoDB) GetTables() ([]string, error) {
 // GetData returns the raw data from the tableName
 func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
-	var dat []map[string]interface{}
+	var data []map[string]interface{}
 
 	// Get the corresponding table to the modelName
 	collectionName := strategy.GetTableForeignName(coralTableName)
@@ -64,24 +65,26 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 
 	//Get all the fields that we are going to get from the document { field: 1}
 	query := make(map[string]bool)
+	//var fieldsNames []string
 	for _, f := range fields {
 		query[f["foreign"]] = true
+		//fieldsNames = append(fieldsNames, f["local"])
 	}
 
 	//.Select(query)
-	err = col.Find(nil).Limit(limit).All(&dat) // TO DO: CHECK TO SEE IF THERE IS ANY OTHER WAY TO GET THIS
+	err = col.Find(nil).Limit(limit).All(&data) // TO DO: CHECK TO SEE IF THERE IS ANY OTHER WAY TO GET THIS
 	if err != nil {
 		log.Error("Importing", "GetData", err, "Get collection")
 		return nil, err
 	}
 
-	datsm, err := normalizeData(dat)
+	flattenData, err := normalizeData(data)
 	if err != nil {
 		log.Error("Importing", "GetData", err, "Converting into simple structure")
 		return nil, err
 	}
 
-	return datsm, nil
+	return flattenData, nil
 }
 
 // GetQueryData needs to be implemented for mongodb to implement the sourcer interface
@@ -114,6 +117,35 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 func (m MongoDB) closeSession(session *mgo.Session) error {
 	session.Close()
 	return nil
+}
+
+// it prepares the data to have the transformations in fiddler
+// normalize converts into a map[string]string with the key a breadcrumb to the leaf, and the value being the leaf itself
+func flattenData(fields []string, mongoData []map[string]interface{}) ([]map[string]interface{}, error) {
+	var dat []map[string]interface{}
+
+	for _, j := range mongoData { // this is a slice of maps
+		d, e := flattDocument(fields, j)
+		if e != nil {
+			return nil, e
+		}
+		// add d to dat
+		dat = append(dat, d)
+	}
+
+	return dat, nil
+}
+
+func flattDocument(fields []string, document map[string]interface{}) (map[string]interface{}, error) {
+
+	var err error
+	result := make(map[string]interface{})
+
+	for _, field := range fields {
+		result[field] = objects.Map(document).Get(field)
+	}
+
+	return result, err
 }
 
 // it prepares the data to have the transformations in fiddler
