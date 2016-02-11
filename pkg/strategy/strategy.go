@@ -156,7 +156,7 @@ func New() Strategy {
 
 	strategy, err = read(strategyFile)
 	if err != nil {
-		log.Error("strategy", "new", err, "Getting strategy file")
+		log.Fatal("strategy", "new", "Getting strategy file %s.", strategyFile)
 	}
 
 	return strategy
