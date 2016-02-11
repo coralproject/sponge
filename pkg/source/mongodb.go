@@ -64,15 +64,15 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 	col := db.C(collectionName)
 
 	//Get all the fields that we are going to get from the document { field: 1}
-	query := make(map[string]bool)
+	fieldsToGet := make(map[string]bool)
 	//var fieldsNames []string
 	for _, f := range fields {
-		query[f["foreign"]] = true
+		fieldsToGet[f["foreign"]] = true
 		//fieldsNames = append(fieldsNames, f["local"])
 	}
 
-	//.Select(query)
-	err = col.Find(nil).Limit(limit).All(&data) // TO DO: CHECK TO SEE IF THERE IS ANY OTHER WAY TO GET THIS
+	//.Select(fieldsToGet) <--- SOME FIELDS ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
+	err = col.Find(nil).Limit(limit).All(&data)
 	if err != nil {
 		log.Error("Importing", "GetData", err, "Get collection")
 		return nil, err
