@@ -40,7 +40,7 @@ func Init(u string) string {
 type Sourcer interface {
 	GetData(string, int, int, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
 	GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error)
-	//GetTables() ([]string, error)
+	GetTables() ([]string, error)
 }
 
 // New returns a new Source struct with the connection string in it

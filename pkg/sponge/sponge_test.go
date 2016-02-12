@@ -46,12 +46,12 @@ func teardown() {
 
 	// recover the environment variables
 
-	os.Setenv("STRATEGY_CONF", oStrategy)
+	e := os.Setenv("STRATEGY_CONF", oStrategy)
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
 
-	os.Setenv("PILLAR_URL", oPillarURL)
+	e = os.Setenv("PILLAR_URL", oPillarURL)
 	if e != nil {
 		fmt.Println("It could not setup the mock pillar url variable")
 	}

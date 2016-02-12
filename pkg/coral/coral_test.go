@@ -43,6 +43,13 @@ func setup() {
 
 	log.Init(os.Stderr, logLevel)
 
+	//MOCK STRATEGY CONF
+	strategyConf := "../../tests/strategy_test.json"
+	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
 	// Initialization of stub server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -80,16 +87,8 @@ func setup() {
 
 		fmt.Fprintln(w, err)
 	}))
-	defer server.Close()
 
 	path = os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/fixtures/"
-
-	// Mock strategy configuration
-	strategyConf := "../../tests/strategy_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
 
 	// Mock pillar url
 	os.Setenv("PILLAR_URL", server.URL)

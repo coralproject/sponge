@@ -25,15 +25,15 @@ type MySQL struct {
 
 /* Exported Functions */
 
-// // GetTables gets all the tables names from this data source
-// func (m MySQL) GetTables() ([]string, error) {
-// 	keys := make([]string, len(strategy.Map.Tables))
-//
-// 	for k, val := range strategy.Map.Tables {
-// 		keys[val.Priority] = k
-// 	}
-// 	return keys, nil
-// }
+// GetTables gets all the tables names from this data source
+func (m MySQL) GetTables() ([]string, error) {
+	keys := make([]string, len(strategy.Map.Tables))
+
+	for k, val := range strategy.Map.Tables {
+		keys[val.Priority] = k
+	}
+	return keys, nil
+}
 
 // GetData returns the raw data from the tableName
 func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) {
