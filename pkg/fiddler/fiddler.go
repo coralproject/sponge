@@ -135,7 +135,7 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 			case string:
 				return parseDate(oldValue.(string))
 			case time.Time:
-				return parseDate(v.String())
+				return v.Format(time.RFC3339), nil
 			default:
 				return "", fmt.Errorf("Type of data %v not recognizable.", v)
 			}
