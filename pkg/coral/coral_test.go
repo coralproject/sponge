@@ -15,6 +15,7 @@ import (
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/pillar/pkg/crud"
 	"github.com/coralproject/sponge/pkg/strategy"
+	uuidimported "github.com/pborman/uuid"
 )
 
 var (
@@ -61,7 +62,6 @@ func setup() {
 			// decode the comment
 			comment := crud.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
-
 		case "/api/import/index":
 			// decode the index
 			index := crud.Index{}
@@ -94,8 +94,10 @@ func setup() {
 	// Mock pillar url
 	os.Setenv("PILLAR_URL", server.URL)
 
+	u := uuidimported.New()
+
 	// Initialize coral
-	Init()
+	Init(u)
 }
 
 func teardown() {

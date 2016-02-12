@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	uuidimported "github.com/pborman/uuid"
 )
 
 var (
@@ -31,7 +33,9 @@ func setupMysql() {
 
 	var ok bool
 
-	s := Init()
+	u := uuidimported.New()
+
+	s := Init(u)
 	m, e := New(s) // function being tested
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
@@ -56,7 +60,8 @@ func setupMongo() {
 
 	var ok bool
 
-	s := Init()
+	u := uuidimported.New()
+	s := Init(u)
 
 	m, e := New(s) // function being tested
 	if e != nil {

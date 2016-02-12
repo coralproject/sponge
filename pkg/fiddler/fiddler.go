@@ -6,7 +6,6 @@
 package fiddler
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -19,12 +18,15 @@ import (
 var (
 	strategy   str.Strategy
 	dateLayout string
+	uuid       string
 )
 
 // Init initialize needed variables
-func Init() {
+func Init(u string) {
 
-	str.Init()
+	uuid = u
+
+	str.Init(uuid)
 	strategy = str.New() // Reads the strategy file
 }
 
@@ -51,25 +53,16 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, ma
 	id := row[idField]
 
 	if table.Local == "" {
-		return "", nil, errors.New("No table found in the strategy file.")
+		return "", nil, fmt.Errorf("No table %s found in the strategy file.", table)
 	}
 
 	newRow, err := transformRow(modelName, row, table.Fields)
 	if err != nil {
-		log.Error("transform", "TransformRow", err, "Transform Data")
+		log.Error(uuid, "fiddler.transformRow", err, "Transform the row into coral.")
 		return id, nil, err
 	}
 
 	return id, newRow, err
-
-	// // Convert to Json
-	// dataCoral, err := json.Marshal(newRow)
-	// if err != nil {
-	// 	log.Error("transform", "TransformRow", err, "Transform Data")
-	// 	return id, nil, err
-	// }
-
-	//return id, dataCoral, err
 }
 
 // Convert a row into the comment coral structure
@@ -93,7 +86,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue, err := transformField(row[strings.ToLower(f["foreign"])], f["relation"], f["local"])
 		if err != nil {
-			log.Error("fiddler", "transformRow", err, "Transforming field %s.", f["foreign"])
+			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 		}
 
 		if newValue != nil {
@@ -131,19 +124,16 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 		case "Source":
 			return oldValue, err
 		case "ParseTimeDate":
-			return parseDate(oldValue)
-			// switch v := oldValue.(type) {
-			// case string:
-			// 	tfield, err = parseDateLayout(oldValue.(string))
-			// case time.Time:
-			// 	return v, nil
-			// default:
-			// 	return "", errors.New("Type of data not recognizable.")
-			// }
+			switch v := oldValue.(type) {
+			case string:
+				return parseDate(oldValue.(string))
+			case time.Time:
+				return parseDate(v.String())
+			default:
+				return "", fmt.Errorf("Type of data %v not recognizable.", v)
+			}
 		}
 		err = fmt.Errorf("Type of transformation %s not found for %v.", relation, oldValue)
-		// } else {
-		// 	err = fmt.Errorf("Empty value for %s field.", local)
 	}
 
 	return tfield, err

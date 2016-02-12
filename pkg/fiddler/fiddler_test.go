@@ -7,6 +7,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
+	uuidimported "github.com/pborman/uuid"
 )
 
 var (
@@ -38,8 +39,10 @@ func setup() {
 		fmt.Println("It could not setup the mock strategy conf variable")
 	}
 
+	u := uuidimported.New()
+
 	// Initialize fiddler
-	Init()
+	Init(u)
 }
 
 func teardown() {

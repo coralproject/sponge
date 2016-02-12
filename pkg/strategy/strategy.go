@@ -15,10 +15,15 @@ import (
 	"github.com/ardanlabs/kit/log"
 )
 
-var pillarURL string
+var (
+	pillarURL string
+	uuid      string
+)
 
 // Init initialize log and get pillar url env variable
-func Init() {
+func Init(u string) {
+
+	uuid = u
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -151,13 +156,13 @@ func New() Strategy {
 	//read STRATEGY_CONF env variable
 	strategyFile := os.Getenv("STRATEGY_CONF")
 	if strategyFile == "" {
-		log.Fatal("strategy", "new", "Enviromental variable STRATEGY_CONF not setup.")
+		log.Fatal(uuid, "strategy.new", "Enviromental variable STRATEGY_CONF not setup.")
 		return strategy
 	}
 
 	strategy, err = read(strategyFile)
 	if err != nil {
-		log.Fatal("strategy", "new", "Getting strategy file %s.", strategyFile)
+		log.Error(uuid, "strategy.new", err, "Reading strategy file %s.", strategyFile)
 	}
 
 	return strategy
@@ -177,7 +182,7 @@ func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
 		}
 	}
 
-	//log.Error("strategy", "getCredentials", errors.New("Credential not found."), "Getting credential %s for strategy.", a)
+	log.Error(uuid, "strategy.getCredentials", fmt.Errorf("Credential %s not found.", a), "Getting credential %s for strategy.", a)
 
 	return cred
 }
@@ -262,13 +267,13 @@ func read(f string) (Strategy, error) {
 
 	content, err := ioutil.ReadFile(f)
 	if err != nil {
-		//log.Error("strategy", "read", err, "Reading strategy file")
+		log.Error(uuid, "strategy.read", err, "Reading strategy file %s.", f)
 		return strategy, err
 	}
 
 	err = json.Unmarshal(content, &strategy)
 	if err != nil {
-		log.Error("strategy", "read", err, "Getting strategy")
+		log.Error(uuid, "strategy.read", err, "Unmarshal strategy %s.", f)
 	}
 
 	return strategy, err

@@ -74,8 +74,15 @@ var (
 	endpoints map[string]string // model -> endpoint
 )
 
+var (
+	uuid string
+	str  strategy.Strategy
+)
+
 // Init initialization of logs and strategy
-func Init() {
+func Init(u string) {
+
+	uuid = u
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -87,8 +94,9 @@ func Init() {
 
 	log.Init(os.Stderr, logLevel)
 
-	strategy.Init()
-	endpoints = strategy.New().GetPillarEndpoints()
+	strategy.Init(uuid)
+	str = strategy.New()
+	endpoints = str.GetPillarEndpoints()
 }
 
 // AddRow send the row to pillar based on which collection is
@@ -99,14 +107,14 @@ func AddRow(data map[string]interface{}, tableName string) error {
 
 		d, err := json.Marshal(data)
 		if err != nil {
-			log.Error("coral", "Addrow", err, "Marshalling %v.", data)
+			log.Error(uuid, "coral.Addrow", err, "Marshalling %v.", data)
 		}
 		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(d))
 		if err != nil {
-			log.Error("coral", "Addrow", err, "Sending request to PILLAR with %v.", data)
+			log.Error(uuid, "coral.Addrow", err, "Sending request to PILLAR with %v.", data)
 		}
 	} else {
-		err = fmt.Errorf("No %s in the endpoints.", tableName)
+		err = fmt.Errorf("No information about %s in the available endpoints.", tableName)
 	}
 
 	return err
@@ -118,15 +126,14 @@ func CreateIndex(collection string) error {
 	var err error
 
 	// get index
-	s := strategy.New()
-	is := s.GetIndexBy(collection) // []map[string]interface{}
+	is := str.GetIndexBy(collection) // []map[string]interface{}
 
 	if is == nil {
 		err = fmt.Errorf("%s does not exist", collection)
 	}
 
 	// get Endpoint
-	createIndexURL := s.GetPillarEndpoints()["index"]
+	createIndexURL := str.GetPillarEndpoints()["index"]
 
 	indexes := make([]map[string]interface{}, len(is))
 	for i := range is {
@@ -145,12 +152,12 @@ func CreateIndex(collection string) error {
 		var data []byte
 		data, err = json.Marshal(indexes[i])
 		if err != nil {
-			log.Error("coral", "CreateIndex", err, "Creating Index.")
+			log.Error(uuid, "coral.createIndex", err, "Marshal index information.")
 		}
 
 		err = doRequest(methodPost, createIndexURL, bytes.NewBuffer(data))
 		if err != nil {
-			log.Error("coral", "CreateIndex", err, "Creating Index.")
+			log.Error(uuid, "coral.createIndex", err, "Sending request to create Index to Pillar.")
 		}
 
 	}
@@ -163,7 +170,7 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 	var err error
 	request, err := http.NewRequest(method, urlStr, payload)
 	if err != nil {
-		log.Error("coral", "doRequest", err, "New request")
+		log.Error(uuid, "coral.doRequest", err, "New http request.")
 		return err
 	}
 	request.Header.Set("Content-Type", "application/json")
@@ -177,7 +184,7 @@ func doRequest(method string, urlStr string, payload io.Reader) error {
 	for i := 0; i < retryTimes; i++ {
 		response, err = client.Do(request)
 		if err != nil {
-			log.Error("coral", "doRequest", err, "Processing request")
+			log.Error(uuid, "coral.doRequest", err, "Sending request number %d to Pillar.", i)
 		} else {
 			defer response.Body.Close()
 			if response.StatusCode != 200 {

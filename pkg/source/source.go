@@ -9,29 +9,25 @@ External possible sources:
 package source
 
 import (
-	"errors"
+	"fmt"
 
 	str "github.com/coralproject/sponge/pkg/strategy"
 )
 
 // global variables related to strategy
-var strategy str.Strategy
+var (
+	strategy str.Strategy
+	uuid     string
+)
 
 // Global configuration variables that holds the credentials for the foreign database connection
 var credential str.CredentialDatabase
 
-// // Global configuration variables that holds the credentials for mysql
-// var credentialMysql str.CredentialDatabase
-// Global configuration variables that holds the credentials for mongodb
-//var credentialMongo = strategy.GetCredential("mongodb", "foreign")
-
-// Global configuration variables that holds the credentials for mysql
-var credentialMongo str.CredentialDatabase
-
 // Init initialize the needed variables
-func Init() string {
+func Init(u string) string {
 
-	str.Init()
+	uuid = u
+	str.Init(uuid)
 
 	strategy = str.New()
 
@@ -59,7 +55,7 @@ func New(d string) (Sourcer, error) {
 		return MongoDB{Connection: connectionMongoDB(), Database: nil}, nil
 	}
 
-	return nil, errors.New("Configuration not found for source database.")
+	return nil, fmt.Errorf("Configuration not found for source database %s.", d)
 }
 
 // GetTables gets all the tables names from this data source

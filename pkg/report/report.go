@@ -25,10 +25,15 @@ const (
 var (
 	records  [][]string
 	filePath string
+	uuid     string
 )
 
 // Init initialize the records to be recorded
-func Init(errorsfile string) {
+func Init(u string, errorsfile string) {
+
+	uuid = u
+
+	// Initialize with the headers
 	records = [][]string{
 		{"table", "id", "row", "note", "error"},
 	}
@@ -51,7 +56,7 @@ func Record(model string, id interface{}, row map[string]interface{}, note strin
 
 	srow, err := json.Marshal(row)
 	if err != nil {
-		log.Error("Report", "Record", e, "Error when marshalling row.")
+		log.Error(uuid, "report.record", e, "Marshalling the report's row.")
 	}
 
 	n := len(records)
@@ -82,7 +87,7 @@ func Write() {
 	if len(records) > 1 {
 		outfile, err := os.Create(filePath)
 		if err != nil {
-			log.Fatal("report", "Write", "Unable to open output")
+			log.Fatal(uuid, "report.write", "Creating or opening the file %s.", filePath)
 		}
 		defer outfile.Close()
 
@@ -90,7 +95,7 @@ func Write() {
 
 		for _, record := range records {
 			if err := w.Write(record); err != nil {
-				log.Error("report", "Write", err, "Writing to CSV file")
+				log.Error(uuid, "report.write", err, "Writing to the CSV file %s.", filePath)
 			}
 		}
 
@@ -98,11 +103,10 @@ func Write() {
 		w.Flush()
 
 		if err := w.Error(); err != nil {
-			log.Error("report", "Write", err, "Writing to CSV file")
-			fmt.Println(records)
+			log.Error(uuid, "report.write", err, "Writing to CSV file")
 		}
 	} else {
-		log.User("report", "Write", "No fails attempts.")
+		log.User(uuid, "report.write", "There is nothing to write into the report.")
 	}
 }
 
@@ -113,7 +117,7 @@ func ReadReport(filePath string) ([]map[string]interface{}, error) {
 	// Read the CSV file
 	outfile, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("report", "Read", "Unable to open file")
+		log.Fatal(uuid, "report.read", "Unable to open file %s.", filePath)
 	}
 	defer outfile.Close()
 
@@ -122,7 +126,7 @@ func ReadReport(filePath string) ([]map[string]interface{}, error) {
 	f.FieldsPerRecord = 5
 	r, err := f.ReadAll()
 	if err != nil {
-		log.Error("report", "Read", err, "Fails at reading the report")
+		log.Error(uuid, "report.read", err, "Fails at reading the report %s.", filePath)
 	}
 
 	// Get into results

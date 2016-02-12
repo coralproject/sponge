@@ -45,7 +45,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	// open a connection
 	db, err := m.open()
 	if err != nil {
-		log.Error("Connecting", "GetData", err, "Error connecting to database.")
+		log.Error(uuid, "source.getdata", err, "Connecting to mysql database.")
 		return nil, err
 	}
 	defer m.close(db)
@@ -70,7 +70,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
-		log.Error("import", "GetData", err, "Running SQL query")
+		log.Error(uuid, "source.getdata", err, "Running SQL query.")
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
-		log.Error("import", "GetData", err, "Unmarshalling the query")
+		log.Error(uuid, "source.getdata", err, "Unmarshalling the result of the query.")
 		return nil, err
 	}
 
@@ -96,7 +96,7 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 	// open a connection
 	db, err := m.open()
 	if err != nil {
-		log.Error("Connecting", "GetData", err, "Error connecting to database.")
+		log.Error(uuid, "source.getquerydata", err, "Error connecting to mysql database.")
 		return nil, err
 	}
 	defer m.close(db)
@@ -130,7 +130,7 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
-		log.Error("import", "GetData", err, "Running SQL query")
+		log.Error(uuid, "source.getdata", err, "Running SQL query.")
 		return nil, err
 	}
 
@@ -139,7 +139,7 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
-		log.Error("import", "GetData", err, "Unmarshalling the query")
+		log.Error(uuid, "source.getdata", err, "Unmarshalling the query.")
 		return nil, err
 	}
 
