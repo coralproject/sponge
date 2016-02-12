@@ -12,11 +12,16 @@ import (
 	uuidimported "github.com/pborman/uuid"
 )
 
-var oStrategy string
+var (
+	oStrategy  string
+	oPillarURL string
+)
 
 func setup() {
 
+	// Save original enviroment variables
 	oStrategy = os.Getenv("STRATEGY_CONF")
+	oPillarURL = os.Getenv("PILLAR_URL")
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -38,9 +43,17 @@ func setup() {
 }
 
 func teardown() {
-	e := os.Setenv("STRATEGY_CONF", oStrategy)
+
+	// recover the environment variables
+
+	os.Setenv("STRATEGY_CONF", oStrategy)
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
+	os.Setenv("PILLAR_URL", oPillarURL)
+	if e != nil {
+		fmt.Println("It could not setup the mock pillar url variable")
 	}
 }
 
@@ -64,39 +77,29 @@ func TestProcess(t *testing.T) {
 	modelName := "comment"
 	var data []map[string]interface{}
 
-	// mock up pillar
-
 	process(modelName, data)
 
 	// check data is sent to pillar with the right transformations
 
 }
 
-// func TestImportAll(t *testing.T) {
-//
-// }
+// Signature: func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
+func TestImportAll(t *testing.T) {
 
-//
-// func TestImportFailedRecordsWholeTable(t *testing.T) {
-//
-// }
-//
-// func TestImportFailedRecordsOneRecord(t *testing.T) {
-//
-// }
-//
-// func TestImportFailedRecordsTwoRecords(t *testing.T) {
-//
-// }
-//
-// func TestImportFailedRecordsTwoRecordsSeveralTables(t *testing.T) {
-//
-// }
-//
-// func TestProcess(t *testing.T) {
-//
-// }
-//
-// func ExampleProcess() {
-//
-// }
+}
+
+func TestImportFailedRecordsWholeTable(t *testing.T) {
+
+}
+
+func TestImportFailedRecordsOneRecord(t *testing.T) {
+
+}
+
+func TestImportFailedRecordsTwoRecords(t *testing.T) {
+
+}
+
+func TestImportFailedRecordsTwoRecordsSeveralTables(t *testing.T) {
+
+}

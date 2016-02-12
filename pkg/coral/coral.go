@@ -100,14 +100,18 @@ func Init(u string) {
 }
 
 // AddRow send the row to pillar based on which collection is
-func AddRow(data []byte, tableName string) error {
+func AddRow(data map[string]interface{}, tableName string) error {
 
 	var err error
 	if _, ok := endpoints[tableName]; ok {
 
-		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(data))
+		d, err := json.Marshal(data)
 		if err != nil {
-			log.Error(uuid, "coral.Addrow", err, "Sending request to PILLAR with %v.", bytes.NewBuffer(data))
+			log.Error(uuid, "coral.Addrow", err, "Marshalling %v.", data)
+		}
+		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(d))
+		if err != nil {
+			log.Error(uuid, "coral.Addrow", err, "Sending request to PILLAR with %v.", data)
 		}
 	} else {
 		err = fmt.Errorf("No information about %s in the available endpoints.", tableName)
@@ -123,6 +127,10 @@ func CreateIndex(collection string) error {
 
 	// get index
 	is := str.GetIndexBy(collection) // []map[string]interface{}
+
+	if is == nil {
+		err = fmt.Errorf("%s does not exist", collection)
+	}
 
 	// get Endpoint
 	createIndexURL := str.GetPillarEndpoints()["index"]

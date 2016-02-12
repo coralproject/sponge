@@ -13,6 +13,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
+	"github.com/coralproject/pillar/pkg/crud"
 	"github.com/coralproject/sponge/pkg/strategy"
 	uuidimported "github.com/pborman/uuid"
 )
@@ -28,6 +29,7 @@ var (
 
 func setup() {
 
+	// Save original enviroment variables
 	oStrategy = os.Getenv("STRATEGY_CONF")
 	oPillar = os.Getenv("PILLAR_URL")
 
@@ -41,14 +43,7 @@ func setup() {
 
 	log.Init(os.Stderr, logLevel)
 
-	// MOCK STRATEGY CONF
-	strategyConf := "../../tests/strategy_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	// Initialization of server
+	// Initialization of stub server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var err error
@@ -57,19 +52,19 @@ func setup() {
 		switch r.RequestURI {
 		case "/api/import/user": // if user, the payload should be a user kind of payload
 			// decode the user
-			user := User{}
+			user := crud.User{}
 			err = json.NewDecoder(r.Body).Decode(&user)
 		case "/api/import/asset": // if asset, the payload should be an asset kind of payload
 			// decode the asset
-			asset := Asset{}
+			asset := crud.Asset{}
 			err = json.NewDecoder(r.Body).Decode(&asset)
 		case "/api/import/comment": // if comment, the payload should be a comment kind of payload
 			// decode the comment
-			comment := Comment{}
+			comment := crud.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
 		case "/api/import/index":
 			// decode the index
-			index := Index{}
+			index := crud.Index{}
 			err = json.NewDecoder(r.Body).Decode(&index)
 		default:
 			err = errors.New("Bad request")
@@ -85,25 +80,33 @@ func setup() {
 
 		fmt.Fprintln(w, err)
 	}))
+	defer server.Close()
 
 	path = os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/fixtures/"
 
-	// mock pillar url
+	// Mock strategy configuration
+	strategyConf := "../../tests/strategy_test.json"
+	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
+	// Mock pillar url
 	os.Setenv("PILLAR_URL", server.URL)
 
 	u := uuidimported.New()
 
 	// Initialize coral
 	Init(u)
-
 }
 
 func teardown() {
+
+	// recover the environment variables
 	e := os.Setenv("STRATEGY_CONF", oStrategy)
 	if e != nil {
 		fmt.Println("It could not setup the strategy conf enviroment variable back.")
 	}
-
 	e = os.Setenv("PILLAR_URL", oPillar)
 	if e != nil {
 		fmt.Println("It could not setup the pillar home environment variable back.")
@@ -119,6 +122,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// We need to test that the mockup server is working by itself
 func TestMockupServer(t *testing.T) {
 
 	method := "POST"
@@ -163,12 +167,10 @@ func GetFixture(fileName string) (map[string]interface{}, error) {
 	return qs, nil
 }
 
-// test the wrong collection (it does not exist)
-// expected an Error
 // Signature: AddRow(data []byte, tableName string) error
 func TestAddRowWrongTable(t *testing.T) {
 
-	var data []byte
+	var data map[string]interface{}
 
 	tableName := "wrongTable"
 
@@ -188,15 +190,9 @@ func TestAddUserRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	var data []byte
-	data, e = json.Marshal(newrow)
-	if e != nil {
-		t.Fatalf("error with the test data: %s.", e)
-	}
-
 	tableName := "user"
 
-	e = AddRow(data, tableName)
+	e = AddRow(newrow, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}
@@ -211,15 +207,9 @@ func TestAddAssetRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	var data []byte
-	data, e = json.Marshal(newrow)
-	if e != nil {
-		t.Fatalf("error with the test data: %s.", e)
-	}
-
 	tableName := "asset"
 
-	e = AddRow(data, tableName)
+	e = AddRow(newrow, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}
@@ -234,34 +224,32 @@ func TestAddCommentRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	var data []byte
-	data, e = json.Marshal(newrow)
-	if e != nil {
-		t.Fatalf("error with the test data: %s.", e)
-	}
-
 	tableName := "comment"
 
-	e = AddRow(data, tableName)
+	e = AddRow(newrow, tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
 	}
 
 }
 
-//test that data is being send in the right format
-
 // test the request on create index
 func TestCreateIndex(t *testing.T) {
-
-	// get the endpoint from the strategy file
-	//createindexURL := server.URL + "/api/import/index"
-	//os.Setenv("CREATE_INDEX_URL", createindexURL)
 
 	tableName := "comment"
 
 	e := CreateIndex(tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
+	}
+}
+
+func TestCreateIndexError(t *testing.T) {
+
+	tableName := "itdoesnotexist"
+
+	e := CreateIndex(tableName)
+	if e == nil {
+		t.Fatalf("expecting an error but got none.")
 	}
 }

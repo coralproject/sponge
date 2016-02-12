@@ -149,16 +149,6 @@ func fakeStrategy() Strategy {
 	return fakeConf
 }
 
-func TestNew(t *testing.T) {
-	t.Log("TO DO")
-}
-
-// Signature func (c CredentialDatabase) GetAdapter() string {
-func TestGetAdapter(t *testing.T) {
-
-	t.Log("TO DO")
-}
-
 // Signature GetIDField(coralName string) string {
 func TestGetID(t *testing.T) {
 	fakeConf := fakeStrategy()

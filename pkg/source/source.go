@@ -30,6 +30,7 @@ func Init(u string) string {
 	str.Init(uuid)
 
 	strategy = str.New()
+
 	credential = strategy.GetCredential(strategy.Map.Foreign, "foreign")
 
 	return strategy.Map.Foreign
@@ -39,7 +40,7 @@ func Init(u string) string {
 type Sourcer interface {
 	GetData(string, int, int, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
 	GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error)
-	GetTables() ([]string, error)
+	//GetTables() ([]string, error)
 }
 
 // New returns a new Source struct with the connection string in it
@@ -55,4 +56,15 @@ func New(d string) (Sourcer, error) {
 	}
 
 	return nil, fmt.Errorf("Configuration not found for source database %s.", d)
+}
+
+// GetTables gets all the tables names from this data source
+func GetTables() ([]string, error) {
+
+	keys := make([]string, len(strategy.Map.Tables))
+
+	for k, val := range strategy.Map.Tables {
+		keys[val.Priority] = k
+	}
+	return keys, nil
 }
