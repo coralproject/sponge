@@ -1,7 +1,7 @@
 {
-  "Name": "New York Times",
+  "Name": "Washington Post",
   "Map": {
-    "Foreign": "mysql",
+    "Foreign": "mongodb",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Tables": {
       "asset": {
@@ -13,7 +13,7 @@
         "Index": [
           {
             "name": "asset-url",
-            "key": ["asseturl"],
+            "keys": ["asseturl"],
             "unique": true,
             "dropdups": true
           }
@@ -55,7 +55,7 @@
         "Index": [
           {
             "name": "user-name",
-            "key": ["name"],
+            "keys": ["name"],
             "unique": true,
             "dropdups": true
           }
@@ -85,7 +85,7 @@
         "Index": [
           {
             "name": "commentid",
-            "key": ["commentid"],
+            "keys": ["commentid"],
             "unique": true,
             "dropdups": true
           }
@@ -154,20 +154,11 @@
   "Credentials": {
     "Databases": [
       {
-        "database": "",
+        "database": "coral_test",
         "username": "",
         "password": "",
-        "host": "",
-        "port": "",
-        "adapter": "mysql",
-        "type": "foreign"
-      },
-      {
-        "database": "",
-        "username": "",
-        "password": "",
-        "host": "",
-        "port": "",
+        "host": "127.0.0.1",
+        "port": "27017",
         "adapter": "mongodb",
         "type": "foreign"
       }

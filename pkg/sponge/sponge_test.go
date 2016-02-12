@@ -11,7 +11,11 @@ import (
 	"github.com/coralproject/sponge/pkg/fiddler"
 )
 
+var oStrategy string
+
 func setup() {
+
+	oStrategy = os.Getenv("STRATEGY_CONF")
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -33,6 +37,10 @@ func setup() {
 }
 
 func teardown() {
+	e := os.Setenv("STRATEGY_CONF", oStrategy)
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
 }
 
 func TestMain(m *testing.M) {

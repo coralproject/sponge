@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/ardanlabs/kit/cfg"
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/sponge"
 )
 
@@ -58,7 +58,8 @@ func Init() {
 
 	flag.StringVar(&importonlyfailedFlag, "onlyfails", importonlyfailedDefault, "-onlyfails Import only the failed documents recorded in report")
 	flag.StringVar(&errorsfileFlag, "errors", errorsfileDefault, "-errors Set the path to the file path where to record errors to")
-	flag.StringVar(&tableFlag, "type", tableDefault, "-type Import only that type of data.")
+
+	flag.StringVar(&tableFlag, "type", tableDefault, "-type Import only that type  or types of data. Separate types by ','.")
 
 	flag.Parse()
 
@@ -69,6 +70,8 @@ func main() {
 	Init()
 
 	log.Dev("cmd", "main", "Start")
+
+	sponge.Init()
 
 	sponge.CreateIndex(tableFlag)
 

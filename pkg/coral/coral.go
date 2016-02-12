@@ -92,14 +92,18 @@ func Init() {
 }
 
 // AddRow send the row to pillar based on which collection is
-func AddRow(data []byte, tableName string) error {
+func AddRow(data map[string]interface{}, tableName string) error {
 
 	var err error
 	if _, ok := endpoints[tableName]; ok {
 
-		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(data))
+		d, err := json.Marshal(data)
 		if err != nil {
-			log.Error("coral", "Addrow", err, "Sending request to PILLAR with %v.", bytes.NewBuffer(data))
+			log.Error("coral", "Addrow", err, "Marshalling %v.", data)
+		}
+		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(d))
+		if err != nil {
+			log.Error("coral", "Addrow", err, "Sending request to PILLAR with %v.", data)
 		}
 	} else {
 		err = fmt.Errorf("No %s in the endpoints.", tableName)

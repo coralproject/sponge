@@ -11,7 +11,7 @@ import (
 	"gopkg.in/mgo.v2"
 
 	"github.com/ardanlabs/kit/cfg"
-	"github.com/coralproject/sponge/pkg/log"
+	"github.com/ardanlabs/kit/log"
 )
 
 var pillarURL string
@@ -156,7 +156,7 @@ func New() Strategy {
 
 	strategy, err = read(strategyFile)
 	if err != nil {
-		log.Error("strategy", "new", err, "Getting strategy file")
+		log.Fatal("strategy", "new", "Getting strategy file %s.", strategyFile)
 	}
 
 	return strategy
