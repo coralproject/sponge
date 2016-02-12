@@ -1,7 +1,7 @@
 {
-  "Name": "The Coral Project",
+  "Name": "New York Times",
   "Map": {
-    "Foreign": "postgresql",
+    "Foreign": "mysql",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Tables": {
       "asset": {
@@ -47,11 +47,11 @@
         "Endpoint": "/api/import/asset"
       },
       "user": {
-        "Foreign": "user",
+        "Foreign": "crnr_comment",
         "Local": "user",
         "Priority": 1,
-        "OrderBy": "id",
-        "ID": "id",
+        "OrderBy": "userid",
+        "ID": "userid",
         "Index": [
           {
             "name": "user-name",
@@ -62,13 +62,13 @@
         ],
         "Fields": [
           {
-            "foreign": "id",
+            "foreign": "userid",
             "local": "id",
             "relation": "Source",
             "type": "int"
           },
           {
-            "foreign": "user_name",
+            "foreign": "userdisplayname",
             "local": "name",
             "relation": "Identity",
             "type": "[]byte"
@@ -154,21 +154,12 @@
   "Credentials": {
     "Databases": [
       {
-        "database": "coral",
-        "username": "gaba",
-        "password": "gabita",
-        "host": "localhost",
-        "port": "5432",
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": "",
         "adapter": "mysql",
-        "type": "foreign"
-      },
-      {
-        "database": "coral",
-        "username": "gaba",
-        "password": "gabita",
-        "host": "127.0.0.1",
-        "port": "27017",
-        "adapter": "mongodb",
         "type": "foreign"
       }
     ]
