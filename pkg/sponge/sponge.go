@@ -12,13 +12,18 @@ import (
 	"github.com/coralproject/sponge/pkg/source"
 )
 
+const (
+	// VersionNumber is the version for sponge
+	VersionNumber = 0.1
+)
+
 var (
 	dbsource source.Sourcer
 	uuid     string
 )
 
 // Init initialize the packages that are going to be used by sponge
-func Init(u string) {
+func Init(u string) error {
 
 	uuid = u
 	var err error
@@ -28,10 +33,13 @@ func Init(u string) {
 	dbsource, err = source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
 		log.Error(uuid, "sponge.import", err, "Connect to external Database")
+		return err
 	}
 
 	fiddler.Init(uuid)
 	coral.Init(uuid)
+
+	return err
 }
 
 // Import gets data, transform it and send it to pillar
