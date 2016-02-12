@@ -9,4 +9,4 @@ TODO.md
 *.out
 tests/strategy_nyt_test.json
 tests/strategy_wapo_test.json
-sponge/cmd/sponge/sponge
+cmd/sponge/sponge

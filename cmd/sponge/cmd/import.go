@@ -37,13 +37,13 @@ const (
 )
 
 func init() {
-	RootCmd.Flags().IntVar(&limitFlag, "limit", defaultLimit, "number of rows that we are going to import (default is 9999999999)")
-	RootCmd.Flags().IntVar(&offsetFlag, "offset", defaultOffset, "offset for rows to import (default is 0)")
-	RootCmd.Flags().StringVar(&orderbyFlag, "orderby", defaultOrderBy, "order by field on the external source (default is not ordered)")
+	RootCmd.PersistentFlags().IntVar(&limitFlag, "limit", defaultLimit, "number of rows that we are going to import (default is 9999999999)")
+	RootCmd.PersistentFlags().IntVar(&offsetFlag, "offset", defaultOffset, "offset for rows to import (default is 0)")
+	RootCmd.PersistentFlags().StringVar(&orderbyFlag, "orderby", defaultOrderBy, "order by field on the external source (default is not ordered)")
 
-	RootCmd.Flags().StringVar(&importonlyfailedFlag, "onlyfails", defaultImportonlyfailed, "import only the the records that failed in the last import(default is import all)")
+	RootCmd.PersistentFlags().StringVar(&importonlyfailedFlag, "onlyfails", defaultImportonlyfailed, "import only the the records that failed in the last import(default is import all)")
 
-	RootCmd.Flags().StringVar(&errorsfileFlag, "errors", defaultErrorsfile, "set the file path for the report on errors (default is failed_import.csv)")
+	RootCmd.PersistentFlags().StringVar(&errorsfileFlag, "errors", defaultErrorsfile, "set the file path for the report on errors (default is failed_import.csv)")
 
 	RootCmd.AddCommand(importCmd)
 }
