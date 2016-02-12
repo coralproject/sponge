@@ -17,20 +17,27 @@ import (
 // global variables related to strategy
 var strategy str.Strategy
 
-// Global configuration variables that holds the credentials for mysql
-var credentialMysql str.CredentialDatabase
+// Global configuration variables that holds the credentials for the foreign database connection
+var credential str.CredentialDatabase
+
+// // Global configuration variables that holds the credentials for mysql
+// var credentialMysql str.CredentialDatabase
+// Global configuration variables that holds the credentials for mongodb
+//var credentialMongo = strategy.GetCredential("mongodb", "foreign")
 
 // Global configuration variables that holds the credentials for mysql
 var credentialMongo str.CredentialDatabase
 
 // Init initialize the needed variables
-func Init() {
+func Init() string {
 
 	str.Init()
 
 	strategy = str.New()
-	credentialMysql = strategy.GetCredential("mysql", "foreign")
-	credentialMongo = strategy.GetCredential("mongodb", "foreign")
+
+	credential = strategy.GetCredential(strategy.Map.Foreign, "foreign")
+
+	return strategy.Map.Foreign
 }
 
 // Sourcer is where the data is coming from (mysql, api)

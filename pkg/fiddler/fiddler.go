@@ -6,7 +6,6 @@
 package fiddler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -45,27 +44,32 @@ func GetCollections() []string {
 }
 
 // TransformRow transform a row of data into the coral schema
-func TransformRow(row map[string]interface{}, modelName string) ([]byte, error) {
+func TransformRow(row map[string]interface{}, modelName string) (interface{}, map[string]interface{}, error) { // id row, transformation, error
 
 	table := strategy.GetTables()[modelName]
+	idField := GetID(modelName)
+	id := row[idField]
 
 	if table.Local == "" {
-		return nil, errors.New("No table found in the strategy file.")
+		return "", nil, errors.New("No table found in the strategy file.")
 	}
 
 	newRow, err := transformRow(modelName, row, table.Fields)
 	if err != nil {
 		log.Error("transform", "TransformRow", err, "Transform Data")
-		return nil, err
-	}
-	// Convert to Json
-	dataCoral, err := json.Marshal(newRow)
-	if err != nil {
-		log.Error("transform", "TransformRow", err, "Transform Data")
-		return nil, err
+		return id, nil, err
 	}
 
-	return dataCoral, err
+	return id, newRow, err
+
+	// // Convert to Json
+	// dataCoral, err := json.Marshal(newRow)
+	// if err != nil {
+	// 	log.Error("transform", "TransformRow", err, "Transform Data")
+	// 	return id, nil, err
+	// }
+
+	//return id, dataCoral, err
 }
 
 // Convert a row into the comment coral structure
@@ -117,37 +121,58 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 // 1. convert types (values are all strings) into the struct
 func transformField(oldValue interface{}, relation string, local string) (interface{}, error) {
 
+	var tfield interface{}
 	var err error
 
 	if oldValue != nil {
 		switch relation {
 		case "Identity":
-			return oldValue, nil
+			return oldValue, err
 		case "Source":
-			return oldValue, nil
+			return oldValue, err
 		case "ParseTimeDate":
-			return parseDate(oldValue.(string))
+			return parseDate(oldValue)
+			// switch v := oldValue.(type) {
+			// case string:
+			// 	tfield, err = parseDateLayout(oldValue.(string))
+			// case time.Time:
+			// 	return v, nil
+			// default:
+			// 	return "", errors.New("Type of data not recognizable.")
+			// }
 		}
 		err = fmt.Errorf("Type of transformation %s not found for %v.", relation, oldValue)
 		// } else {
 		// 	err = fmt.Errorf("Empty value for %s field.", local)
 	}
 
-	return nil, err
+	return tfield, err
 }
 
-func parseDate(value string) (string, error) {
+func parseDateLayout(value string) (time.Time, error) {
+	var err error
+	var dt time.Time
+
+	if value != "" {
+		dt, err = time.Parse(dateLayout, value)
+	}
+	return dt, err
+}
+
+func parseDate(value interface{}) (string, error) {
 
 	// on format https://golang.org/pkg/time/#Parse
 	// date layout is the representation of 2006 Mon Jan 2 15:04:05 in the desired format. https://golang.org/pkg/time/#pkg-constants
+	var err error
+	var dt time.Time
 
-	if value == "" {
-		return "", nil
-	}
-
-	dt, err := time.Parse(dateLayout, value)
-	if err != nil {
-		log.Error("fiddler", "parseDate", err, "Parsing date %s.", value)
+	switch v := value.(type) {
+	case string:
+		dt, err = parseDateLayout(value.(string))
+	case time.Time:
+		dt = value.(time.Time)
+	default:
+		err = fmt.Errorf("Type of data %v not recognizable.", v)
 	}
 
 	dtRFC3339 := dt.Format(time.RFC3339)

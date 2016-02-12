@@ -150,7 +150,7 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 
 // ConnectionMySQL returns the connection string
 func connectionMySQL() string {
-	return credentialMysql.Username + ":" + credentialMysql.Password + "@" + "/" + credentialMysql.Database
+	return credential.Username + ":" + credential.Password + "@" + "/" + credential.Database
 }
 
 // Open gives back  DB

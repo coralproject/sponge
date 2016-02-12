@@ -13,7 +13,7 @@
         "Index": [
           {
             "name": "asset-url",
-            "key": ["asseturl"],
+            "keys": ["asseturl"],
             "unique": true,
             "dropdups": true
           }
@@ -55,7 +55,7 @@
         "Index": [
           {
             "name": "user-name",
-            "key": ["name"],
+            "keys": ["name"],
             "unique": true,
             "dropdups": true
           }
@@ -85,7 +85,7 @@
         "Index": [
           {
             "name": "commentid",
-            "key": ["commentid"],
+            "keys": ["commentid"],
             "unique": true,
             "dropdups": true
           }
@@ -154,21 +154,12 @@
   "Credentials": {
     "Databases": [
       {
-        "database": "",
+        "database": "coral_test",
         "username": "",
         "password": "",
-        "host": "",
-        "port": "",
+        "host": "127.0.0.1",
+        "port": "5432",
         "adapter": "mysql",
-        "type": "foreign"
-      },
-      {
-        "database": "",
-        "username": "",
-        "password": "",
-        "host": "",
-        "port": "",
-        "adapter": "mongodb",
         "type": "foreign"
       }
     ]

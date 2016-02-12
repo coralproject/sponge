@@ -2,40 +2,51 @@
 package sponge
 
 import (
+	"strings"
 	"time"
 
+	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/coral"
 	"github.com/coralproject/sponge/pkg/fiddler"
-	"github.com/coralproject/sponge/pkg/log"
 	"github.com/coralproject/sponge/pkg/report"
 	"github.com/coralproject/sponge/pkg/source"
 )
 
+var dbsource source.Sourcer
+
+// Init initialize the packages that are going to be used by sponge
+func Init() {
+
+	var err error
+
+	// Initialize the source
+	foreignSource := source.Init()
+	dbsource, err = source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
+	if err != nil {
+		log.Error("sponge", "import", err, "Connect to external Database")
+	}
+
+	fiddler.Init()
+	coral.Init()
+}
+
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, table string, importonlyfailed string, errorsfile string) {
+func Import(limit int, offset int, orderby string, types string, importonlyfailed string, errorsfile string) {
 
 	// Initialize the report and write it down at the end (it does not create the file until the end)
 	report.Init(errorsfile)
 	// Connect to external source
 	log.User("main", "import", "### Connecting to external database...")
 
-	// Initialize the source
-	source.Init()
-	mysql, err := source.New("mysql") // To Do. 1. Needs to ensure maximum rate limit is not reached
-	if err != nil {
-		log.Error("sponge", "import", err, "Connect to external MySQL")
-	}
-
-	fiddler.Init()
-	coral.Init()
-
 	if importonlyfailed != "" { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(mysql, limit, offset, orderby, importonlyfailed)
+		importOnlyFailedRecords(dbsource, limit, offset, orderby, importonlyfailed)
 	} else { // import everything that is in the strategy
-		if table != "" {
-			importTable(mysql, limit, offset, orderby, table)
+		if types != "" {
+			for _, t := range strings.Split(types, ",") {
+				importType(dbsource, limit, offset, orderby, strings.Trim(t, " ")) // removes any extra space
+			}
 		} else {
-			importAll(mysql, limit, offset, orderby)
+			importAll(dbsource, limit, offset, orderby)
 		}
 	}
 
@@ -51,6 +62,7 @@ func CreateIndex(collection string) {
 
 		// get data from strategy file
 		tables := fiddler.GetCollections()
+
 		// for each table
 		for t := range tables {
 			log.User("main", "createindex", "### Index for collection %s.", tables[t])
@@ -65,7 +77,7 @@ func CreateIndex(collection string) {
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
-func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderby string, importonlyfailed string) {
+func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, orderby string, importonlyfailed string) {
 
 	log.User("sponge", "importOnlyFailedRecords", "### Reading file of data to import.")
 
@@ -81,10 +93,10 @@ func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderb
 		if len(row["ids"].([]string)) < 1 {
 			// Get the data
 			log.User("sponge", "importOnlyFailedRecords", "### Reading data from table '%s'. \n", table)
-			data, err = mysql.GetData(table, offset, limit, orderby)
+			data, err = dbsource.GetData(table, offset, limit, orderby)
 		} else {
 			log.User("sponge", "importOnlyFailedRecords", "### Reading data from table '%s', quering '%s'. \n", table, row["ids"])
-			data, err = mysql.GetQueryData(table, offset, limit, orderby, row["ids"].([]string))
+			data, err = dbsource.GetQueryData(table, offset, limit, orderby, row["ids"].([]string))
 		}
 		if err != nil {
 			report.Record(table, row["ids"], row, "Failing getting data", err)
@@ -96,23 +108,24 @@ func importOnlyFailedRecords(mysql source.Sourcer, limit int, offset int, orderb
 }
 
 // Import gets ALL data, transform it and send it to pillar
-func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
+func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 
 	log.User("sponge", "importAll", "### Reading tables to import from strategy file.")
 
 	//Get All the tables's names that we have in the strategy json file
-	tables, err := source.GetTables()
+	tables, err := dbsource.GetTables()
 	if err != nil {
-		log.Error("sponge", "importAll", err, "Get external MySQL tables")
+		log.Error("sponge", "importAll", err, "Get external tables")
 		return
 	}
 	for _, modelName := range tables {
 
 		// Get the data
 		log.User("sponge", "importAll", "### Reading data from table '%s'. \n", modelName)
-		data, err := mysql.GetData(modelName, offset, limit, orderby)
+
+		data, err := dbsource.GetData(modelName, offset, limit, orderby)
 		if err != nil {
-			log.Error("sponge", "importAll", err, "Get external MySQL data")
+			log.Error("sponge", "importAll", err, "Get external data")
 			//RECORD to report about failing modelName
 			report.Record(modelName, "", nil, "Failing getting data", err)
 			continue
@@ -123,14 +136,14 @@ func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
 	}
 }
 
-// ImportTable gets ony data related to table, transform it and send it to pillar
-func importTable(mysql source.Sourcer, limit int, offset int, orderby string, modelName string) {
+// ImportType gets ony data related to table, transform it and send it to pillar
+func importType(dbsource source.Sourcer, limit int, offset int, orderby string, modelName string) {
 
 	// Get the data
 	log.User("sponge", "importTable", "### Reading data from table '%s'. \n", modelName)
-	data, err := mysql.GetData(modelName, offset, limit, orderby)
+	data, err := dbsource.GetData(modelName, offset, limit, orderby)
 	if err != nil {
-		log.Error("sponge", "importAll", err, "Get external MySQL data")
+		log.Error("sponge", "importAll", err, "Get external data")
 		//RECORD to report about failing modelName
 		report.Record(modelName, "", nil, "Failing getting data", err)
 		return
@@ -172,13 +185,11 @@ func process(modelName string, data []map[string]interface{}) {
 		documents = documents + 1
 
 		// transform the row
-		newRow, err := fiddler.TransformRow(row, modelName)
-		id := fiddler.GetID(modelName)
+		id, newRow, err := fiddler.TransformRow(row, modelName)
 		if err != nil {
 			log.Error("sponge", "process", err, "Error when transforming the row %s.", row)
-
 			//RECORD to report about failing transformation
-			report.Record(modelName, row[id], row, "Failing transform data", err)
+			report.Record(modelName, id, row, "Failing transform data", err) // TO DO, needs to recalculate id
 		}
 
 		// To Do: acquire meta-data
@@ -188,14 +199,14 @@ func process(modelName string, data []map[string]interface{}) {
 		   store result in newrow.metadata
 		*/
 
-		log.Dev("sponge", "process", "Transform: %v -> %v", row, string(newRow))
+		log.Dev("sponge", "process", "Transform: %v -> %v", row, newRow)
 
 		// send the row to pillar
 		err = coral.AddRow(newRow, modelName)
 		if err != nil {
-			log.Error("sponge", "process", err, "Error when adding the row %s.", row)
+			log.Error("sponge", "process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
 			//RECORD to report about failing adding row to coral db
-			report.Record(modelName, row[id], row, "Failing add row to coral", err)
+			report.Record(modelName, id, row, "Failing add row to coral", err)
 		}
 	}
 }

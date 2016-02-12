@@ -22,7 +22,6 @@ func setup() {
 	oStrategy = os.Getenv("STRATEGY_CONF")
 	oPillarURL = os.Getenv("PILLAR_URL")
 
-	// Initializing the log
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
@@ -47,7 +46,14 @@ func teardown() {
 	// recover the environment variables
 
 	os.Setenv("STRATEGY_CONF", oStrategy)
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
 	os.Setenv("PILLAR_URL", oPillarURL)
+	if e != nil {
+		fmt.Println("It could not setup the mock pillar url variable")
+	}
 }
 
 func TestMain(m *testing.M) {
