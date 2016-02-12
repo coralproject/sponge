@@ -8,3 +8,5 @@ strategy.json
 TODO.md
 *.out
 app/sponge/sponge
+tests/strategy_nyt_test.json
+tests/strategy_wapo_test.json
