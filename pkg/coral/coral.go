@@ -50,10 +50,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/strategy"
 )
@@ -84,15 +82,15 @@ func Init(u string) {
 
 	uuid = u
 
-	logLevel := func() int {
-		ll, err := cfg.Int("LOGGING_LEVEL")
-		if err != nil {
-			return log.USER
-		}
-		return ll
-	}
-
-	log.Init(os.Stderr, logLevel)
+	// logLevel := func() int {
+	// 	ll, err := cfg.Int("LOGGING_LEVEL")
+	// 	if err != nil {
+	// 		return log.USER
+	// 	}
+	// 	return ll
+	// }
+	//
+	// log.Init(os.Stderr, logLevel)
 
 	strategy.Init(uuid)
 	str = strategy.New()

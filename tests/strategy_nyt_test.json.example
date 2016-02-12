@@ -13,7 +13,7 @@
         "Index": [
           {
             "name": "asset-url",
-            "key": ["asseturl"],
+            "keys": ["asseturl"],
             "unique": true,
             "dropdups": true
           }
@@ -55,7 +55,7 @@
         "Index": [
           {
             "name": "user-name",
-            "key": ["name"],
+            "keys": ["name"],
             "unique": true,
             "dropdups": true
           }
@@ -85,7 +85,7 @@
         "Index": [
           {
             "name": "commentid",
-            "key": ["commentid"],
+            "keys": ["commentid"],
             "unique": true,
             "dropdups": true
           }
@@ -160,15 +160,6 @@
         "host": "",
         "port": "",
         "adapter": "mysql",
-        "type": "foreign"
-      },
-      {
-        "database": "",
-        "username": "",
-        "password": "",
-        "host": "",
-        "port": "",
-        "adapter": "mongodb",
         "type": "foreign"
       }
     ]
