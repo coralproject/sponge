@@ -21,10 +21,18 @@ var (
 	server  *httptest.Server
 	path    string
 	fakeStr strategy.Strategy
+
+	oStrategy  string
+	oPillarURL string
 )
 
 func setup() {
 
+	// Save original enviroment variables
+	oStrategy = os.Getenv("STRATEGY_CONF")
+	oPillarURL = os.Getenv("PILLAR_URL")
+
+	// Initialize log
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
 		if err != nil {
@@ -35,14 +43,7 @@ func setup() {
 
 	log.Init(os.Stderr, logLevel)
 
-	// MOCK STRATEGY CONF
-	strategyConf := "../../tests/strategy_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	// Initialization of server
+	// Initialization of stub server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var err error
@@ -79,18 +80,30 @@ func setup() {
 
 		fmt.Fprintln(w, err)
 	}))
+	defer server.Close()
 
 	path = os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/fixtures/"
 
-	// mock pillar url
+	// Mock strategy configuration
+	strategyConf := "../../tests/strategy_test.json"
+	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
+	if e != nil {
+		fmt.Println("It could not setup the mock strategy conf variable")
+	}
+
+	// Mock pillar url
 	os.Setenv("PILLAR_URL", server.URL)
 
 	// Initialize coral
 	Init()
-
 }
 
 func teardown() {
+
+	// recover the environment variables
+
+	os.Setenv("STRATEGY_CONF", oStrategy)
+	os.Setenv("PILLAR_URL", oPillarURL)
 }
 
 func TestMain(m *testing.M) {
@@ -102,6 +115,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// We need to test that the mockup server is working by itself
 func TestMockupServer(t *testing.T) {
 
 	method := "POST"
@@ -146,8 +160,6 @@ func GetFixture(fileName string) (map[string]interface{}, error) {
 	return qs, nil
 }
 
-// test the wrong collection (it does not exist)
-// expected an Error
 // Signature: AddRow(data []byte, tableName string) error
 func TestAddRowWrongTable(t *testing.T) {
 
@@ -232,19 +244,23 @@ func TestAddCommentRow(t *testing.T) {
 
 }
 
-//test that data is being send in the right format
-
 // test the request on create index
 func TestCreateIndex(t *testing.T) {
-
-	// get the endpoint from the strategy file
-	//createindexURL := server.URL + "/api/import/index"
-	//os.Setenv("CREATE_INDEX_URL", createindexURL)
 
 	tableName := "comment"
 
 	e := CreateIndex(tableName)
 	if e != nil {
 		t.Fatalf("expecting not error but got one %v.", e)
+	}
+}
+
+func TestCreateIndexError(t *testing.T) {
+
+	tableName := "itdoesnotexist"
+
+	e := CreateIndex(tableName)
+	if e == nil {
+		t.Fatalf("expecting an error but got none.")
 	}
 }

@@ -117,6 +117,10 @@ func CreateIndex(collection string) error {
 	s := strategy.New()
 	is := s.GetIndexBy(collection) // []map[string]interface{}
 
+	if is == nil {
+		err = fmt.Errorf("%s does not exist", collection)
+	}
+
 	// get Endpoint
 	createIndexURL := s.GetPillarEndpoints()["index"]
 

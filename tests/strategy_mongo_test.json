@@ -1,11 +1,11 @@
 {
-  "Name": "New York Times",
+  "Name": "Washington Post",
   "Map": {
     "Foreign": "mysql",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Tables": {
       "asset": {
-        "Foreign": "crnr_asset",
+        "Foreign": "asset",
         "Local": "asset",
         "Priority": 0,
         "OrderBy": "assetid",
@@ -47,7 +47,7 @@
         "Endpoint": "/api/import/asset"
       },
       "user": {
-        "Foreign": "crnr_comment",
+        "Foreign": "user",
         "Local": "user",
         "Priority": 1,
         "OrderBy": "userid",
@@ -77,7 +77,7 @@
         "Endpoint": "/api/import/user"
       },
       "comment": {
-        "Foreign": "crnr_comment",
+        "Foreign": "comment",
         "Local": "comment",
         "Priority": 2,
         "OrderBy": "createdate",
