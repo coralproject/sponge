@@ -1,0 +1,176 @@
+{
+  "Name": "The Coral Project",
+  "Map": {
+    "Foreign": "postgresql",
+    "DateTimeFormat": "2006-01-02 15:04:05",
+    "Tables": {
+      "asset": {
+        "Foreign": "crnr_asset",
+        "Local": "asset",
+        "Priority": 0,
+        "OrderBy": "assetid",
+        "ID": "assetid",
+        "Index": [
+          {
+            "name": "asset-url",
+            "key": ["asseturl"],
+            "unique": true,
+            "dropdups": true
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "assetid",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "asseturl",
+            "local": "url",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
+          },
+          {
+            "foreign": "createdate",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
+          }
+        ],
+        "Endpoint": "/api/import/asset"
+      },
+      "user": {
+        "Foreign": "user",
+        "Local": "user",
+        "Priority": 1,
+        "OrderBy": "id",
+        "ID": "id",
+        "Index": [
+          {
+            "name": "user-name",
+            "key": ["name"],
+            "unique": true,
+            "dropdups": true
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "id",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "user_name",
+            "local": "name",
+            "relation": "Identity",
+            "type": "[]byte"
+          }
+        ],
+        "Endpoint": "/api/import/user"
+      },
+      "comment": {
+        "Foreign": "crnr_comment",
+        "Local": "comment",
+        "Priority": 2,
+        "OrderBy": "createdate",
+        "ID": "commentid",
+        "Index": [
+          {
+            "name": "commentid",
+            "key": ["commentid"],
+            "unique": true,
+            "dropdups": true
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "commentid",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "commentbody",
+            "local": "body",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "userid",
+            "local": "user_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "assetid",
+            "local": "asset_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "statusid",
+            "local": "status",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "parentid",
+            "local": "parent_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "createdate",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timedate",
+            "datetimeformat": "2006-01-02 15:04:05"
+          },
+          {
+            "foreign": "approvedate",
+            "local": "date_approved",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          }
+        ],
+        "Endpoint": "/api/import/comment"
+      }
+    }
+  },
+  "Credentials": {
+    "Databases": [
+      {
+        "database": "coral",
+        "username": "gaba",
+        "password": "gabita",
+        "host": "localhost",
+        "port": "5432",
+        "adapter": "mysql",
+        "type": "foreign"
+      },
+      {
+        "database": "coral",
+        "username": "gaba",
+        "password": "gabita",
+        "host": "127.0.0.1",
+        "port": "27017",
+        "adapter": "mongodb",
+        "type": "foreign"
+      }
+    ]
+  }
+}
