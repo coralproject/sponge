@@ -64,7 +64,7 @@ func TestMain(m *testing.M) {
 
 // Signature: TransformRow(row map[string]interface{}, modelName string) ([]byte, error)
 func TestTransformRow(t *testing.T) {
-	row := map[string]interface{}{"assetid": "3416344", "asseturl": "http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html", "updatedate": "2014-12-04 00:01:11"}
+	row := map[string]interface{}{"assetid": "3416344", "asseturl": "http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html", "updatedate": "2014-12-04 00:01:11", "createdate": "2014-12-04 00:01:11"}
 	modelName := "asset"
 
 	id, result, err := TransformRow(row, modelName)
@@ -72,7 +72,7 @@ func TestTransformRow(t *testing.T) {
 		t.Fatalf("error should be nil. Error is %v", err)
 	}
 
-	expectedResult := map[string]interface{}{"date_updated": "2014-12-04T00:01:11Z", "source": map[string]string{"id": "3416344"}, "url": "http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html"}
+	expectedResult := map[string]interface{}{"date_updated": "2014-12-04T00:01:11Z", "date_created": "2014-12-04T00:01:11Z", "source": map[string]string{"id": "3416344"}, "url": "http://www.nytimes.com/interactive/2014/11/24/us/north-dakota-oil-boom-politics.html"}
 
 	if len(result) != len(expectedResult) {
 		t.Fatalf("got %d , expected %d", len(result), len(expectedResult))

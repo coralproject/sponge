@@ -89,17 +89,17 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 		}
 
-		if newValue != nil {
-
-			if f["relation"] != "Source" {
-				newRow[f["local"]] = newValue // newvalue could be string or time.Time or int
-			} else { // special case when I'm looking into a source relationship
-				// {
-				//	"source":
-				//					{ "asset_id": xxx},
-				// }
-				source[f["local"]] = newValue
-			}
+		switch f["relation"] {
+		case "Source":
+			// {
+			//	"source":
+			//					{ "asset_id": xxx},
+			// }
+			source[f["local"]] = newValue
+		case "Constant": // the value is a constant
+			newRow[f["local"]] = f["foreign"]
+		default:
+			newRow[f["local"]] = newValue
 		}
 	}
 
