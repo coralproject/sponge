@@ -54,7 +54,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	f := make([]string, 0, len(tableFields))
 	for _, field := range tableFields {
 		if field != nil {
-			f = append(f, field["foreign"])
+			f = append(f, field["foreign"].(string))
 		}
 	}
 
@@ -105,7 +105,7 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 	f := make([]string, 0, len(tableFields))
 	for _, field := range tableFields {
 		if field != nil {
-			f = append(f, field["foreign"])
+			f = append(f, field["foreign"].(string))
 		}
 	}
 
