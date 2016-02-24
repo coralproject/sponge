@@ -67,7 +67,7 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 	fieldsToGet := make(map[string]bool)
 	//var fieldsNames []string
 	for _, f := range fields {
-		fieldsToGet[f["foreign"]] = true
+		fieldsToGet[f["foreign"].(string)] = true
 		//fieldsNames = append(fieldsNames, f["local"])
 	}
 

@@ -104,10 +104,10 @@ func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, ord
 		table := row["table"].(string)
 		if len(row["ids"].([]string)) < 1 {
 			// Get the data
-			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data from table '%s'. \n", table)
+			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s'. \n", table)
 			data, err = dbsource.GetData(table, offset, limit, orderby)
 		} else {
-			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data from table '%s', quering '%s'. \n", table, row["ids"])
+			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s', quering '%s'. \n", table, row["ids"])
 			data, err = dbsource.GetQueryData(table, offset, limit, orderby, row["ids"].([]string))
 		}
 		if err != nil {
@@ -164,6 +164,7 @@ func importType(dbsource source.Sourcer, limit int, offset int, orderby string, 
 
 	// Transform and send to pillar
 	process(modelName, data)
+
 }
 
 func process(modelName string, data []map[string]interface{}) {
@@ -189,7 +190,7 @@ func process(modelName string, data []map[string]interface{}) {
 			msSinceBlock := time.Since(blockStart).Nanoseconds() / int64(1000000)
 			timeRemaining := int64(float64(time.Since(start).Seconds()) / float64(percentComplete) * float64(100))
 
-			// log stats
+			//log stats
 			log.User(uuid, "sponge.process", "%v%% (%v/%v imported) %vms, %vms avg - last %v in %vms, %vms avg -- est time remaining %vs\n", int64(percentComplete), documents, totalDocuments, msSinceStart, msSinceStart/documents, blockSize, msSinceBlock, msSinceBlock/blockSize, int64(timeRemaining))
 			blockStart = time.Now()
 
@@ -197,7 +198,7 @@ func process(modelName string, data []map[string]interface{}) {
 		documents = documents + 1
 
 		// transform the row
-		id, newRow, err := fiddler.TransformRow(row, modelName)
+		id, newRows, err := fiddler.TransformRow(row, modelName)
 		if err != nil {
 			log.Error(uuid, "sponge.process", err, "Error when transforming the row %s.", row)
 			//RECORD to report about failing transformation
@@ -211,14 +212,19 @@ func process(modelName string, data []map[string]interface{}) {
 		   store result in newrow.metadata
 		*/
 
-		log.Dev(uuid, "sponge.process", "Transforming: %v into %v.", row, newRow)
+		// Usually newRows only will have a document but in the case that we have subcollections
+		// we may get more than one document from a transformation
+		for _, newRow := range newRows {
 
-		// send the row to pillar
-		err = coral.AddRow(newRow, modelName)
-		if err != nil {
-			log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
-			//RECORD to report about failing adding row to coral db
-			report.Record(modelName, id, row, "Failing add row to coral", err)
+			log.Dev(uuid, "sponge.process", "Transforming: %v into %v.", row, newRow)
+
+			// send the row to pillar
+			err = coral.AddRow(newRow, modelName)
+			if err != nil {
+				log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
+				//RECORD to report about failing adding row to coral db
+				report.Record(modelName, id, row, "Failing add row to coral", err)
+			}
 		}
 	}
 }
