@@ -30,7 +30,7 @@ cp app/sponge/strategy.json.example /path/to/my/strategy.json
 ### How to run
 
 ```
-cd app/sponge
+cd cmd/sponge
  go run main.go
 ```
 
@@ -38,15 +38,12 @@ cd app/sponge
 ### To build
 
 ```
-cd app/sponge
+cd cmd/sponge
 go build
 ```
 
 ```
- ./sponge
+ ./sponge -h
 ```
 
-
-### Example data to import
-
-At ./scripts/LOADCSV.md we have the mysql commands on how to import the ./script/nyt_sample_data.csv example.
+will give you all the options to run it
