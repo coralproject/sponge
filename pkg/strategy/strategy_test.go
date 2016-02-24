@@ -23,86 +23,86 @@ func fakeStrategy() Strategy {
 		Type:     "source",
 	}
 
-	cfields := make([]map[string]string, 8)
+	cfields := make([]map[string]interface{}, 8)
 
-	cfields[0] = map[string]string{
+	cfields[0] = map[string]interface{}{
 		"foreign":  "commentid",
 		"local":    "CommentID",
 		"relation": "Identity",
 		"type":     "int",
 	}
-	cfields[1] = map[string]string{
+	cfields[1] = map[string]interface{}{
 		"foreign":  "commentbody",
 		"local":    "Body",
 		"relation": "Identity",
 		"type":     "[]byte",
 	}
-	cfields[2] = map[string]string{
+	cfields[2] = map[string]interface{}{
 		"foreign":  "parentid",
 		"local":    "ParentID",
 		"relation": "Identity",
 		"type":     "int",
 	}
-	cfields[3] = map[string]string{
+	cfields[3] = map[string]interface{}{
 		"foreign":  "assetid",
 		"local":    "AssetID",
 		"relation": "Identity",
 		"type":     "int",
 	}
-	cfields[4] = map[string]string{
+	cfields[4] = map[string]interface{}{
 		"foreign":  "statusid",
 		"local":    "Status",
 		"relation": "Identity",
 		"type":     "int",
 	}
-	cfields[5] = map[string]string{
+	cfields[5] = map[string]interface{}{
 		"foreign":        "createdate",
 		"local":          "DateCreated",
 		"relation":       "Parse",
 		"type":           "timedate",
 		"datetimeformat": "February 1st, 2006",
 	}
-	cfields[6] = map[string]string{
+	cfields[6] = map[string]interface{}{
 		"foreign":  "updatedate",
 		"local":    "DateUpdated",
 		"relation": "Parse",
 		"type":     "timedate",
 	}
-	cfields[7] = map[string]string{
+	cfields[7] = map[string]interface{}{
 		"foreign":  "approvedate",
 		"local":    "DateApproved",
 		"relation": "Parse",
 		"type":     "timedate",
 	}
 
-	afields := make([]map[string]string, 3)
-	afields[0] = map[string]string{
+	afields := make([]map[string]interface{}, 3)
+	afields[0] = map[string]interface{}{
 		"foreign":  "assetid",
 		"local":    "AssetID",
 		"relation": "identity",
 		"type":     "int",
 	}
-	afields[1] = map[string]string{
+	afields[1] = map[string]interface{}{
 		"foreign":  "sourceid",
 		"local":    "SourceID",
 		"relation": "identity",
 		"type":     "int",
 	}
-	afields[2] = map[string]string{
+	afields[2] = map[string]interface{}{
 		"foreign":  "asseturl",
 		"local":    "URL",
 		"relation": "identity",
 		"type":     "[]byte",
 	}
 
-	ufields := make([]map[string]string, 6)
-	ufields[0] = map[string]string{
+	ufields := make([]map[string]interface{}, 6)
+	ufields[0] = map[string]interface{}{
 		"foreign":  "userid",
 		"local":    "UserID",
 		"relation": "identity",
 		"type":     "int",
 	}
-	ufields[1] = map[string]string{
+	ufields[1] = map[string]interface{}{
 		"foreign":  "userdisplayname",
 		"local":    "UserName",
 		"relation": "identity",
@@ -223,6 +223,18 @@ func TestGetTables(t *testing.T) {
 
 	if tables["Comment"].Foreign != "crnr_comment" {
 		t.Error("Expected crnr_comment, got ", tables["Comment"])
+	}
+}
+
+// Signature func (s Strategy) HasArrayField(t Table) bool {
+func TestHasArrayField(t *testing.T) {
+	fakeConf := fakeStrategy()
+
+	var tables map[string]Table
+	tables = fakeConf.GetTables()
+
+	if fakeConf.HasArrayField(tables["Comment"]) {
+		t.Error("Expected not to have an array field.")
 	}
 }
 

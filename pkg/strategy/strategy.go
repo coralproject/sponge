@@ -55,14 +55,14 @@ type Map struct {
 
 // Table holds the struct on what is the external source's table name and fields
 type Table struct {
-	Foreign  string              `json:"foreign"`
-	Local    string              `json:"local"`
-	Priority int                 `json:"priority"`
-	OrderBy  string              `json:"orderby"`
-	ID       string              `json:"id"`
-	Index    []mgo.Index         `json:"index"`  //map[string]interface{} `json:"index"`
-	Fields   []map[string]string `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
-	Endpoint string              `json:"endpoint"`
+	Foreign  string                   `json:"foreign"`
+	Local    string                   `json:"local"`
+	Priority int                      `json:"priority"`
+	OrderBy  string                   `json:"orderby"`
+	ID       string                   `json:"id"`
+	Index    []mgo.Index              `json:"index"`  //map[string]interface{} `json:"index"`
+	Fields   []map[string]interface{} `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+	Endpoint string                   `json:"endpoint"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,7 +203,7 @@ func (s Strategy) GetDateTimeFormat(table string, field string) string {
 		if f["local"] == field {
 			val, exists := f["datetimeformat"]
 			if exists {
-				return val
+				return val.(string)
 			}
 		}
 	}
@@ -217,13 +217,25 @@ func (s Strategy) GetTables() map[string]Table {
 	return s.Map.Tables
 }
 
+// HasArrayField returns true if the table has fields that are type array and need to be loop through
+func (s Strategy) HasArrayField(t Table) bool {
+	//Fields   []map[string]interface{}
+
+	for _, f := range t.Fields {
+		if f["type"] == "Array" {
+			return true
+		}
+	}
+	return false
+}
+
 // GetTableForeignName returns the external source's table mapped to the coral model
 func (s Strategy) GetTableForeignName(coralName string) string {
 	return s.Map.Tables[coralName].Foreign
 }
 
 // GetTableForeignFields returns the external source's table fields mapped to the coral model
-func (s Strategy) GetTableForeignFields(coralName string) []map[string]string {
+func (s Strategy) GetTableForeignFields(coralName string) []map[string]interface{} {
 	return s.Map.Tables[coralName].Fields
 }
 
