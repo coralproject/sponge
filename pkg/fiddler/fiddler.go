@@ -96,7 +96,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		dateLayout = strategy.GetDateTimeFormat(modelName, f["local"].(string))
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		newValue, err := transformField(row[strings.ToLower(f["foreign"].(string))], f["relation"].(string), f["local"].(string))
+		newValue, err := transformField(row[strings.ToLower(f["foreign"].(string))], f["relation"].(string), f["local"].(string), modelName)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v.", f["foreign"])
 		}
@@ -105,7 +105,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		case "Source": // { 	"source": { "asset_id": xxx}, }
 			source[f["local"].(string)] = newValue
 
-		default: // Identity
+		default: // Identity or SubDocument or Status or Constant
 			newRow[f["local"].(string)] = newValue
 		}
 
@@ -136,11 +136,11 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 
 		switch f["relation"] {
 		case "Loop":
-			newRows = transformArrayFields(foreign, f["fields"], row)
+			newRows = transformArrayFields(foreign, f["fields"], row, modelName)
 		case "Source": // { 	"source": { "asset_id": xxx}, }
 			local := f["local"].(string)
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[strings.ToLower(foreign)], relation, local)
+			newValue, err := transformField(row[strings.ToLower(foreign)], relation, local, modelName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -155,7 +155,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			dateLayout = strategy.GetDateTimeFormat(modelName, local)
 
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[strings.ToLower(foreign)], relation, local)
+			newValue, err := transformField(row[strings.ToLower(foreign)], relation, local, modelName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -213,7 +213,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 // object.likes.1.actor.
 // object.likes.2.actor.
 
-func transformArrayFields(foreign string, fields interface{}, row map[string]interface{}) []map[string]interface{} {
+func transformArrayFields(foreign string, fields interface{}, row map[string]interface{}, modelName string) []map[string]interface{} {
 	var newRows []map[string]interface{}
 	// The transformation for one row with arrays is multiple rows
 
@@ -235,7 +235,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 			// if that row has data on fi
 			if row[fi] != nil {
 				// transform that specific field
-				newvalue, err := transformField(row[fi], field["relation"].(string), field["local"].(string))
+				newvalue, err := transformField(row[fi], field["relation"].(string), field["local"].(string), modelName)
 				if err != nil {
 					log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", field["foreign"])
 				}
@@ -266,7 +266,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 
 //Here we transform the record into what we want (based on the configuration in the strategy)
 // 1. convert types (values are all strings) into the struct
-func transformField(oldValue interface{}, relation string, local string) (interface{}, error) {
+func transformField(oldValue interface{}, relation string, local string, coralName string) (interface{}, error) {
 
 	var tfield interface{}
 	var err error
@@ -277,6 +277,8 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 			return oldValue, err
 		case "Source":
 			return oldValue, err
+		case "Status":
+			return strategy.GetStatus(coralName, oldValue.(string)), err
 		case "ParseTimeDate":
 			switch v := oldValue.(type) {
 			case string:

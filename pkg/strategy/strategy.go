@@ -62,6 +62,7 @@ type Table struct {
 	ID       string                   `json:"id"`
 	Index    []mgo.Index              `json:"index"`  //map[string]interface{} `json:"index"`
 	Fields   []map[string]interface{} `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+	Status   map[string]string        `json:"status"`
 	Endpoint string                   `json:"endpoint"`
 }
 
@@ -252,6 +253,11 @@ func (s Strategy) GetIndexBy(coralName string) []mgo.Index { //map[string]interf
 // GetIDField returns the identifier for the table coralname setup in the strategy file
 func (s Strategy) GetIDField(coralName string) string {
 	return s.Map.Tables[coralName].ID
+}
+
+// GetStatus returns the mapping of the external status into the coral one
+func (s Strategy) GetStatus(coralName string, foreign string) string {
+	return s.Map.Tables[coralName].Status[foreign]
 }
 
 // GetPillarEndpoints return the endpoints configured in the strategy

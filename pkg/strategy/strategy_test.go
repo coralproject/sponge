@@ -51,9 +51,9 @@ func fakeStrategy() Strategy {
 	}
 	cfields[4] = map[string]interface{}{
 		"foreign":  "statusid",
-		"local":    "Status",
-		"relation": "Identity",
-		"type":     "int",
+		"local":    "status",
+		"relation": "Status",
+		"type":     "string",
 	}
 	cfields[5] = map[string]interface{}{
 		"foreign":        "createdate",
@@ -109,6 +109,10 @@ func fakeStrategy() Strategy {
 		"type":     "[]byte",
 	}
 
+	var status = map[string]string{
+		"ModeratorApproved": "1",
+		"Untouched":         "2",
+	}
 	var fakeConf = Strategy{
 		Name: "New York Times",
 		Map: Map{
@@ -121,6 +125,7 @@ func fakeStrategy() Strategy {
 					OrderBy:  "commentid",
 					ID:       "commentid",
 					Fields:   cfields,
+					Status:   status,
 					Endpoint: "/api/import/comment",
 				},
 				"Asset": Table{
@@ -287,4 +292,18 @@ func TestGetDatetimeFormat(t *testing.T) {
 		t.Errorf("Expected %s, got %s", expectedDTformat, dtformat)
 	}
 
+}
+
+// Signature func (s Strategy) GetStatus(coralName string, foreign string) string {
+func TestGetStatus(t *testing.T) {
+	fakeConf := fakeStrategy()
+
+	table := "Comment"
+	value := "ModeratorApproved"
+	expectedsfield := "1"
+
+	sfield := fakeConf.GetStatus(table, value)
+	if sfield != expectedsfield {
+		t.Errorf("Expected %s, got %s", expectedsfield, sfield)
+	}
 }

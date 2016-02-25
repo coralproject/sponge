@@ -113,6 +113,8 @@ The relationship between the foreign field and the local one. We have this optio
 - Source: when it needs to be added to our source struct for the local table (the original identifiers have to go into source)
 - ParseTimeDate: when we need to parse the foreign value as date time.
 - Constant: when the local field should always be the same value. In this case we will have "foreign" blank and we will have other field called "value" with the value of the local field.
+- SubDocument: when the local field has an array of documents in one of the fields.
+- Status: when the field need to be translated based on the status map that is declared in that same strategy file for the table.
 
 ###### Type
 
