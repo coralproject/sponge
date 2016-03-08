@@ -53,6 +53,9 @@ func New(d string) (Sourcer, error) {
 	case "mongodb":
 		// Get MongoDB connection string
 		return MongoDB{Connection: connectionMongoDB(), Database: nil}, nil
+	case "postgresql":
+		// Get MySQL connection string
+		return PostgreSQL{Connection: connectionPostgreSQL(), Database: nil}, nil
 	}
 
 	return nil, fmt.Errorf("Configuration not found for source database %s.", d)

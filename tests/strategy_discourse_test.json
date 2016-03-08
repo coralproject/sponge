@@ -1,0 +1,80 @@
+{
+  "Name": "The Coral Project",
+  "Map": {
+    "Foreign": "postgresql",
+    "DateTimeFormat": "2006-01-02 15:04:05",
+    "Tables": {
+      "assets": {
+        "Foreign": "posts",
+        "Local": "assets",
+        "Priority": 0,
+        "OrderBy": "id",
+        "ID": "id",
+        "Fields": [
+          {
+            "foreign": "id",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "updated_at",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
+          },
+          {
+            "foreign": "created_at",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
+          }
+        ],
+        "Endpoint": "/api/import/asset"
+      },
+      "users": {
+        "Foreign": "users",
+        "Local": "users",
+        "Priority": 1,
+        "OrderBy": "id",
+        "ID": "id",
+        "Index": [
+          {
+            "name": "username",
+            "keys": ["name"],
+            "unique": true,
+            "dropdups": true
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "id",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "username",
+            "local": "name",
+            "relation": "Identity",
+            "type": "[]byte"
+          }
+        ],
+        "Endpoint": "/api/import/user"
+      }
+    }
+  },
+  "Credentials": {
+    "Databases": [
+      {
+        "database": "coral_test",
+        "username": "",
+        "password": "",
+        "host": "127.0.0.1",
+        "port": "5432",
+        "adapter": "postgresql",
+        "type": "foreign"
+      }
+    ]
+  }
+}
