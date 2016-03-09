@@ -95,19 +95,33 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 
 		dateLayout = strategy.GetDateTimeFormat(modelName, f["local"].(string))
 
+		foreign, ok := f["foreign"].(string)
+		if !ok {
+			return nil, fmt.Errorf("%v not expected type", f["foreign"])
+		}
+		foreign = strings.ToLower(foreign)
+		relation, ok := f["relation"].(string)
+		if !ok {
+			return nil, fmt.Errorf("%v not expected type", f["relation"])
+		}
+		relation = strings.ToLower(relation)
+		local, ok := f["local"].(string)
+		if !ok {
+			return nil, fmt.Errorf("%v not expected type", f["local"])
+		}
+		local = strings.ToLower(local)
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		oldValue := row[strings.ToLower(f["foreign"].(string))]
-		newValue, err := transformField(oldValue, f["relation"].(string), modelName, f["foreign"].(string))
+		newValue, err := transformField(row[foreign], relation, local, modelName)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v.", f["foreign"])
 		}
 
 		switch f["relation"] {
 		case "Source": // { 	"source": { "asset_id": xxx}, }
-			source[f["local"].(string)] = newValue
+			source[local] = newValue
 
 		default: // Identity or SubDocument or Status or Constant
-			newRow[f["local"].(string)] = newValue
+			newRow[local] = newValue
 		}
 
 		if source != nil && len(source) > 0 {
@@ -132,33 +146,50 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 
 	// Loop on the fields for the transformation
 	for _, f := range fields {
-		foreign := f["foreign"].(string)
-		relation := f["relation"].(string)
+		foreign, ok := f["foreign"].(string)
+		if !ok {
+			return nil, fmt.Errorf("%v not expected type", f["foreign"])
+		}
+		foreign = strings.ToLower(foreign)
+		relation, ok := f["relation"].(string)
+		if !ok {
+			return nil, fmt.Errorf("%v not expected type", f["relation"])
+		}
+		relation = strings.ToLower(relation)
 
-		switch f["relation"] {
-		case "Loop":
-			newRows = transformArrayFields(foreign, f["fields"], row, modelName)
-		case "Source": // { 	"source": { "asset_id": xxx}, }
+		switch relation {
+		case "loop":
+			newRows, err = transformArrayFields(foreign, f["fields"], row, modelName)
+			if err != nil {
+				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
+			}
+		case "source": // { 	"source": { "asset_id": xxx}, }
 			local := f["local"].(string)
+			local = strings.ToLower(local)
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			//newValue, err := transformField(row[strings.ToLower(foreign)], relation, local, modelName)
-			newValue, err := transformField(row[strings.ToLower(foreign)], relation, modelName, foreign)
+			newValue, err := transformField(row[foreign], relation, local, modelName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
 			source[local] = newValue
 
-		case "Constant":
-			local := f["local"].(string)
+		case "constant":
+			local, ok := f["local"].(string)
+			if !ok {
+				return nil, fmt.Errorf("%v not expected type", f["local"])
+			}
+
 			newRow[local] = f["value"]
 
-		default: // Identity or ParseTimeDate or SubDocument
-			local := f["local"].(string)
+		default: // Identity or ParseTimeDate
+			local, ok := f["local"].(string)
+			if !ok {
+				return nil, fmt.Errorf("%v not expected type", f["local"])
+			}
 			dateLayout = strategy.GetDateTimeFormat(modelName, local)
 
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			//newValue, err := transformField(row[strings.ToLower(foreign)], relation, local, modelName)
-			newValue, err := transformField(row[strings.ToLower(foreign)], relation, modelName, foreign)
+			newValue, err := transformField(row[foreign], relation, local, modelName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -169,14 +200,24 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			newRow["source"] = source
 		}
 	}
+
 	// add newRow to all rows in newRows
 	for i := range newRows {
 
 		for key := range newRow {
 			//fmt.Printf("Adding value %v for key %v. \n\n", newRow[key], key)
 			if key == "source" {
-				for k := range newRow[key].(map[string]interface{}) {
-					newRows[i][key].(map[string]interface{})[k] = newRow[key].(map[string]interface{})[k]
+				nr, ok := newRow[key].(map[string]interface{})
+				if !ok {
+					return nil, fmt.Errorf("%v not expected type", newRow[key])
+				}
+
+				for k := range nr {
+					nrsi, ok := newRows[i][key].(map[string]interface{})
+					if !ok {
+						return nil, fmt.Errorf("%v not expected type", newRows[i][key])
+					}
+					nrsi[k] = nr[k]
 				}
 			} else {
 				newRows[i][key] = newRow[key]
@@ -216,7 +257,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 // object.likes.1.actor.
 // object.likes.2.actor.
 
-func transformArrayFields(foreign string, fields interface{}, row map[string]interface{}, modelName string) []map[string]interface{} {
+func transformArrayFields(foreign string, fields interface{}, row map[string]interface{}, modelName string) ([]map[string]interface{}, error) {
 	var newRows []map[string]interface{}
 	// The transformation for one row with arrays is multiple rows
 
@@ -228,26 +269,48 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 	finish := false
 	i := 0
 	for !finish {
-		for _, f := range fields.([]interface{}) { // loop through all the fields that we need to create the row
+		fis, ok := fields.([]interface{})
+		if !ok {
+			log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", fields), "Not expected interface{} type")
+		}
 
-			field := f.(map[string]interface{})
-			lastfield := field["foreign"].(string)
+		for _, f := range fis { // loop through all the fields that we need to create the row
+
+			field, ok := f.(map[string]interface{})
+			if !ok {
+				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", f), "Not expected type")
+			}
+			lastfield, ok := field["foreign"].(string)
+			if !ok {
+				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["foreign"]), "Not expected type")
+			}
+			lastfield = strings.ToLower(lastfield)
 
 			fi := foreign + "." + strconv.Itoa(i) + "." + lastfield // this one is the field in the source document
+
+			relation, ok := field["relation"].(string)
+			if !ok {
+				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["relation"]), "Not expected type")
+			}
+			relation = strings.ToLower(relation)
+			local, ok := field["local"].(string)
+			if !ok {
+				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["local"]), "Not expected type")
+			}
+			local = strings.ToLower(local)
 
 			// if that row has data on fi
 			if row[fi] != nil {
 				// transform that specific field
-				//newvalue, err := transformField(row[fi], field["relation"].(string), field["local"].(string), modelName)
-				newvalue, err := transformField(row[fi], field["relation"].(string), modelName, field["foreign"].(string))
+				newvalue, err := transformField(row[fi], relation, local, modelName)
 				if err != nil {
 					log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", field["foreign"])
 				}
 				switch field["relation"] {
 				case "Source":
-					source[field["local"].(string)] = newvalue
+					source[local] = newvalue
 				default:
-					newRow[field["local"].(string)] = newvalue
+					newRow[local] = newvalue
 				}
 				if source != nil && len(source) > 0 {
 					newRow["source"] = source
@@ -265,32 +328,36 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 
 		i++ // NEXT POSSIBLE ROW
 	}
-	return newRows
+	return newRows, nil
 }
 
 //Here we transform the record into what we want (based on the configuration in the strategy)
 // 1. convert types (values are all strings) into the struct
 //func transformField(oldValue interface{}, relation string, local string, coralName string) (interface{}, error) {
 // // 1. convert types into the struct
-func transformField(oldValue interface{}, relation string, model string, foreignfield string) (interface{}, error) {
+func transformField(oldValue interface{}, relation string, coralName string, foreignfield string) (interface{}, error) {
 
 	var newValue interface{}
 	var err error
 
 	if oldValue != nil {
-		switch relation {
-		case "Identity":
+		ov, ok := oldValue.(string)
+		if !ok {
+			return nil, fmt.Errorf("%v not expected type", oldValue)
+		}
+		switch strings.ToLower(relation) {
+		case "identity":
 			return oldValue, err
-		case "Source":
+		case "source":
 			return oldValue, err
-		case "Status":
-			return strategy.GetStatus(model, oldValue.(string)), err
-		case "SubDocument":
+		case "status":
+			return strategy.GetStatus(coralName, ov), err
+		case "subdocument":
 			//oldvalue is [map[_id:terrence-mccoy name:Terrence McCoy url:http://www.washingtonpost.com/people/terrence-mccoy twitter:@terrence_mccoy]]
 			// check all the other fields in the subcollection
 			// oldValue is an array of values []map[string]interface{}
 			// look through all the fields and do the transformation one by one
-			fields := strategy.GetFieldsForSubDocument(model, foreignfield)
+			fields := strategy.GetFieldsForSubDocument(coralName, foreignfield)
 
 			// oldValue is interface{} and it is []map[string]interface{} when subdocument
 			ovSlice := oldValue.([]interface{}) // cast into []interface{}
@@ -300,10 +367,10 @@ func transformField(oldValue interface{}, relation string, model string, foreign
 			}
 
 			return transformSubDocumentField(ov, relation, fields)
-		case "ParseTimeDate":
+		case "parsetimedate":
 			switch v := oldValue.(type) {
 			case string:
-				return parseDate(oldValue.(string))
+				return parseDate(ov)
 			case time.Time:
 				return v.Format(time.RFC3339), nil
 			default:
@@ -355,9 +422,16 @@ func parseDate(value interface{}) (string, error) {
 
 	switch v := value.(type) {
 	case string:
-		dt, err = parseDateLayout(value.(string))
+		vs, ok := value.(string)
+		if !ok {
+			return "", fmt.Errorf("%v not expected type", vs)
+		}
+		dt, err = parseDateLayout(vs)
 	case time.Time:
-		dt = value.(time.Time)
+		dt, ok := value.(time.Time)
+		if !ok {
+			return "", fmt.Errorf("%v not expected type", dt)
+		}
 	default:
 		err = fmt.Errorf("Type of data %v not recognizable.", v)
 	}

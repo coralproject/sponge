@@ -213,8 +213,6 @@ func (s Strategy) GetDateTimeFormat(table string, field string) string {
 
 // GetTables returns a list of tables to be imported
 func (s Strategy) GetTables() map[string]Table {
-	// To Do: catch the error when no Tables
-
 	return s.Map.Tables
 }
 

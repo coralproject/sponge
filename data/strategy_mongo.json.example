@@ -1,155 +1,190 @@
 {
-  "Name": "New York Times",
+  "Name": "Washington Post",
   "Map": {
-    "Foreign": "mysql",
-    "DateTimeFormat": "2006-01-02 15:04:05",
+    "Foreign": "mongodb",
+    "DateTimeFormat": "2006-02-01T15:04:05Z",
     "Tables": {
       "assets": {
-        "Foreign": "crnr_asset",
+        "Foreign": "assets",
         "Local": "assets",
         "Priority": 0,
-        "OrderBy": "assetid",
-        "ID": "assetid",
+        "OrderBy": "url",
+        "ID": "url",
         "Index": [
           {
-            "name": "asset-url",
-            "keys": ["asseturl"],
+            "name": "url",
+            "key": ["url"],
             "unique": true,
             "dropdups": true
           }
         ],
         "Fields": [
           {
-            "foreign": "assetid",
+            "foreign": "url",
             "local": "id",
             "relation": "Source",
             "type": "int"
           },
           {
-            "foreign": "asseturl",
+            "foreign": "url",
             "local": "url",
             "relation": "Identity",
             "type": "int"
           },
           {
-            "foreign": "updatedate",
-            "local": "date_updated",
-            "relation": "ParseTimeDate",
-            "type": "dateTime"
+            "foreign": "section",
+            "local": "section",
+            "relation": "Identity",
+            "type": "string"
           },
           {
-            "foreign": "createdate",
-            "local": "date_created",
-            "relation": "ParseTimeDate",
-            "type": "dateTime"
+            "foreign": "authors",
+            "local": "authors",
+            "relation": "SubDocument",
+            "type": "collection",
+            "fields": [
+              {
+                "foreign": "_id",
+                "local": "id"
+              },
+              {
+                "foreign": "name",
+                "local": "name"
+              },
+              {
+                "foreign": "url",
+                "local": "url"
+              },
+              {
+                "foreign": "twitter",
+                "local": "twitter"
+              },
+              {
+                "foreign": "facebook",
+                "local": "facebook"
+              }
+            ]
           }
         ],
         "Endpoint": "/api/import/asset"
       },
       "users": {
-        "Foreign": "crnr_comment",
+        "Foreign": "actors",
         "Local": "users",
         "Priority": 1,
-        "OrderBy": "userid",
-        "ID": "userid",
+        "OrderBy": "_id",
+        "ID": "_id",
         "Index": [
           {
-            "name": "user-name",
-            "keys": ["name"],
-            "unique": true,
+            "name": "title",
+            "key": ["name"],
+            "unique": false,
             "dropdups": true
           }
         ],
         "Fields": [
           {
-            "foreign": "userid",
+            "foreign": "_id",
             "local": "id",
             "relation": "Source",
-            "type": "int"
+            "type": "String"
           },
           {
-            "foreign": "userdisplayname",
+            "foreign": "title",
             "local": "name",
             "relation": "Identity",
-            "type": "[]byte"
+            "type": "String"
+          },
+          {
+            "foreign": "status",
+            "local": "status",
+            "relation": "Status",
+            "type": "String"
+          },
+          {
+            "foreign": "avatar",
+            "local": "avatar",
+            "relation": "Identity",
+            "type": "String"
           }
         ],
+        "Status": {
+          "unmoderated": "1",
+          "accepted": "2",
+          "rejected": "3",
+          "escalated": "4"
+        },
         "Endpoint": "/api/import/user"
       },
       "comments": {
-        "Foreign": "crnr_comment",
+        "Foreign": "comments",
         "Local": "comments",
         "Priority": 2,
-        "OrderBy": "createdate",
-        "ID": "commentid",
+        "OrderBy": "postedTime",
+        "ID": "_id",
         "Index": [
           {
-            "name": "commentid",
-            "keys": ["commentid"],
-            "unique": true,
-            "dropdups": true
+            "name": "posted-time",
+            "key": ["date_created"],
+            "unique": false,
+            "dropdups": false
           }
         ],
         "Fields": [
           {
-            "foreign": "commentid",
+            "foreign": "_id",
             "local": "id",
             "relation": "Source",
-            "type": "int"
+            "type": "ObjectId"
           },
           {
-            "foreign": "commentbody",
+            "foreign": "object.content",
             "local": "body",
             "relation": "Identity",
-            "type": "[]byte"
+            "type": "String"
           },
           {
-            "foreign": "userid",
+            "foreign": "actor.id",
             "local": "user_id",
             "relation": "Source",
-            "type": "int"
+            "type": "String"
           },
           {
-            "foreign": "assetid",
+            "foreign": "object.context.0.uri",
             "local": "asset_id",
             "relation": "Source",
-            "type": "int"
+            "type": "String"
           },
           {
-            "foreign": "statusid",
+            "foreign": "object.status",
             "local": "status",
             "relation": "Identity",
             "type": "int"
           },
           {
-            "foreign": "parentid",
+            "foreign": "targets.0.id",
             "local": "parent_id",
             "relation": "Source",
             "type": "int"
           },
           {
-            "foreign": "createdate",
+            "foreign": "postedTime",
             "local": "date_created",
             "relation": "ParseTimeDate",
-            "type": "timedate"
+            "type": "timedate",
+            "datetimeformat": "2006-01-02 15:04:05 -0700 PST"
           },
           {
-            "foreign": "updatedate",
+            "foreign": "updated",
             "local": "date_updated",
             "relation": "ParseTimeDate",
             "type": "timedate",
-            "datetimeformat": "2006-01-02 15:04:05"
-          },
-          {
-            "foreign": "approvedate",
-            "local": "date_approved",
-            "relation": "ParseTimeDate",
-            "type": "timedate"
+            "datetimeformat": "2006-01-02 15:04:05 -0700 PST"
           }
         ],
         "Endpoint": "/api/import/comment"
       },
-      "actionslikes": {
+      "actions": {
         "Foreign": "comments",
         "Local": "actions",
         "Priority": 4,
@@ -204,7 +239,7 @@
         ],
         "Endpoint": "/api/import/action"
       },
-      "actionsflags": {
+      "actions": {
         "Foreign": "comments",
         "Local": "actions",
         "Priority": 3,
@@ -264,20 +299,11 @@
   "Credentials": {
     "Databases": [
       {
-        "database": "coral_test",
-        "username": "root",
+        "database": "",
+        "username": "",
         "password": "",
-        "host": "localhost",
-        "port": "5432",
-        "adapter": "mysql",
-        "type": "foreign"
-      },
-      {
-        "database": "coral_test",
-        "username": "gaba",
-        "password": "gabita",
-        "host": "localhost",
-        "port": "27017",
+        "host": "",
+        "port": "",
         "adapter": "mongodb",
         "type": "foreign"
       }
