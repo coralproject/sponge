@@ -96,7 +96,8 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		dateLayout = strategy.GetDateTimeFormat(modelName, f["local"].(string))
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		newValue, err := transformField(row[strings.ToLower(f["foreign"].(string))], f["relation"].(string), f["local"].(string))
+		oldValue := row[strings.ToLower(f["foreign"].(string))]
+		newValue, err := transformField(oldValue, f["relation"].(string), modelName, f["foreign"].(string))
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v.", f["foreign"])
 		}
@@ -105,7 +106,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		case "Source": // { 	"source": { "asset_id": xxx}, }
 			source[f["local"].(string)] = newValue
 
-		default: // Identity
+		default: // Identity or SubDocument
 			newRow[f["local"].(string)] = newValue
 		}
 
@@ -136,11 +137,11 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 
 		switch f["relation"] {
 		case "Loop":
-			newRows = transformArrayFields(foreign, f["fields"], row)
+			newRows = transformArrayFields(foreign, f["fields"], row, modelName)
 		case "Source": // { 	"source": { "asset_id": xxx}, }
 			local := f["local"].(string)
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[strings.ToLower(foreign)], relation, local)
+			newValue, err := transformField(row[strings.ToLower(foreign)], relation, modelName, foreign)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -150,12 +151,12 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			local := f["local"].(string)
 			newRow[local] = f["value"]
 
-		default: // Identity or ParseTimeDate
+		default: // Identity or ParseTimeDate or SubDocument
 			local := f["local"].(string)
 			dateLayout = strategy.GetDateTimeFormat(modelName, local)
 
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[strings.ToLower(foreign)], relation, local)
+			newValue, err := transformField(row[strings.ToLower(foreign)], relation, modelName, foreign)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -213,7 +214,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 // object.likes.1.actor.
 // object.likes.2.actor.
 
-func transformArrayFields(foreign string, fields interface{}, row map[string]interface{}) []map[string]interface{} {
+func transformArrayFields(foreign string, fields interface{}, row map[string]interface{}, modelName string) []map[string]interface{} {
 	var newRows []map[string]interface{}
 	// The transformation for one row with arrays is multiple rows
 
@@ -235,7 +236,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 			// if that row has data on fi
 			if row[fi] != nil {
 				// transform that specific field
-				newvalue, err := transformField(row[fi], field["relation"].(string), field["local"].(string))
+				newvalue, err := transformField(row[fi], field["relation"].(string), modelName, field["foreign"].(string))
 				if err != nil {
 					log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", field["foreign"])
 				}
@@ -265,10 +266,10 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 }
 
 //Here we transform the record into what we want (based on the configuration in the strategy)
-// 1. convert types (values are all strings) into the struct
-func transformField(oldValue interface{}, relation string, local string) (interface{}, error) {
+// 1. convert types into the struct
+func transformField(oldValue interface{}, relation string, model string, foreignfield string) (interface{}, error) {
 
-	var tfield interface{}
+	var newValue interface{}
 	var err error
 
 	if oldValue != nil {
@@ -277,6 +278,21 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 			return oldValue, err
 		case "Source":
 			return oldValue, err
+		case "SubDocument":
+			//oldvalue is [map[_id:terrence-mccoy name:Terrence McCoy url:http://www.washingtonpost.com/people/terrence-mccoy twitter:@terrence_mccoy]]
+			// check all the other fields in the subcollection
+			// oldValue is an array of values []map[string]interface{}
+			// look through all the fields and do the transformation one by one
+			fields := strategy.GetFieldsForSubDocument(model, foreignfield)
+
+			// oldValue is interface{} and it is []map[string]interface{} when subdocument
+			ovSlice := oldValue.([]interface{}) // cast into []interface{}
+			ov := make([]map[string]interface{}, len(ovSlice))
+			for i := range ov {
+				ov[i] = ovSlice[i].(map[string]interface{})
+			}
+
+			return transformSubDocumentField(ov, relation, fields)
 		case "ParseTimeDate":
 			switch v := oldValue.(type) {
 			case string:
@@ -287,10 +303,10 @@ func transformField(oldValue interface{}, relation string, local string) (interf
 				return "", fmt.Errorf("Type of data %v not recognizable.", v)
 			}
 		}
+		err = fmt.Errorf("Type of transformation %s not found for %v.", relation, oldValue)
 	}
-	err = fmt.Errorf("Type of transformation %s not found for %v.", relation, oldValue)
 
-	return tfield, err
+	return newValue, err
 }
 
 func parseDateLayout(value string) (time.Time, error) {
@@ -303,6 +319,26 @@ func parseDateLayout(value string) (time.Time, error) {
 	return dt, err
 }
 
+func transformSubDocumentField(oldValue []map[string]interface{}, relation string, fields []map[string]interface{}) (interface{}, error) {
+
+	var err error
+
+	newValue := make([]map[string]interface{}, len(oldValue))
+	//stringType := reflect.TypeOf("string").Elem()
+
+	for i := range oldValue { // oldValue is an array of documents
+		r := oldValue[i] // when it is a subdocument we know that oldValue is really a slice of maps
+		newValue[i] = make(map[string]interface{})
+		for _, f := range fields { // each field is a map with local, foreign fields
+
+			if r[f["foreign"].(string)] != nil {
+				newValue[i][f["local"].(string)] = r[f["foreign"].(string)]
+			}
+		}
+	}
+
+	return newValue, err
+}
 func parseDate(value interface{}) (string, error) {
 
 	// on format https://golang.org/pkg/time/#Parse
