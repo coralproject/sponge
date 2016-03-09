@@ -164,9 +164,6 @@ func CreateIndex(collection string) error {
 }
 
 func doRequest(method string, urlStr string, payload io.Reader) error {
-
-	//fmt.Println("PAYLOAD: ", payload)
-
 	var err error
 	request, err := http.NewRequest(method, urlStr, payload)
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
-	"github.com/buth/pillar/pkg/model"
+	"github.com/coralproject/pillar/pkg/model"
 	"github.com/coralproject/sponge/pkg/strategy"
 	uuidimported "github.com/pborman/uuid"
 )
