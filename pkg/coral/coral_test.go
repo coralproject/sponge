@@ -13,7 +13,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
-	"github.com/coralproject/pillar/pkg/crud"
+	"github.com/coralproject/pillar/pkg/model"
 	"github.com/coralproject/sponge/pkg/strategy"
 	uuidimported "github.com/pborman/uuid"
 )
@@ -59,19 +59,19 @@ func setup() {
 		switch r.RequestURI {
 		case "/api/import/user": // if user, the payload should be a user kind of payload
 			// decode the user
-			user := crud.User{}
+			user := model.User{}
 			err = json.NewDecoder(r.Body).Decode(&user)
 		case "/api/import/asset": // if asset, the payload should be an asset kind of payload
 			// decode the asset
-			asset := crud.Asset{}
+			asset := model.Asset{}
 			err = json.NewDecoder(r.Body).Decode(&asset)
 		case "/api/import/comment": // if comment, the payload should be a comment kind of payload
 			// decode the comment
-			comment := crud.Comment{}
+			comment := model.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
 		case "/api/import/index":
 			// decode the index
-			index := crud.Index{}
+			index := model.Index{}
 			err = json.NewDecoder(r.Body).Decode(&index)
 		default:
 			err = errors.New("Bad request")
@@ -189,7 +189,7 @@ func TestAddUserRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	tableName := "user"
+	tableName := "users"
 
 	e = AddRow(newrow, tableName)
 	if e != nil {
@@ -206,7 +206,7 @@ func TestAddAssetRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	tableName := "asset"
+	tableName := "assets"
 
 	e = AddRow(newrow, tableName)
 	if e != nil {
@@ -223,7 +223,7 @@ func TestAddCommentRow(t *testing.T) {
 		t.Fatalf("error with the test data: %s.", e)
 	}
 
-	tableName := "comment"
+	tableName := "comments"
 
 	e = AddRow(newrow, tableName)
 	if e != nil {
@@ -235,7 +235,7 @@ func TestAddCommentRow(t *testing.T) {
 // test the request on create index
 func TestCreateIndex(t *testing.T) {
 
-	tableName := "comment"
+	tableName := "comments"
 
 	e := CreateIndex(tableName)
 	if e != nil {
