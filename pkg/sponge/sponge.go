@@ -3,6 +3,7 @@ package sponge
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ardanlabs/kit/log"
@@ -135,16 +136,34 @@ func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 		// Get the data
 		log.User(uuid, "sponge.importAll", "### Reading data from table '%s'. \n", modelName)
 
-		data, err := dbsource.GetData(modelName, offset, limit, orderby)
-		if err != nil {
-			log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", modelName)
-			//RECORD to report about failing modelName
-			report.Record(modelName, "", nil, "Failing to get data.", err)
-			continue
+		// get only some data at a time
+		CHUNK := 1000
+		i := offset
+		n := CHUNK
+		var wg sync.WaitGroup
+
+		for i < limit { // TO DO: limit could be too big
+			wg.Add(1)
+
+			go func() {
+				defer wg.Done()
+				data, err := dbsource.GetData(modelName, i, n, orderby)
+				if err != nil {
+					log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", modelName)
+					//RECORD to report about failing modelName
+					report.Record(modelName, "", nil, "Failing to get data.", err)
+					return
+				}
+
+				//transform and send to pillar
+				process(modelName, data)
+			}()
+
+			i = n + 1
+			n = i + n
 		}
 
-		//transform and send to pillar
-		process(modelName, data)
+		wg.Wait()
 	}
 }
 
