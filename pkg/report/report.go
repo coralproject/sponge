@@ -16,43 +16,39 @@ import (
 	"sort"
 
 	"github.com/ardanlabs/kit/log"
+	"github.com/boltdb/bolt"
 )
 
 const (
-	filePathDefault = "failed_import.csv"
+	dbnameDefault = "sponge.db"
 )
 
 var (
-	records  [][]string
-	filePath string
-	uuid     string
+	db   string
+	uuid string
 )
 
 // Init initialize the records to be recorded
-func Init(u string, errorsfile string) {
+func Init(u string, dbname string) {
 
 	uuid = u
 
-	// Initialize with the headers
-	records = [][]string{
-		{"table", "id", "row", "note", "error"},
+	// 	{"table", "id", "row", "note", "error"},
+
+	if dbname == "" {
+		dbname = dbnameDefault
 	}
 
-	if errorsfile == "" {
-		filePath = filePathDefault
-	} else {
-		filePath = errorsfile
+	db, err := bolt.Open(dbname, 0600, nil)
+	if err != nil {
+		log.Error(uuid, "report.init", err, "Initializing database.")
 	}
+	defer db.Close()
+
 }
 
 // Record adds a new record to the report
 func Record(model string, id interface{}, row map[string]interface{}, note string, e error) {
-
-	// convertthe row to string
-	// srow := ""
-	// for key, value := range row {
-	// 	srow = srow + "/" + key + ":" + value
-	// }
 
 	srow, err := json.Marshal(row)
 	if err != nil {
@@ -201,3 +197,6 @@ func addRecord(results []map[string]interface{}, table string, id string) []map[
 
 	return results
 }
+
+// SetImportDate
+// GetLastImportDate

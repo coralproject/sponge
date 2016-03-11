@@ -13,6 +13,11 @@
 			"revisionTime": "2015-12-12T03:50:02-05:00"
 		},
 		{
+			"path": "github.com/boltdb/bolt",
+			"revision": "0fd4c0547d204c7b1cad6db6f3adad5f2cf453e5",
+			"revisionTime": "2016-03-10T12:43:05-07:00"
+		},
+		{
 			"path": "github.com/coralproject/shelf/pkg/cfg",
 			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
 			"revisionTime": "2015-12-09T01:47:32-05:00"
