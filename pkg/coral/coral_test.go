@@ -57,15 +57,15 @@ func setup() {
 
 		// check that the row is what we want it to be
 		switch r.RequestURI {
-		case "/api/import/user": // if user, the payload should be a user kind of payload
+		case "/api/import/users": // if user, the payload should be a user kind of payload
 			// decode the user
 			user := model.User{}
 			err = json.NewDecoder(r.Body).Decode(&user)
-		case "/api/import/asset": // if asset, the payload should be an asset kind of payload
+		case "/api/import/assets": // if asset, the payload should be an asset kind of payload
 			// decode the asset
 			asset := model.Asset{}
 			err = json.NewDecoder(r.Body).Decode(&asset)
-		case "/api/import/comment": // if comment, the payload should be a comment kind of payload
+		case "/api/import/comments": // if comment, the payload should be a comment kind of payload
 			// decode the comment
 			comment := model.Comment{}
 			err = json.NewDecoder(r.Body).Decode(&comment)
@@ -125,7 +125,7 @@ func TestMain(m *testing.M) {
 func TestMockupServer(t *testing.T) {
 
 	method := "POST"
-	urlStr := server.URL + "/api/import/user"
+	urlStr := server.URL + "/api/import/users"
 	row := map[string]interface{}{"juan": 3, "pepe": "what"}
 	juser, err := json.Marshal(row)
 	payload := bytes.NewBuffer(juser)
