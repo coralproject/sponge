@@ -100,6 +100,11 @@
 			"revisionTime": "2015-07-29T10:04:31+02:00"
 		},
 		{
+			"path": "gopkg.in/djherbis/stow.v2",
+			"revision": "52774f0516156e0e23216283da682d5b668bc1f3",
+			"revisionTime": "2016-03-05T12:40:48-08:00"
+		},
+		{
 			"path": "gopkg.in/mgo.v2",
 			"revision": "f402e3a216db333ae6b3ba68b9152a34a0bc6984",
 			"revisionTime": "2015-10-05T19:07:38-07:00"
