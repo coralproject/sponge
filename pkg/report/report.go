@@ -9,11 +9,9 @@ table, id, row, "what went wrong"
 package report
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"os"
-	"sort"
+	"strconv"
 
 	"github.com/ardanlabs/kit/log"
 	"github.com/boltdb/bolt"
@@ -24,178 +22,171 @@ const (
 )
 
 var (
-	db   string
-	uuid string
+	dbname string
+	uuid   string
 )
 
+// Note is the schema for each row in the db
+type Note struct {
+	Row     string
+	Details string
+	Error   string
+}
+
 // Init initialize the records to be recorded
-func Init(u string, dbname string) {
+func Init(u string, dbn string) {
 
 	uuid = u
 
 	// 	{"table", "id", "row", "note", "error"},
 
-	if dbname == "" {
+	if dbn == "" {
 		dbname = dbnameDefault
+	} else {
+		dbname = dbn
+	}
+
+}
+
+// Record adds a new record to the report on failed imports
+func Record(model string, id interface{}, row map[string]interface{}, n string, e error) {
+
+	var srow string
+	for k, v := range row {
+		srow = fmt.Sprintf("%v/%s:%s", srow, k, v)
+	}
+
+	key, ok := id.(string)
+	if !ok {
+		log.Error(uuid, "report.record", fmt.Errorf("Error on assertion"), "Asserting the ID to string")
+	}
+
+	note := &Note{
+		Row:     srow,
+		Details: n,
+		Error:   e.Error(),
+	}
+
+	value, err := json.Marshal(note)
+	if err != nil {
+		log.Error(uuid, "report.record", err, "Marshaling data.")
 	}
 
 	db, err := bolt.Open(dbname, 0600, nil)
 	if err != nil {
-		log.Error(uuid, "report.init", err, "Initializing database.")
+		log.Error(uuid, "report.record", err, "Initializing database.")
 	}
 	defer db.Close()
 
-}
+	db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte(model))
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(key), value)
+	})
 
-// Record adds a new record to the report
-func Record(model string, id interface{}, row map[string]interface{}, note string, e error) {
-
-	srow, err := json.Marshal(row)
 	if err != nil {
-		log.Error(uuid, "report.record", e, "Marshalling the report's row.")
+		log.Error(uuid, "report.record", e, "Commiting to Bolt DB.")
 	}
-
-	n := len(records)
-
-	var original [][]string
-	original = make([][]string, n)
-	copy(original, records)
-
-	records = make([][]string, n+1)
-	copy(records[:n], original)
-	records[n] = []string{model, fmt.Sprintf("%v", id), fmt.Sprintf("%v", string(srow)), note, fmt.Sprint(e)}
-
-	Write()
-
 }
 
 // GetRecords returns the actual records that I'm recording
-func GetRecords() [][]string {
-	return records[1:len(records)]
-}
+func GetRecords(model string) (map[string]interface{}, error) {
 
-// Write writes the report to disk
-func Write() {
-	// remove existing file
-	//os.Remove(filePath)
+	m := make(map[string]interface{})
+	var err error
 
-	// only write the file if there is any report to write
-	if len(records) > 1 {
-		outfile, err := os.Create(filePath)
-		if err != nil {
-			log.Fatal(uuid, "report.write", "Creating or opening the file %s.", filePath)
-		}
-		defer outfile.Close()
+	db, err := bolt.Open(dbname, 0600, nil)
+	if err != nil {
+		log.Error(uuid, "report.record", err, "Initializing database.")
+	}
+	defer db.Close()
 
-		w := csv.NewWriter(outfile)
+	var vj Note
+	var kj int
 
-		for _, record := range records {
-			if err := w.Write(record); err != nil {
-				log.Error(uuid, "report.write", err, "Writing to the CSV file %s.", filePath)
+	err = db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte(model))
+
+		err := b.ForEach(func(k []byte, v []byte) error {
+			err := json.Unmarshal(v, &vj)
+			if err != nil {
+				log.Error(uuid, "report.getrecords", err, "Unmarshalling.")
 			}
-		}
+			err = json.Unmarshal(k, &kj)
+			if err != nil {
+				log.Error(uuid, "report.getrecords", err, "Unmarshalling.")
+			}
 
-		// Write any buffered data to the underlying writer (standard output).
-		w.Flush()
+			m[strconv.Itoa(kj)] = vj
 
-		if err := w.Error(); err != nil {
-			log.Error(uuid, "report.write", err, "Writing to CSV file")
-		}
-	} else {
-		log.User(uuid, "report.write", "There is nothing to write into the report.")
+			return err
+		})
+		return err
+	})
+	if err != nil {
+		log.Error(uuid, "report.getrecords", err, "Reading bolt database.")
 	}
+
+	return m, err
 }
 
-//* This functions are for the old report that is already save in disk. *//
+// GetRecordsForBucket use the bucket to look all the records
+func GetRecordsForBucket(b *bolt.Bucket) (map[string]interface{}, error) {
+	m := make(map[string]interface{})
 
-// ReadReport gets the data that needs to be imported from the report already in disk and return the records in a way that can be easily read it
-func ReadReport(filePath string) ([]map[string]interface{}, error) {
-	// Read the CSV file
-	outfile, err := os.Open(filePath)
-	if err != nil {
-		log.Fatal(uuid, "report.read", "Unable to open file %s.", filePath)
-	}
-	defer outfile.Close()
+	var vj Note
+	var kj int
 
-	// Read the file
-	f := csv.NewReader(outfile)
-	f.FieldsPerRecord = 5
-	r, err := f.ReadAll()
-	if err != nil {
-		log.Error(uuid, "report.read", err, "Fails at reading the report %s.", filePath)
-	}
-
-	// Get into results
-	// [
-	// 	{
-	//		table: xxx,
-	//		ids: [x,x,xx,x,xxx]
-	//	},
-	// 	{
-	// 		table: x,
-	// 		ids: []
-	//  }
-	// ]
-	var results []map[string]interface{}
-	for _, row := range r {
-		if row[0] == "table" {
-			continue
+	err := b.ForEach(func(k []byte, v []byte) error {
+		err := json.Unmarshal(v, &vj)
+		if err != nil {
+			log.Error(uuid, "report.getrecordsforbucket", err, "Unmarshalling.")
 		}
-		table := row[0]
-		id := row[1]
+		err = json.Unmarshal(k, &kj)
+		if err != nil {
+			log.Error(uuid, "report.getrecordsforbucket", err, "Unmarshalling.")
+		}
 
-		results = addRecord(results, table, id)
-	}
+		m[strconv.Itoa(kj)] = vj
 
-	return results, nil
+		return err
+	})
+
+	return m, err
+
 }
 
-//results
-//[{
-// "table": "comment"
-// "ids": []
-// }]
-// adds the table, id to the results
-func addRecord(results []map[string]interface{}, table string, id string) []map[string]interface{} {
+// ReadReport gets the ids that needs to be imported from the report already in disk and return the records in a way that can be easily read it
+func ReadReport(dbname string) (map[string][]string, error) { //(map[string]map[string]interface{}, error) {
+	maa := make(map[string][]string) //make(map[string]map[string]interface{})
 
-	n := len(results)
-
-	// copy results to a temporal map
-	var original []map[string]interface{}
-	original = make([]map[string]interface{}, n)
-	copy(original, results)
-
-	if id == "" { // add the whole table to the results
-
-		// increment our map
-		results = make([]map[string]interface{}, n+1)
-		copy(results[:n], original)
-
-		// item to be added
-		item := map[string]interface{}{"table": table, "ids": []string{}}
-
-		results[n] = item
-		return results
+	db, err := bolt.Open(dbname, 0600, nil)
+	if err != nil {
+		log.Error(uuid, "report.record", err, "Opening bolt database.")
 	}
 
-	// search table in the original
-	pos := sort.Search(n, func(i int) bool {
-		return (original[i]["table"] == table)
-	}) // returns the position where the value is
+	err = db.View(func(tx *bolt.Tx) error {
 
-	if pos == n { // not found
-		// increment our map
-		results = make([]map[string]interface{}, n+1)
-		copy(results[:n], original)
+		var err error
+		err = tx.ForEach(func(bucketname []byte, b *bolt.Bucket) error {
 
-		item := map[string]interface{}{"table": table, "ids": []string{id}}
-		results[n] = item
-	} else {
-		ids := original[pos]["ids"].([]string)
-		results[pos]["ids"] = append(ids, id)
-	}
+			m, err := GetRecordsForBucket(b)
+			s := make([]string, 0, len(m))
+			for i := range m {
+				s = append(s, i)
+			}
+			maa[string(bucketname)] = s
 
-	return results
+			return err
+		})
+
+		return err
+	})
+
+	return maa, err
 }
 
 // SetImportDate
