@@ -114,6 +114,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		newValue, err := transformField(row[foreign], relation, local, modelName)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v.", f["foreign"])
+			return nil, err
 		}
 
 		switch f["relation"] {

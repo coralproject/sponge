@@ -43,15 +43,15 @@ func Init(u string) error {
 }
 
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, thisStrategy string) {
+func Import(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportdbfile string) {
 
-	report.Init(uuid, thisStrategy)
+	report.Init(uuid, reportdbfile)
 
 	// Connect to external source
 	log.User(uuid, "sponge.import", "### Connecting to external database...")
 
 	if importonlyfailed { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(dbsource, limit, offset, orderby, thisStrategy)
+		importOnlyFailedRecords(dbsource, limit, offset, orderby, reportdbfile)
 	} else { // import everything that is in the strategy
 		if types != "" {
 			for _, t := range strings.Split(types, ",") {

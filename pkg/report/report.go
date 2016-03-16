@@ -11,7 +11,10 @@ package report
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
+
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/ardanlabs/kit/log"
 	"github.com/boltdb/bolt"
@@ -56,9 +59,18 @@ func Record(model string, id interface{}, row map[string]interface{}, n string, 
 		srow = fmt.Sprintf("%v/%s:%s", srow, k, v)
 	}
 
-	key, ok := id.(string)
-	if !ok {
-		log.Error(uuid, "report.record", fmt.Errorf("Error on assertion"), "Asserting the ID to string")
+	reflect.TypeOf(id)
+
+	var key []byte
+
+	switch v := id.(type) {
+	case string:
+		key = []byte(v)
+	case bson.ObjectId:
+		key, _ = v.MarshalJSON()
+		//key = []byte(v.Hex())
+	default:
+		log.Error(uuid, "report.record", fmt.Errorf("Error on assertion. Type is %v", reflect.TypeOf(id)), "Asserting the ID to string")
 	}
 
 	note := &Note{
@@ -81,9 +93,16 @@ func Record(model string, id interface{}, row map[string]interface{}, n string, 
 	db.Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists([]byte(model))
 		if err != nil {
+			log.Error(uuid, "report.record", err, "Creating bucket.")
 			return err
 		}
-		return b.Put([]byte(key), value)
+
+		err = b.Put(key, value)
+		if err != nil {
+			log.Error(uuid, "report.record", err, "Recording data.")
+		}
+
+		return err
 	})
 
 	if err != nil {
@@ -117,7 +136,9 @@ func GetRecords(model string) (map[string]interface{}, error) {
 			}
 			err = json.Unmarshal(k, &kj)
 			if err != nil {
+				reflect.TypeOf(kj)
 				log.Error(uuid, "report.getrecords", err, "Unmarshalling.")
+				return err
 			}
 
 			m[strconv.Itoa(kj)] = vj
@@ -138,7 +159,7 @@ func GetRecordsForBucket(b *bolt.Bucket) (map[string]interface{}, error) {
 	m := make(map[string]interface{})
 
 	var vj Note
-	var kj int
+	var kj string
 
 	err := b.ForEach(func(k []byte, v []byte) error {
 		err := json.Unmarshal(v, &vj)
@@ -150,7 +171,7 @@ func GetRecordsForBucket(b *bolt.Bucket) (map[string]interface{}, error) {
 			log.Error(uuid, "report.getrecordsforbucket", err, "Unmarshalling.")
 		}
 
-		m[strconv.Itoa(kj)] = vj
+		m[kj] = vj
 
 		return err
 	})
@@ -174,6 +195,9 @@ func ReadReport(dbname string) (map[string][]string, error) { //(map[string]map[
 		err = tx.ForEach(func(bucketname []byte, b *bolt.Bucket) error {
 
 			m, err := GetRecordsForBucket(b)
+			if err != nil {
+				return err
+			}
 			s := make([]string, 0, len(m))
 			for i := range m {
 				s = append(s, i)
@@ -187,6 +211,31 @@ func ReadReport(dbname string) (map[string][]string, error) { //(map[string]map[
 	})
 
 	return maa, err
+}
+
+// Print all the reports
+func Print() {
+
+	//GetRecords(model string) (map[string]interface{}, error) {
+	m, err := ReadReport(dbname)
+	if err != nil {
+		fmt.Printf("Error on reading %s. Error: %v.", dbname, err)
+		return
+	}
+
+	for i := range m {
+		fmt.Println("Model: ", i)
+
+		records, err := GetRecords(i)
+		if err != nil {
+			fmt.Println("Error on getting records: ", err)
+		}
+		for j, k := range records {
+			fmt.Println("ID: ", j)
+			fmt.Println("Details: ", k.(Note).Details)
+			fmt.Println("Error: ", k.(Note).Error)
+		}
+	}
 }
 
 // SetImportDate

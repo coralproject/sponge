@@ -25,7 +25,7 @@ var (
 
 	// Import from report on failed records (or not)
 	importonlyfailedFlag bool
-	errorsfileFlag       string
+	localErrorsDBFlag    string
 
 	// Query on the indicated field
 	queryFlag string
@@ -36,7 +36,7 @@ const (
 	defaultOffset           = 0
 	defaultOrderBy          = ""
 	defaultImportonlyfailed = false
-	defaultErrorsfile       = "failed_import.csv"
+	defaultlocalErrorsDB    = "report.db"
 	defaultQuery            = ""
 )
 
@@ -48,12 +48,12 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVar(&importonlyfailedFlag, "onlyfails", defaultImportonlyfailed, "import only the the records that failed in the last import(default is import all)")
 
-	RootCmd.PersistentFlags().StringVar(&errorsfileFlag, "errors", defaultErrorsfile, "set the file path for the report on errors (default is failed_import.csv)")
+	RootCmd.PersistentFlags().StringVar(&localErrorsDBFlag, "errors", defaultlocalErrorsDB, "set the file path for the report on errors (default is report.db)")
 
 	RootCmd.AddCommand(importCmd)
 }
 
 func addImport(cmd *cobra.Command, args []string) {
 
-	sponge.Import(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, errorsfileFlag)
+	sponge.Import(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, localErrorsDBFlag)
 }
