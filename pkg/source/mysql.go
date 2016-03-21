@@ -36,7 +36,7 @@ func (m MySQL) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) {
+func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string, q string) ([]map[string]interface{}, error) {
 
 	// Get the corresponding table to the modelName
 	tableName := strategy.GetTableForeignName(coralTableName)
@@ -66,7 +66,11 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
 	//query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
-	query := fmt.Sprintf("SELECT %s from %s order by %s limit %v, %v", fields, tableName, orderby, offset, limit)
+	var where string
+	if q != "" {
+		where = fmt.Sprintf("where %s ", q)
+	}
+	query := fmt.Sprintf("SELECT %s from %s %s order by %s limit %v, %v", fields, tableName, where, orderby, offset, limit)
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
@@ -86,7 +90,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	return dat, nil
 }
 
-// GetQueryData returns the raw data from the tableName
+// GetQueryData returns the raw data from the tableName based on the ids
 func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
 
 	// Get the corresponding table to the modelName

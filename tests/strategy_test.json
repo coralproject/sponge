@@ -149,10 +149,10 @@
         ],
         "Endpoint": "/api/import/comment"
       },
-      "actions": {
+      "actionslikes": {
         "Foreign": "comments",
         "Local": "actions",
-        "Priority": 3,
+        "Priority": 4,
         "OrderBy": "",
         "ID": "_id",
         "Index": [
@@ -186,6 +186,61 @@
           },
           {
             "foreign": "object.likes",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "user_id",
+                "relation": "Source"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "Endpoint": "/api/import/action"
+      },
+      "actionsflags": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 3,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "flags",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.flags",
             "fields": [
               {
                 "foreign": "published",

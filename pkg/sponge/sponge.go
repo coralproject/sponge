@@ -43,20 +43,19 @@ func Init(u string) error {
 }
 
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, types string, importonlyfailed string, errorsfile string) {
+func Import(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportdbfile string) {
 
-	// Initialize the report and write it down at the end (it does not create the file until the end)
-	report.Init(uuid, errorsfile)
+	report.Init(uuid, reportdbfile)
 
 	// Connect to external source
 	log.User(uuid, "sponge.import", "### Connecting to external database...")
 
-	if importonlyfailed != "" { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(dbsource, limit, offset, orderby, importonlyfailed)
+	if importonlyfailed { // import only what is in the report of failed importeda
+		importOnlyFailedRecords(dbsource, limit, offset, orderby, reportdbfile)
 	} else { // import everything that is in the strategy
 		if types != "" {
 			for _, t := range strings.Split(types, ",") {
-				importType(dbsource, limit, offset, orderby, strings.Trim(t, " ")) // removes any extra space
+				importType(dbsource, limit, offset, orderby, query, strings.Trim(t, " ")) // removes any extra space
 			}
 		} else {
 			importAll(dbsource, limit, offset, orderby)
@@ -89,29 +88,30 @@ func CreateIndex(collection string) {
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
-func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, orderby string, importonlyfailed string) {
+func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, orderby string, thisStrategy string) {
 
 	log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading file of data to import.")
 
 	// get the data that needs to be imported
-	rowsToImport, err := report.ReadReport(importonlyfailed) //[]map[string]interface{}
+	tables, err := report.ReadReport(thisStrategy) //map[model]map[id]interface{}
 	if err != nil {
 		log.Error(uuid, "sponge.importOnlyFailedRecords", err, "Getting the rows that will be imported")
 	}
 
 	var data []map[string]interface{}
-	for _, row := range rowsToImport {
-		table := row["table"].(string)
-		if len(row["ids"].([]string)) < 1 {
+
+	for table, ids := range tables {
+
+		if len(ids) < 1 { // only one ID
 			// Get the data
 			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s'. \n", table)
-			data, err = dbsource.GetData(table, offset, limit, orderby)
+			data, err = dbsource.GetData(table, offset, limit, orderby, "")
 		} else {
-			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s', quering '%s'. \n", table, row["ids"])
-			data, err = dbsource.GetQueryData(table, offset, limit, orderby, row["ids"].([]string))
+			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s', quering '%s'. \n", table, ids)
+			data, err = dbsource.GetQueryData(table, offset, limit, orderby, ids)
 		}
 		if err != nil {
-			report.Record(table, row["ids"], row, "Failing getting data", err)
+			report.Record(table, ids, nil, "Failing getting data", err)
 		}
 
 		// transform and get data into pillar
@@ -135,7 +135,7 @@ func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 		// Get the data
 		log.User(uuid, "sponge.importAll", "### Reading data from table '%s'. \n", modelName)
 
-		data, err := dbsource.GetData(modelName, offset, limit, orderby)
+		data, err := dbsource.GetData(modelName, offset, limit, orderby, "")
 		if err != nil {
 			log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", modelName)
 			//RECORD to report about failing modelName
@@ -149,12 +149,12 @@ func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 }
 
 // ImportType gets ony data related to table, transform it and send it to pillar
-func importType(dbsource source.Sourcer, limit int, offset int, orderby string, modelName string) {
+func importType(dbsource source.Sourcer, limit int, offset int, orderby string, query string, modelName string) {
 
 	// Get the data
 	log.User(uuid, "sponge.importTable", "### Reading data from table '%s'.", modelName)
 
-	data, err := dbsource.GetData(modelName, offset, limit, orderby)
+	data, err := dbsource.GetData(modelName, offset, limit, orderby, query)
 	if err != nil {
 		log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", modelName)
 		//RECORD to report about failing modelName

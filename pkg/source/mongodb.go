@@ -4,6 +4,8 @@ Package source implements a way to get data from external MongoDB sources.
 package source
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -33,7 +35,7 @@ func (m MongoDB) GetTables() ([]string, error) {
 }
 
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby string, query string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
 
 	var data []map[string]interface{}
 
@@ -71,10 +73,19 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 		//fieldsNames = append(fieldsNames, f["local"])
 	}
 
+	var mquery map[string]interface{}
+	if query != "" {
+		err = json.Unmarshal([]byte(query), &mquery)
+		if err != nil {
+			log.Error(uuid, "mongo.getdata", err, "Unmarshalling query %v", query)
+			return nil, err
+		}
+	}
+
 	//.Select(fieldsToGet) <--- SOME FIELDS ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
-	err = col.Find(nil).Limit(limit).All(&data)
+	err = col.Find(mquery).Limit(limit).All(&data)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Getting collection %s.", collectionName)
+		log.Error(uuid, "mongo.getdata", err, "Getting collection %s.", collectionName)
 		return nil, err
 	}
 
@@ -88,15 +99,33 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 }
 
 // GetQueryData needs to be implemented for mongodb to implement the sourcer interface
-func (m MongoDB) GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error) {
-	return nil, nil
+func (m MongoDB) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
+
+	var d []map[string]interface{}
+	var err error
+
+	// if we are quering specifics recrords
+	if len(ids) > 0 {
+		idField := strategy.GetIDField(coralTableName)
+
+		for i, j := range ids {
+			ids[i] = fmt.Sprintf("\"%s\"", j)
+		}
+		query := fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
+
+		d, err = m.GetData(coralTableName, offset, limit, orderby, query)
+	} else {
+		err = fmt.Errorf("No ids to get.")
+	}
+
+	return d, err
 }
 
 //////* Not exported functions *//////
 
 // ConnectionMongoDB returns the connection string
 func connectionMongoDB() string {
-	return credential.Username + ":" + credential.Password + "@" + "/" + credential.Database
+	return fmt.Sprintf("%s:%s@/%s", credential.Username, credential.Password, credential.Database)
 }
 
 // Open gives back a pointer to the DB

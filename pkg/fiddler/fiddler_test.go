@@ -30,10 +30,11 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel)
+	log.Init(os.Stderr, logLevel, log.Ldefault)
 
 	// Mock strategy configuration
 	strategyConf := "../../tests/strategy_test.json"
+	//strategyConf := "../../tests/strategy_with_actions_test.json"
 	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
@@ -132,7 +133,7 @@ func TestTransformRowArrayTypesNotDuplicating(t *testing.T) {
 		"object.likes.0.actor.objectTypes.0": "http://activitystrea.ms/schema/1.0/person",
 		"object.likes.0.published":           "2015-06-03T16:50:15Z",
 	}
-	modelName := "actions"
+	modelName := "actionslikes"
 
 	// interface{}, []map[string]interface{}, error)
 	id, result, err := TransformRow(row, modelName)
@@ -202,7 +203,7 @@ func TestTransformRowArrayTypes(t *testing.T) {
 		"object.likes.1.actor.objectTypes.0": "http://activitystrea.ms/schema/1.0/person",
 		"object.likes.1.published":           "2015-06-03T16:50:15Z",
 	}
-	modelName := "actions"
+	modelName := "actionslikes"
 
 	// interface{}, []map[string]interface{}, error)
 	id, result, err := TransformRow(row, modelName)
@@ -276,7 +277,8 @@ func TestGetCollections(t *testing.T) {
 		"assets",
 		"users",
 		"comments",
-		"actions",
+		"actionsflags",
+		"actionslikes",
 	}
 
 	collections := GetCollections()

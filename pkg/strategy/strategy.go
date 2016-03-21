@@ -213,8 +213,6 @@ func (s Strategy) GetDateTimeFormat(table string, field string) string {
 
 // GetTables returns a list of tables to be imported
 func (s Strategy) GetTables() map[string]Table {
-	// To Do: catch the error when no Tables
-
 	return s.Map.Tables
 }
 
@@ -228,6 +226,24 @@ func (s Strategy) HasArrayField(t Table) bool {
 		}
 	}
 	return false
+}
+
+// GetFieldsForSubDocument get all the fields in the case of a subdocumetn
+func (s Strategy) GetFieldsForSubDocument(model string, foreignfield string) []map[string]interface{} {
+	var fields []map[string]interface{}
+
+	for _, f := range s.Map.Tables[model].Fields { // search foreign field in []map[string]interface{}
+		if f["foreign"] == foreignfield {
+			fi := f["fields"].([]interface{})
+			// Convert the []interface into []map[string]interface{}
+			fields = make([]map[string]interface{}, len(fi))
+			for i := range fields {
+				fields[i] = fi[i].(map[string]interface{})
+			}
+			return fields
+		}
+	}
+	return fields
 }
 
 // GetTableForeignName returns the external source's table mapped to the coral model

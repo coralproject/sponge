@@ -13,7 +13,7 @@ import (
 
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
-	"github.com/buth/pillar/pkg/model"
+	"github.com/coralproject/pillar/pkg/model"
 	"github.com/coralproject/sponge/pkg/strategy"
 	uuidimported "github.com/pborman/uuid"
 )
@@ -41,7 +41,7 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel)
+	log.Init(os.Stderr, logLevel, log.Ldefault)
 
 	//MOCK STRATEGY CONF
 	strategyConf := "../../tests/strategy_test.json"

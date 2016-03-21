@@ -23,6 +23,18 @@ var (
 
 var oStrategy string
 
+func init() {
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.DEV
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel, log.Ldefault)
+}
+
 func setupMysql() {
 
 	// Initialize logging

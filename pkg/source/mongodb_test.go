@@ -13,9 +13,10 @@ func TestMongoGetData(t *testing.T) {
 	offset := 0
 	limit := 9999999999
 	orderby := ""
+	query := ""
 
 	// no error
-	data, err := mdb.GetData(coralName, offset, limit, orderby)
+	data, err := mdb.GetData(coralName, offset, limit, orderby, query)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -27,8 +28,51 @@ func TestMongoGetData(t *testing.T) {
 	}
 }
 
+func TestMongoQueryGetData(t *testing.T) {
+	setupMongo()
+
+	// Default Flags
+	coralName := "comment"
+	offset := 0
+	limit := 9999999999
+	orderby := ""
+	query := "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }"
+
+	// no error
+	data, err := mdb.GetData(coralName, offset, limit, orderby, query)
+	if err != nil {
+		t.Fatalf("expected no error, got '%s'.", err)
+	}
+
+	// data should be []map[string]interface{}
+	expectedlen := 0
+	if len(data) != expectedlen { // this is a setup for the seed data
+		t.Fatalf("expected %d, got %d", expectedlen, len(data))
+	}
+}
+
+// Signature func (m MongoDB) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
 func TestMongoGetQueryData(t *testing.T) {
-	t.Skip()
+	setupMongo()
+
+	// Default Flags
+	coralName := "comment"
+	offset := 0
+	limit := 9999999999
+	orderby := ""
+	ids := []string{"56ac0c7010780b0a357bdec3", "56ac0c7010780b0a357bdec1", "56ac0c7010780b0a357bdec4"}
+
+	// no error
+	data, err := mdb.GetQueryData(coralName, offset, limit, orderby, ids)
+	if err != nil {
+		t.Fatalf("expected no error, got '%s'.", err)
+	}
+
+	// data should be []map[string]interface{}
+	expectedlen := 0
+	if len(data) != expectedlen { // this is a setup for the seed data
+		t.Fatalf("expected %d, got %d", expectedlen, len(data))
+	}
 }
 
 // Signature func (m MongoDB) GetTables() ([]string, error) {

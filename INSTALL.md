@@ -27,6 +27,12 @@ There is one strategy file for publisher. It tells us how to do the transformati
 cp app/sponge/strategy.json.example /path/to/my/strategy.json
 ```
 
+* Specify the URL where pillar services are running
+
+```
+export PILLAR_URL=http://localhost:8080
+```
+
 ### How to run
 
 ```
