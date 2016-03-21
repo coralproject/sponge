@@ -76,5 +76,6 @@ func addAll(cmd *cobra.Command, args []string) {
 
 	addCreateIndexes(cmd, args)
 	addImport(cmd, args)
+	addReadReport(cmd, args)
 
 }

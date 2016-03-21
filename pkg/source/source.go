@@ -38,7 +38,7 @@ func Init(u string) string {
 
 // Sourcer is where the data is coming from (mysql, api)
 type Sourcer interface {
-	GetData(string, int, int, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
+	GetData(string, int, int, string, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
 	GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error)
 	GetTables() ([]string, error)
 }
