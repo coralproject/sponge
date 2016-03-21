@@ -39,9 +39,10 @@ func TestPostgresGetData(t *testing.T) {
 	offset := 0
 	limit := 9999999999
 	var orderby string
+	var query string
 
 	// no error
-	data, err := mp.GetData(coralName, offset, limit, orderby)
+	data, err := mp.GetData(coralName, offset, limit, orderby, query)
 	if err != nil {
 		t.Fatalf("expected no error, got %s.", err)
 	}

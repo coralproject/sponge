@@ -35,8 +35,10 @@ func (m PostgreSQL) GetTables() ([]string, error) {
 	return keys, nil
 }
 
+//GetData(string, int, int, string, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
+
 // GetData returns the raw data from the tableName
-func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderby string) ([]map[string]interface{}, error) {
+func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderby string, q string) ([]map[string]interface{}, error) {
 
 	// Get the corresponding table to the modelName
 	tableName := strategy.GetTableForeignName(coralTableName)
@@ -64,9 +66,12 @@ func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderb
 	}
 
 	// Get only the fields that we are going to use
-	// the query string . To Do. Select only the stuff you are going to use
+	var where string
+	if q != "" {
+		where = fmt.Sprintf("where %s ", q)
+	}
 
-	query := fmt.Sprintf("SELECT %s from %s order by %s OFFSET %v LIMIT %v", fields, tableName, orderby, offset, limit)
+	query := fmt.Sprintf("SELECT %s from %s %s order by %s OFFSET %v LIMIT %v", fields, tableName, where, orderby, offset, limit)
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {

@@ -45,7 +45,7 @@ func setupMysql() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel)
+	log.Init(os.Stderr, logLevel, log.Ldefault)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
@@ -82,7 +82,7 @@ func setupMongo() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel)
+	log.Init(os.Stderr, logLevel, log.Ldefault)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
@@ -119,7 +119,7 @@ func setupPostgreSQL() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel)
+	log.Init(os.Stderr, logLevel, log.Ldefault)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
