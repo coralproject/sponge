@@ -25,6 +25,7 @@ var (
 
 	// Import from report on failed records (or not)
 	importonlyfailedFlag bool
+	reportErrorsFlag     bool
 	localErrorsDBFlag    string
 
 	// Query on the indicated field
@@ -38,6 +39,7 @@ const (
 	defaultImportonlyfailed = false
 	defaultlocalErrorsDB    = "report.db"
 	defaultQuery            = ""
+	defaultReportErrors     = false
 )
 
 func init() {
@@ -47,13 +49,13 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&queryFlag, "query", defaultQuery, "query on the external table (where condition on mysql, query document on mongodb). It only works with a specific --type. Example updated_date >'2003-12-31 01:02:03'")
 
 	RootCmd.PersistentFlags().BoolVar(&importonlyfailedFlag, "onlyfails", defaultImportonlyfailed, "import only the the records that failed in the last import(default is import all)")
-
-	RootCmd.PersistentFlags().StringVar(&localErrorsDBFlag, "errors", defaultlocalErrorsDB, "set the file path for the report on errors (default is report.db)")
+	RootCmd.PersistentFlags().BoolVar(&reportErrorsFlag, "report", defaultReportErrors, "create report on records that fail importing (default is do not report)")
+	RootCmd.PersistentFlags().StringVar(&localErrorsDBFlag, "filepath", defaultlocalErrorsDB, "set the file path for the report on errors (default is report.db)")
 
 	RootCmd.AddCommand(importCmd)
 }
 
 func addImport(cmd *cobra.Command, args []string) {
 
-	sponge.Import(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, localErrorsDBFlag)
+	sponge.Import(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, reportErrorsFlag, localErrorsDBFlag)
 }
