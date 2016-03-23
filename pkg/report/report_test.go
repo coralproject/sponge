@@ -2,6 +2,7 @@ package report
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -24,7 +25,19 @@ func setup() {
 }
 
 func teardown() {
+	// drop the test.db
+	dbname := "test.db"
+	e := os.Remove(dbname)
+	if e != nil {
+		fmt.Printf("Error when removing %s: %v\n\n", dbname, e)
+	}
 
+	// drop the test2.db
+	dbname = "test2.db"
+	e = os.Remove(dbname)
+	if e != nil {
+		fmt.Printf("Error when removing %s: %v\n\n", dbname, e)
+	}
 }
 
 func TestMain(m *testing.M) {
@@ -36,12 +49,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-//func Record(model string, id interface{}, row map[string]interface{}, note string, e error) {
+//func Record(model string, id interface{},  note string, e error) {
 func TestRecord(t *testing.T) {
 
+	var id string
+
 	model := "comments"
-	id := "1"
-	row := map[string]interface{}{"id": "1", "body": "This is a comment."}
+	id = "1"
 	n := "This is a note."
 	e := errors.New("an error")
 
@@ -50,11 +64,9 @@ func TestRecord(t *testing.T) {
 
 	Init(u, dbname)
 
-	Record(model, id, row, n, e)
+	Record(model, id, n, e)
 
-	records, err := GetRecords(model)
-	//map[1:{/id:1/body:This is a comment. This is a note. an error}]
-
+	records, err := GetRecords(model) //map[1:{1 This is a note. an error}]
 	if err != nil {
 		t.Fatalf("got error %v, wanted nil", err)
 	}
@@ -73,10 +85,6 @@ func TestRecord(t *testing.T) {
 		t.Fatalf("got %v, it should be %v", r.Details, n)
 	}
 
-	if r.Row != "/id:1/body:This is a comment." {
-		t.Fatalf("got %v, it should be /id:1/body:This is a comment.", r.Row)
-	}
-
 	if r.Error != "an error" {
 		t.Fatalf("got %v, it should be %v", r.Error, e)
 	}
@@ -85,23 +93,23 @@ func TestRecord(t *testing.T) {
 
 func TestReadReport(t *testing.T) {
 
+	var id string
 	model := "comment"
-	id := "1"
-	row := map[string]interface{}{"id": "1", "body": "comment"}
-	note := "This is a note"
+	details := "This is a note"
 	e := errors.New("an error")
+
+	id = "1"
 
 	u := uuidimported.New()
 	dbname := "test2.db"
 
 	Init(u, dbname)
 
-	Record(model, id, row, note, e)
+	Record(model, id, details, e)
 
 	records, err := ReadReport(dbname)
-	// map[comment:[1]]
 	if err != nil {
-		t.Fatalf("got an error when reading report")
+		t.Fatalf("got an error when reading report %v.", err)
 	}
 
 	// records should have one item

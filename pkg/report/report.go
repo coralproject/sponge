@@ -1,8 +1,8 @@
 /*
 Package report
 
-CSV errors file with this fields:
-table, id, row, "what went wrong"
+Records with this fields:
+table, id, "what went wrong"
 
 */
 
@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strconv"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -31,7 +30,7 @@ var (
 
 // Note is the schema for each row in the db
 type Note struct {
-	Row     string
+	ID      string
 	Details string
 	Error   string
 }
@@ -41,40 +40,38 @@ func Init(u string, dbn string) {
 
 	uuid = u
 
-	// 	{"table", "id", "row", "note", "error"},
+	// 	{"table", "id", "note", "error"},
 
 	if dbn == "" {
 		dbname = dbnameDefault
 	} else {
 		dbname = dbn
 	}
-
 }
 
 // Record adds a new record to the report on failed imports
-func Record(model string, id interface{}, row map[string]interface{}, n string, e error) {
-
-	var srow string
-	for k, v := range row {
-		srow = fmt.Sprintf("%v/%s:%s", srow, k, v)
-	}
-
-	reflect.TypeOf(id)
+func Record(model string, id interface{}, n string, e error) {
 
 	var key []byte
+	var err error
 
 	switch v := id.(type) {
 	case string:
-		key = []byte(v)
+		key, err = json.Marshal(v)
+		if err != nil {
+			log.Error(uuid, "report.record", fmt.Errorf("Error on marshalling %v", v), "Marshalling the ID to key")
+		}
 	case bson.ObjectId:
-		key, _ = v.MarshalJSON()
-		//key = []byte(v.Hex())
+		key, err = v.MarshalJSON()
+		if err != nil {
+			log.Error(uuid, "report.record", fmt.Errorf("Error on marshalling %v", v), "Marshalling the ID to key")
+		}
 	default:
 		log.Error(uuid, "report.record", fmt.Errorf("Error on assertion. Type is %v", reflect.TypeOf(id)), "Asserting the ID to string")
 	}
 
 	note := &Note{
-		Row:     srow,
+		ID:      id.(string),
 		Details: n,
 		Error:   e.Error(),
 	}
@@ -123,7 +120,7 @@ func GetRecords(model string) (map[string]interface{}, error) {
 	defer db.Close()
 
 	var vj Note
-	var kj int
+	var kj interface{}
 
 	err = db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
@@ -136,12 +133,11 @@ func GetRecords(model string) (map[string]interface{}, error) {
 			}
 			err = json.Unmarshal(k, &kj)
 			if err != nil {
-				reflect.TypeOf(kj)
 				log.Error(uuid, "report.getrecords", err, "Unmarshalling.")
 				return err
 			}
 
-			m[strconv.Itoa(kj)] = vj
+			m[vj.ID] = vj
 
 			return err
 		})
@@ -159,7 +155,7 @@ func GetRecordsForBucket(b *bolt.Bucket) (map[string]interface{}, error) {
 	m := make(map[string]interface{})
 
 	var vj Note
-	var kj string
+	var kj interface{}
 
 	err := b.ForEach(func(k []byte, v []byte) error {
 		err := json.Unmarshal(v, &vj)
@@ -171,7 +167,7 @@ func GetRecordsForBucket(b *bolt.Bucket) (map[string]interface{}, error) {
 			log.Error(uuid, "report.getrecordsforbucket", err, "Unmarshalling.")
 		}
 
-		m[kj] = vj
+		m[vj.ID] = vj
 
 		return err
 	})
@@ -188,6 +184,7 @@ func ReadReport(dbname string) (map[string][]string, error) { //(map[string]map[
 	if err != nil {
 		log.Error(uuid, "report.record", err, "Opening bolt database.")
 	}
+	defer db.Close()
 
 	err = db.View(func(tx *bolt.Tx) error {
 
@@ -216,27 +213,32 @@ func ReadReport(dbname string) (map[string][]string, error) { //(map[string]map[
 // Print all the reports
 func Print() {
 
-	//GetRecords(model string) (map[string]interface{}, error) {
+	fmt.Printf("#### Reading Report %s.\n\n", dbname)
 	m, err := ReadReport(dbname)
 	if err != nil {
 		fmt.Printf("Error on reading %s. Error: %v.", dbname, err)
 		return
 	}
 
-	for i := range m {
-		fmt.Println("Model: ", i)
+	if len(m) == 0 {
+		fmt.Println("The report is empty.")
+		return
+	}
 
+	for i := range m {
 		records, err := GetRecords(i)
 		if err != nil {
 			fmt.Println("Error on getting records: ", err)
 		}
+		fmt.Println("## Model: ", i)
+		if len(records) == 0 {
+			fmt.Println("  All documents.")
+		}
+
 		for j, k := range records {
-			fmt.Println("ID: ", j)
-			fmt.Println("Details: ", k.(Note).Details)
-			fmt.Println("Error: ", k.(Note).Error)
+			fmt.Println("  ID: ", j)
+			fmt.Println("  Details: ", k.(Note).Details)
+			fmt.Println("  Error: ", k.(Note).Error)
 		}
 	}
 }
-
-// SetImportDate
-// GetLastImportDate
