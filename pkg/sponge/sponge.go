@@ -29,7 +29,11 @@ func Init(u string) error {
 	var err error
 
 	// Initialize the source
-	foreignSource := source.Init(uuid)
+	foreignSource, err := source.Init(uuid)
+	if err != nil {
+		log.Error(uuid, "sponge.import", err, "Initialization of Source")
+		return err
+	}
 	dbsource, err = source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
 		log.Error(uuid, "sponge.import", err, "Connect to external Database")
@@ -43,25 +47,26 @@ func Init(u string) error {
 }
 
 // Import gets data, transform it and send it to pillar
-func Import(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportdbfile string) {
+func Import(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string) {
 
-	report.Init(uuid, reportdbfile)
+	if reportOnFailedRecords {
+		report.Init(uuid, reportdbfile)
+	}
 
 	// Connect to external source
 	log.User(uuid, "sponge.import", "### Connecting to external database...")
 
-	if importonlyfailed { // import only what is in the report of failed importeda
-		importOnlyFailedRecords(dbsource, limit, offset, orderby, reportdbfile)
+	if importonlyfailed { // import only what is in the report of failed imported records
+		importOnlyFailedRecords(dbsource, limit, offset, orderby, reportdbfile, reportOnFailedRecords)
 	} else { // import everything that is in the strategy
 		if types != "" {
 			for _, t := range strings.Split(types, ",") {
-				importType(dbsource, limit, offset, orderby, query, strings.Trim(t, " ")) // removes any extra space
+				importType(dbsource, limit, offset, orderby, query, strings.Trim(t, " "), reportOnFailedRecords) // removes any extra space
 			}
 		} else {
-			importAll(dbsource, limit, offset, orderby)
+			importAll(dbsource, limit, offset, orderby, reportOnFailedRecords)
 		}
 	}
-
 }
 
 // CreateIndex will read the strategy file and create index that are mentioned there for each collection
@@ -88,7 +93,7 @@ func CreateIndex(collection string) {
 }
 
 // Import gets data from report on failed import, transform it and send it to pillar
-func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, orderby string, thisStrategy string) {
+func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, orderby string, thisStrategy string, reportOnFailedRecords bool) {
 
 	log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading file of data to import.")
 
@@ -110,17 +115,17 @@ func importOnlyFailedRecords(dbsource source.Sourcer, limit int, offset int, ord
 			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s', quering '%s'. \n", table, ids)
 			data, err = dbsource.GetQueryData(table, offset, limit, orderby, ids)
 		}
-		if err != nil {
-			report.Record(table, ids, nil, "Failing getting data", err)
+		if err != nil && reportOnFailedRecords {
+			report.Record(table, ids, "Failing getting data", err)
 		}
 
 		// transform and get data into pillar
-		process(table, data)
+		process(table, data, reportOnFailedRecords)
 	}
 }
 
 // Import gets ALL data, transform it and send it to pillar
-func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
+func importAll(dbsource source.Sourcer, limit int, offset int, orderby string, reportOnFailedRecords bool) {
 
 	log.User(uuid, "sponge.importAll", "### Reading tables to import from strategy file.")
 
@@ -139,17 +144,19 @@ func importAll(dbsource source.Sourcer, limit int, offset int, orderby string) {
 		if err != nil {
 			log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", modelName)
 			//RECORD to report about failing modelName
-			report.Record(modelName, "", nil, "Failing to get data.", err)
+			if reportOnFailedRecords {
+				report.Record(modelName, "", "Failing to get data.", err)
+			}
 			continue
 		}
 
 		//transform and send to pillar
-		process(modelName, data)
+		process(modelName, data, reportOnFailedRecords)
 	}
 }
 
 // ImportType gets ony data related to table, transform it and send it to pillar
-func importType(dbsource source.Sourcer, limit int, offset int, orderby string, query string, modelName string) {
+func importType(dbsource source.Sourcer, limit int, offset int, orderby string, query string, modelName string, reportOnFailedRecords bool) {
 
 	// Get the data
 	log.User(uuid, "sponge.importTable", "### Reading data from table '%s'.", modelName)
@@ -158,16 +165,18 @@ func importType(dbsource source.Sourcer, limit int, offset int, orderby string, 
 	if err != nil {
 		log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", modelName)
 		//RECORD to report about failing modelName
-		report.Record(modelName, "", nil, "Failing to get data", err)
+		if reportOnFailedRecords {
+			report.Record(modelName, "", "Failing to get data", err)
+		}
 		return
 	}
 
 	// Transform and send to pillar
-	process(modelName, data)
+	process(modelName, data, reportOnFailedRecords)
 
 }
 
-func process(modelName string, data []map[string]interface{}) {
+func process(modelName string, data []map[string]interface{}, reportOnFailedRecords bool) {
 	// Transform the data row by row
 	log.User(uuid, "sponge.process", "# Transforming data to the coral schema.\n")
 	log.User(uuid, "sponge.process", "# And importing %v documents.", len(data))
@@ -202,7 +211,9 @@ func process(modelName string, data []map[string]interface{}) {
 		if err != nil {
 			log.Error(uuid, "sponge.process", err, "Error when transforming the row %s.", row)
 			//RECORD to report about failing transformation
-			report.Record(modelName, id, row, "Failing transform data", err) // TO DO, needs to recalculate id
+			if reportOnFailedRecords {
+				report.Record(modelName, id, "Failing transform data", err)
+			}
 		}
 
 		// To Do: acquire meta-data
@@ -223,7 +234,9 @@ func process(modelName string, data []map[string]interface{}) {
 			if err != nil {
 				log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
 				//RECORD to report about failing adding row to coral db
-				report.Record(modelName, id, row, "Failing add row to coral", err)
+				if reportOnFailedRecords {
+					report.Record(modelName, id, "Failing add row to coral", err)
+				}
 			}
 		}
 	}

@@ -60,7 +60,10 @@ func setupMysql() {
 
 	u := uuidimported.New()
 
-	s := Init(u)
+	s, e := Init(u)
+	if e != nil {
+		fmt.Printf("Error when initializing strategy, %v.\n", e)
+	}
 	m, e := New(s) // function being tested
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
@@ -96,7 +99,10 @@ func setupMongo() {
 	var ok bool
 
 	u := uuidimported.New()
-	s := Init(u)
+	s, e := Init(u)
+	if e != nil {
+		fmt.Printf("Error when initializing strategy, %v.\n", e)
+	}
 
 	m, e := New(s) // function being tested
 	if e != nil {
@@ -134,7 +140,10 @@ func setupPostgreSQL() {
 
 	u := uuidimported.New()
 
-	s := Init(u)
+	s, e := Init(u)
+	if e != nil {
+		fmt.Printf("Error when initializing strategy, %v.\n", e)
+	}
 	m, e := New(s) // function being tested
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
