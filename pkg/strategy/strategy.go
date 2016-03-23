@@ -148,7 +148,7 @@ func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
 /* Exported Functions */
 
 // New creates a new strategy struct variable from the json file
-func New() Strategy {
+func New() (Strategy, error) {
 
 	var strategy Strategy
 	var err error
@@ -157,7 +157,7 @@ func New() Strategy {
 	strategyFile := os.Getenv("STRATEGY_CONF")
 	if strategyFile == "" {
 		log.Fatal(uuid, "strategy.new", "Enviromental variable STRATEGY_CONF not setup.")
-		return strategy
+		return strategy, err
 	}
 
 	strategy, err = read(strategyFile)
@@ -165,12 +165,13 @@ func New() Strategy {
 		log.Error(uuid, "strategy.new", err, "Reading strategy file %s.", strategyFile)
 	}
 
-	return strategy
+	return strategy, err
 }
 
 // GetCredential returns the credentials for connection with the external source adapter a, type t
-func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
+func (s Strategy) GetCredential(a string, t string) (CredentialDatabase, error) {
 	var cred CredentialDatabase
+	var err error
 
 	creda := s.Credentials.Databases
 
@@ -178,13 +179,14 @@ func (s Strategy) GetCredential(a string, t string) CredentialDatabase {
 	for i := 0; i < len(creda); i++ {
 		if creda[i].GetAdapter() == a && creda[i].GetType() == t {
 			cred = creda[i]
-			return cred
+			return cred, err
 		}
 	}
 
-	log.Error(uuid, "strategy.getCredentials", fmt.Errorf("Credential %s not found.", a), "Getting credential %s for strategy.", a)
+	err = fmt.Errorf("Credential %s not found.", a)
+	log.Error(uuid, "strategy.getCredentials", err, "Getting credential %s for strategy.", a)
 
-	return cred
+	return cred, err
 }
 
 // GetMap returns the strategy
