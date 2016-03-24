@@ -11,6 +11,7 @@ package source
 import (
 	"fmt"
 
+	"github.com/ardanlabs/kit/log"
 	str "github.com/coralproject/sponge/pkg/strategy"
 )
 
@@ -24,16 +25,26 @@ var (
 var credential str.CredentialDatabase
 
 // Init initialize the needed variables
-func Init(u string) string {
+func Init(u string) (string, error) {
+
+	var err error
 
 	uuid = u
 	str.Init(uuid)
 
-	strategy = str.New()
+	strategy, err = str.New()
+	if err != nil {
+		log.Error(uuid, "source.init", err, "Get Strategy Configuration")
+		return "", err
+	}
 
-	credential = strategy.GetCredential(strategy.Map.Foreign, "foreign")
+	credential, err = strategy.GetCredential(strategy.Map.Foreign, "foreign")
+	if err != nil {
+		log.Error(uuid, "source.init", err, "Get Credentials for external source")
+		return "", err
+	}
 
-	return strategy.Map.Foreign
+	return strategy.Map.Foreign, err
 }
 
 // Sourcer is where the data is coming from (mysql, api)

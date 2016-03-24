@@ -80,20 +80,14 @@ var (
 // Init initialization of logs and strategy
 func Init(u string) {
 
+	var err error
 	uuid = u
 
-	// logLevel := func() int {
-	// 	ll, err := cfg.Int("LOGGING_LEVEL")
-	// 	if err != nil {
-	// 		return log.USER
-	// 	}
-	// 	return ll
-	// }
-	//
-	// log.Init(os.Stderr, logLevel)
-
 	strategy.Init(uuid)
-	str = strategy.New()
+	str, err = strategy.New()
+	if err != nil {
+		log.Error(uuid, "fiddler.init", err, "Reading the streategy file.")
+	}
 	endpoints = str.GetPillarEndpoints()
 }
 
@@ -165,7 +159,6 @@ func CreateIndex(collection string) error {
 
 func doRequest(method string, urlStr string, payload io.Reader) error {
 
-	//fmt.Printf("PAYLOAD: %v \n\n", payload)
 	var err error
 	request, err := http.NewRequest(method, urlStr, payload)
 	if err != nil {

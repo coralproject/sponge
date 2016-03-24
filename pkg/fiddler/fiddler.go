@@ -25,10 +25,15 @@ var (
 // Init initialize needed variables
 func Init(u string) {
 
+	var err error
+
 	uuid = u
 
 	str.Init(uuid)
-	strategy = str.New() // Reads the strategy file
+	strategy, err = str.New() // Reads the strategy file
+	if err != nil {
+		log.Error(uuid, "fiddler.init", err, "Reading the streategy file.")
+	}
 }
 
 // GetID returns the identifier for modelName

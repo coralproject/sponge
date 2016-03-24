@@ -76,8 +76,9 @@ func TestProcess(t *testing.T) {
 
 	modelName := "comment"
 	var data []map[string]interface{}
+	reportOnFailedRecords := false
 
-	process(modelName, data)
+	process(modelName, data, reportOnFailedRecords)
 
 	// check data is sent to pillar with the right transformations
 

@@ -174,7 +174,10 @@ func TestGetCredential(t *testing.T) {
 	ty := "source"
 	fakeConf := fakeStrategy()
 
-	credential := fakeConf.GetCredential(a, ty)
+	credential, err := fakeConf.GetCredential(a, ty)
+	if err != nil {
+		t.Error("Expected not error, got ", err)
+	}
 
 	// credential should have fields
 	if credential.Database != "coral" {
