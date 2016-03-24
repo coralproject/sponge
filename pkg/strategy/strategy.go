@@ -104,8 +104,6 @@ func (c CredentialDatabase) GetType() string {
 
 // CredentialAPI has the information to connect to an external API source.
 type CredentialAPI struct {
-	Username  string            `json:"username"` // BasicAuth
-	Password  string            `json:"password"` // BasicAuth
 	Adapter   string            `json:"adapter"`
 	Endpoints map[string]string `json:"endpoints"`
 }
