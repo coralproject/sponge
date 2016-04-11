@@ -78,29 +78,9 @@ func TestProcess(t *testing.T) {
 	var data []map[string]interface{}
 	reportOnFailedRecords := false
 
-	process(modelName, data, reportOnFailedRecords)
+	AddOptions(999, 0, "", "", "", false, reportOnFailedRecords, "")
+
+	process(modelName, data)
 
 	// check data is sent to pillar with the right transformations
-
-}
-
-// Signature: func importAll(mysql source.Sourcer, limit int, offset int, orderby string) {
-func TestImportAll(t *testing.T) {
-
-}
-
-func TestImportFailedRecordsWholeTable(t *testing.T) {
-
-}
-
-func TestImportFailedRecordsOneRecord(t *testing.T) {
-
-}
-
-func TestImportFailedRecordsTwoRecords(t *testing.T) {
-
-}
-
-func TestImportFailedRecordsTwoRecordsSeveralTables(t *testing.T) {
-
 }
