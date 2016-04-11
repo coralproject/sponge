@@ -95,6 +95,7 @@ func Init(u string) {
 func AddRow(data map[string]interface{}, tableName string) error {
 
 	var err error
+
 	if _, ok := endpoints[tableName]; ok {
 
 		d, err := json.Marshal(data)
