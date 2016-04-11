@@ -3,158 +3,233 @@
   "Map": {
     "Foreign": "mongodb",
     "DateTimeFormat": "2006-01-02 15:04:05",
-    "Tables": {
-      "asset": {
-        "Foreign": "crnr_asset",
-        "Local": "asset",
+    "Entities": {
+      "users": {
+        "Foreign": "actors",
+        "Local": "users",
         "Priority": 0,
-        "OrderBy": "assetid",
-        "ID": "assetid",
+        "OrderBy": "_id",
+        "ID": "_id",
         "Index": [
           {
-            "name": "asset-url",
-            "keys": ["asseturl"],
-            "unique": true,
+            "name": "title",
+            "key": ["name"],
+            "unique": false,
             "dropdups": true
           }
         ],
         "Fields": [
           {
-            "foreign": "assetid",
+            "foreign": "_id",
             "local": "id",
             "relation": "Source",
-            "type": "int"
+            "type": "String"
           },
           {
-            "foreign": "asseturl",
-            "local": "url",
-            "relation": "Identity",
-            "type": "int"
-          },
-          {
-            "foreign": "updatedate",
-            "local": "date_updated",
-            "relation": "ParseTimeDate",
-            "type": "dateTime"
-          },
-          {
-            "foreign": "createdate",
-            "local": "date_created",
-            "relation": "ParseTimeDate",
-            "type": "dateTime"
-          }
-        ],
-        "Endpoint": "/api/import/asset"
-      },
-      "user": {
-        "Foreign": "crnr_comment",
-        "Local": "user",
-        "Priority": 1,
-        "OrderBy": "userid",
-        "ID": "userid",
-        "Index": [
-          {
-            "name": "user-name",
-            "keys": ["name"],
-            "unique": true,
-            "dropdups": true
-          }
-        ],
-        "Fields": [
-          {
-            "foreign": "userid",
-            "local": "id",
-            "relation": "Source",
-            "type": "int"
-          },
-          {
-            "foreign": "userdisplayname",
+            "foreign": "title",
             "local": "name",
             "relation": "Identity",
-            "type": "[]byte"
+            "type": "String"
+          },
+          {
+            "foreign": "status",
+            "local": "status",
+            "relation": "Identity",
+            "type": "String"
+          },
+          {
+            "foreign": "avatar",
+            "local": "avatar",
+            "relation": "Identity",
+            "type": "String"
           }
         ],
-        "Endpoint": "/api/import/user"
+        "endpoint": "/api/import/user"
       },
-      "comment": {
-        "Foreign": "crnr_comment",
-        "Local": "comment",
-        "Priority": 2,
-        "OrderBy": "createdate",
-        "ID": "commentid",
+      "comments": {
+        "Foreign": "comments",
+        "Local": "comments",
+        "Priority": 1,
+        "OrderBy": "postedTime",
+        "ID": "_id",
         "Index": [
           {
-            "name": "commentid",
-            "keys": ["commentid"],
-            "unique": true,
-            "dropdups": true
+            "name": "posted-time",
+            "key": ["date_created"],
+            "unique": false,
+            "dropdups": false
           }
         ],
         "Fields": [
           {
-            "foreign": "commentid",
+            "foreign": "_id",
             "local": "id",
             "relation": "Source",
-            "type": "int"
+            "type": "ObjectId"
           },
           {
-            "foreign": "commentbody",
+            "foreign": "object.content",
             "local": "body",
             "relation": "Identity",
-            "type": "[]byte"
+            "type": "String"
           },
           {
-            "foreign": "userid",
+            "foreign": "actor.id",
             "local": "user_id",
             "relation": "Source",
-            "type": "int"
+            "type": "String"
           },
           {
-            "foreign": "assetid",
+            "foreign": "object.context.0.uri",
             "local": "asset_id",
             "relation": "Source",
-            "type": "int"
+            "type": "String"
           },
           {
-            "foreign": "statusid",
+            "foreign": "object.status",
             "local": "status",
             "relation": "Identity",
             "type": "int"
           },
           {
-            "foreign": "parentid",
+            "foreign": "targets.0.id",
             "local": "parent_id",
             "relation": "Source",
             "type": "int"
           },
           {
-            "foreign": "createdate",
+            "foreign": "postedTime",
             "local": "date_created",
             "relation": "ParseTimeDate",
-            "type": "timedate"
+            "type": "timedate",
+            "datetimeformat": "2006-01-02 15:04:05 -0700 PST"
           },
           {
-            "foreign": "updatedate",
+            "foreign": "updated",
             "local": "date_updated",
             "relation": "ParseTimeDate",
             "type": "timedate",
-            "datetimeformat": "2006-01-02 15:04:05"
-          },
-          {
-            "foreign": "approvedate",
-            "local": "date_approved",
-            "relation": "ParseTimeDate",
-            "type": "timedate"
+            "datetimeformat": "2006-01-02 15:04:05 -0700 PST"
           }
         ],
-        "Endpoint": "/api/import/comment"
+        "endpoint": "/api/import/comment"
+      },
+      "actionsLikes": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 2,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "likes",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.likes",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "user_id",
+                "relation": "Source"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "endpoint": "/api/import/action"
+      },
+      "actionsFlags": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 3,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "flags",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.flags",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "user_id",
+                "relation": "Source"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "endpoint": "/api/import/action"
       }
     }
   },
   "Credentials": {
     "Databases": [
       {
-        "database": "coral_test",
+        "database": "original_wapo",
         "username": "gaba",
         "password": "gabita",
         "host": "127.0.0.1",
