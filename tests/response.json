@@ -1,0 +1,153 @@
+{
+  "children": {
+    "filter": "",
+    "itemsPerPage": 3,
+    "maxDepth": null,
+    "sortOrder": "chronological"
+  },
+  "entries": [
+    {
+      "actor": {
+        "_id": "http://washingtonpost.com/2fr0hQuh0mb1i38/PjD4X8goWI6YUHMFVlNQOUtKBgd/tT03sC7QkQ%3D%3D/",
+        "avatar": "http://akiajc2strzaac3fwsta.post-avatars.s3.amazonaws.com/0000012d-1049-4a57-4d62-0edc5b347cb2",
+        "id": "http://washingtonpost.com/2fr0hQuh0mb1i38/PjD4X8goWI6YUHMFVlNQOUtKBgd/tT03sC7QkQ%3D%3D/",
+        "links": [],
+        "markers": [],
+        "objectTypes": [
+          "http://activitystrea.ms/schema/1.0/person"
+        ],
+        "roles": [],
+        "status": "ModeratorApproved",
+        "title": "Duck504"
+      },
+      "hasMoreChildren": "false",
+      "id": "http://js-kit.com/activities/post/ac38d4b1-54cd-4008-b976-271d06504d52",
+      "object": {
+        "content": "I'm in my 60's.  I haven't gone for a checkup in a decade.  Why?  Because I am healthy.\n\nI monitor my weight and blood pressure.  I'm aware of my risk factors and monitor for signs of a problem there.  I know about how often and how long symptoms take to develop.  I know what aches and pains are normal and which are something new.\n\nLW - your parents may be doing a lot to monitor their health without telling you.  \n\nPS: I don't dislike doctors.  I just don't see a reason to go to them unless something might be wrong.",
+        "content_type": "html",
+        "context": [
+          {
+            "title": "",
+            "uri": "http://washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html"
+          }
+        ],
+        "id": "http://washingtonpost.com/ECHO/item/ac38d4b1-54cd-4008-b976-271d06504d52",
+        "markers": [
+          "style"
+        ],
+        "objectTypes": [
+          "http://activitystrea.ms/schema/1.0/comment"
+        ],
+        "permalink": "",
+        "published": "2015-09-30T07:27:32Z",
+        "status": "Untouched",
+        "tags": []
+      },
+      "pageAfter": "1443598052.437",
+      "postedTime": "2015-09-30T07:27:32Z",
+      "provider": {
+        "icon": "http://cdn.echoenabled.com/images/echo.png",
+        "name": "echo",
+        "uri": "http://aboutecho.com/"
+      },
+      "source": {
+        "name": "washpost.com"
+      },
+      "targets": [
+        {
+          "conversationID": "http://washingtonpost.com/ECHO/item/ac38d4b1-54cd-4008-b976-271d06504d52",
+          "id": "http://washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html"
+        }
+      ],
+      "updated": 1443598326.627,
+      "verbs": [
+        "http://activitystrea.ms/schema/1.0/post"
+      ]
+    },
+    {
+      "actor": {
+        "_id": "http://washingtonpost.com/VxReJMD1n22c6tRAx3osB/JkV59ZvvsMVMwGyOmCSUhoGeVxxhJF5A%3D%3D/",
+        "avatar": "https://wpidentity.s3.amazonaws.com/assets/images/avatar-default.png",
+        "id": "http://washingtonpost.com/VxReJMD1n22c6tRAx3osB/JkV59ZvvsMVMwGyOmCSUhoGeVxxhJF5A%3D%3D/",
+        "links": [],
+        "markers": [],
+        "objectTypes": [
+          "http://activitystrea.ms/schema/1.0/person"
+        ],
+        "roles": [],
+        "status": "ModeratorApproved",
+        "title": "SpunkyBug"
+      },
+      "hasMoreChildren": "false",
+      "id": "http://js-kit.com/activities/post/e00041c4-a5e1-4845-aac2-2e3cd4cd9a1d",
+      "object": {
+        "accumulators": {
+          "likesCount": 1
+        },
+        "content": "Here's some additional perspective: Even if you could get your parent to go to the doctor, who's to say they would follow the doctor's orders? My mom has an appointment with one of her long line of doctors every other month (at least). She loves going to the doctor. But the only thing she will do is take another pill. She will not exercise or eat right. I go with her on these appointments, and the doctors look at me like, why don't you make her eat better, why don't you make her exercise?  I finally had a calm talk with her, and I told her it was the last time I would ask her to get some exercise and eat healthier. She said she's 76, and she doesn't want to live to be a 100. I explained that she might not just drop dead one day, she might get really sick, and that could be very unpleasant, plus I will be the one who has to care for her. It didn't do any good. So, off to another doctor we go, and I am done begging.",
+        "content_type": "html",
+        "context": [
+          {
+            "title": "",
+            "uri": "http://washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html"
+          }
+        ],
+        "id": "http://washingtonpost.com/ECHO/item/e00041c4-a5e1-4845-aac2-2e3cd4cd9a1d",
+        "likes": [
+          {
+            "actor": {
+              "avatar": "http://wpidpub.s3.amazonaws.com/0000014c-8185-268e-32e3-766c315a997a",
+              "id": "http://washingtonpost.com/lVT0b7rabmF9ndaJhWlxlewKrkvbT4tmVyJgOC1LXCRoGeVxxhJF5A%3D%3D/",
+              "links": [],
+              "objectTypes": [
+                "http://activitystrea.ms/schema/1.0/person"
+              ],
+              "title": "WoollyMammoth2"
+            },
+            "published": "2015-09-30T03:07:45Z"
+          }
+        ],
+        "markers": [
+          "style"
+        ],
+        "objectTypes": [
+          "http://activitystrea.ms/schema/1.0/comment"
+        ],
+        "permalink": "",
+        "published": "2015-09-28T17:37:40Z",
+        "status": "Untouched",
+        "tags": []
+      },
+      "pageAfter": "1443461860.966",
+      "postedTime": "2015-09-28T17:37:40Z",
+      "provider": {
+        "icon": "http://cdn.echoenabled.com/images/echo.png",
+        "name": "echo",
+        "uri": "http://aboutecho.com/"
+      },
+      "source": {
+        "name": "washpost.com"
+      },
+      "targets": [
+        {
+          "conversationID": "http://washingtonpost.com/ECHO/item/e00041c4-a5e1-4845-aac2-2e3cd4cd9a1d",
+          "id": "http://washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html"
+        }
+      ],
+      "updated": 1443582465.146,
+      "verbs": [
+        "http://activitystrea.ms/schema/1.0/post"
+      ]
+    }
+    ],
+  "hasMoreChildren": "true",
+  "id": "https://comments-api-staging.ext.nile.works/v1/search?q=((scope: https:%2F%2Fwww.washingtonpost.com%2Flifestyle%2Fstyle%2Fcarolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor%2F2015%2F09%2F24%2F299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage: 100 sortOrder:reverseChronological ))&appkey=dev.washpost.com",
+  "itemsPerPage": 100,
+  "liveUpdatesTimeout": "15",
+  "nextPageAfter": "1443195024.171",
+  "nextSince": 1446786263.373,
+  "safeHTML": "aggressive",
+  "showFlags": "on",
+  "sortOrder": "reverseChronological",
+  "updated": 1460151053
+}
