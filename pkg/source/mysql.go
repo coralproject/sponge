@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
+	str "github.com/coralproject/sponge/pkg/strategy"
 	"github.com/gabelula/gosqljson"
 	// importing mysql
 	_ "github.com/go-sql-driver/mysql"
@@ -25,28 +26,20 @@ type MySQL struct {
 
 /* Exported Functions */
 
-// GetTables gets all the tables names from this data source
-func (m MySQL) GetTables() ([]string, error) {
-	keys := make([]string, len(strategy.Map.Tables))
-
-	for k, val := range strategy.Map.Tables {
-		keys[val.Priority] = k
-	}
-	return keys, nil
-}
-
 // GetData returns the raw data from the tableName
-func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string, q string) ([]map[string]interface{}, error) {
+func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string, q string) ([]map[string]interface{}, bool, error) {
+
+	notFinish := false
 
 	// Get the corresponding table to the modelName
-	tableName := strategy.GetTableForeignName(coralTableName)
-	tableFields := strategy.GetTableForeignFields(coralTableName) // []map[string]string
+	tableName := strategy.GetEntityForeignName(coralTableName)
+	tableFields := strategy.GetEntityForeignFields(coralTableName) // []map[string]string
 
 	// open a connection
 	db, err := m.open()
 	if err != nil {
 		log.Error(uuid, "source.getdata", err, "Connecting to mysql database.")
-		return nil, err
+		return nil, notFinish, err
 	}
 	defer m.close(db)
 
@@ -75,7 +68,7 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
 		log.Error(uuid, "source.getdata", err, "Running SQL query.")
-		return nil, err
+		return nil, notFinish, err
 	}
 
 	byt := []byte(data)
@@ -84,18 +77,18 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
 		log.Error(uuid, "source.getdata", err, "Unmarshalling the result of the query.")
-		return nil, err
+		return nil, notFinish, err
 	}
 
-	return dat, nil
+	return dat, notFinish, nil
 }
 
 // GetQueryData returns the raw data from the tableName based on the ids
 func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
 
-	// Get the corresponding table to the modelName
-	tableName := strategy.GetTableForeignName(coralTableName)
-	tableFields := strategy.GetTableForeignFields(coralTableName) // []map[string]string
+	// Get the corresponding entity to the modelName
+	tableName := strategy.GetEntityForeignName(coralTableName)
+	tableFields := strategy.GetEntityForeignFields(coralTableName) // []map[string]string
 
 	// open a connection
 	db, err := m.open()
@@ -150,11 +143,22 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 	return dat, nil
 }
 
+// IsAPI returns true only if the implementation of Sourcer is an API
+func (m MySQL) IsAPI() bool {
+	return false
+}
+
 //////* Not exported functions *//////
 
 // ConnectionMySQL returns the connection string
 func connectionMySQL() string {
-	return credential.Username + ":" + credential.Password + "@" + "/" + credential.Database
+	credentialD, ok := credential.(str.CredentialDatabase)
+	if !ok {
+		err := fmt.Errorf("Error asserting type CredentialDatabase from interface Credential.")
+		log.Error(uuid, "source.getdata", err, "Asserting Type CredentialDatabase")
+		return ""
+	}
+	return fmt.Sprintf("%s:%s@/%s", credentialD.Username, credentialD.Password, credentialD.Database)
 }
 
 // Open gives back  DB

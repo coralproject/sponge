@@ -43,7 +43,7 @@ func GetID(modelName string) string {
 
 // GetCollections give the names of all the collections in the strategy file
 func GetCollections() []string {
-	tables := strategy.GetTables() // map[string]Table
+	tables := strategy.GetEntities() // map[string]Table
 	keys := []string{}
 	for k := range tables {
 		keys = append(keys, k)
@@ -57,7 +57,7 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, []
 	var newRows []map[string]interface{}
 	var err error
 
-	table := strategy.GetTables()[modelName]
+	table := strategy.GetEntities()[modelName]
 	idField := GetID(modelName)
 	id := row[idField]
 

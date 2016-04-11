@@ -118,31 +118,31 @@ func fakeStrategy() Strategy {
 		Map: Map{
 			Foreign:        "mysql",
 			DateTimeFormat: "2006-01-02 15:04:05",
-			Tables: map[string]Table{
-				"Comment": Table{
-					Foreign:  "crnr_comment",
-					Local:    "comment",
-					OrderBy:  "commentid",
-					ID:       "commentid",
-					Fields:   cfields,
-					Status:   status,
-					Endpoint: "/api/import/comment",
+			Entities: map[string]Entity{
+				"comments": Entity{
+					Foreign:        "crnr_comment",
+					Local:          "comments",
+					OrderBy:        "commentid",
+					ID:             "commentid",
+					Fields:         cfields,
+					Status:         status,
+					PillarEndpoint: "/api/import/comment",
 				},
-				"Asset": Table{
-					Foreign:  "crnr_asset",
-					Local:    "asset",
-					OrderBy:  "assetid",
-					ID:       "assetid",
-					Fields:   afields,
-					Endpoint: "/api/import/asset",
+				"assets": Entity{
+					Foreign:        "crnr_asset",
+					Local:          "assets",
+					OrderBy:        "assetid",
+					ID:             "assetid",
+					Fields:         afields,
+					PillarEndpoint: "/api/import/asset",
 				},
-				"User": Table{
-					Foreign:  "crnr_comment",
-					Local:    "user",
-					OrderBy:  "userid",
-					ID:       "commentid",
-					Fields:   ufields,
-					Endpoint: "/api/import/user",
+				"users": Entity{
+					Foreign:        "crnr_comment",
+					Local:          "users",
+					OrderBy:        "userid",
+					ID:             "commentid",
+					Fields:         ufields,
+					PillarEndpoint: "/api/import/user",
 				},
 			},
 		},
@@ -157,7 +157,7 @@ func fakeStrategy() Strategy {
 // Signature GetIDField(coralName string) string {
 func TestGetID(t *testing.T) {
 	fakeConf := fakeStrategy()
-	modelName := "Comment"
+	modelName := "comments"
 
 	id := fakeConf.GetIDField(modelName)
 
@@ -179,33 +179,38 @@ func TestGetCredential(t *testing.T) {
 		t.Error("Expected not error, got ", err)
 	}
 
+	dcredential, ok := credential.(CredentialDatabase)
+	if !ok {
+		t.Error("Expected type credentialdtabase.")
+	}
+
 	// credential should have fields
-	if credential.Database != "coral" {
-		t.Error("Expected coral, got ", credential.Database)
+	if dcredential.Database != "coral" {
+		t.Error("Expected coral, got ", dcredential.Database)
 	}
 
-	if credential.Username != "user" {
-		t.Error("Expected user, got ", credential.Username)
+	if dcredential.Username != "user" {
+		t.Error("Expected user, got ", dcredential.Username)
 	}
 
-	if credential.Password != "password" {
-		t.Error("Expected password, got ", credential.Password)
+	if dcredential.Password != "password" {
+		t.Error("Expected password, got ", dcredential.Password)
 	}
 
-	if credential.Host != "host" {
-		t.Error("Expected host, got ", credential.Host)
+	if dcredential.Host != "host" {
+		t.Error("Expected host, got ", dcredential.Host)
 	}
 
-	if credential.Port != "5432" {
-		t.Error("Expected 5432, got ", credential.Port)
+	if dcredential.Port != "5432" {
+		t.Error("Expected 5432, got ", dcredential.Port)
 	}
 
-	if credential.Adapter != "mysql" {
-		t.Error("Expected mysql, got ", credential.Adapter)
+	if dcredential.Adapter != "mysql" {
+		t.Error("Expected mysql, got ", dcredential.Adapter)
 	}
 
-	if credential.Type != "source" {
-		t.Error("Expected source, got ", credential.Type)
+	if dcredential.Type != "source" {
+		t.Error("Expected source, got ", dcredential.Type)
 	}
 }
 
@@ -226,11 +231,11 @@ func TestGetStrategy(t *testing.T) {
 func TestGetTables(t *testing.T) {
 	fakeConf := fakeStrategy()
 
-	var tables map[string]Table
-	tables = fakeConf.GetTables()
+	var tables map[string]Entity
+	tables = fakeConf.GetEntities()
 
-	if tables["Comment"].Foreign != "crnr_comment" {
-		t.Error("Expected crnr_comment, got ", tables["Comment"])
+	if tables["comments"].Foreign != "crnr_comment" {
+		t.Error("Expected crnr_comment, got ", tables["comments"])
 	}
 }
 
@@ -238,10 +243,10 @@ func TestGetTables(t *testing.T) {
 func TestHasArrayField(t *testing.T) {
 	fakeConf := fakeStrategy()
 
-	var tables map[string]Table
-	tables = fakeConf.GetTables()
+	var tables map[string]Entity
+	tables = fakeConf.GetEntities()
 
-	if fakeConf.HasArrayField(tables["Comment"]) {
+	if fakeConf.HasArrayField(tables["comments"]) {
 		t.Error("Expected not to have an array field.")
 	}
 }
@@ -262,8 +267,8 @@ func TestGetPillarEndpoints(t *testing.T) {
 	}
 
 	expectedCommentEndpoint := "http://localhost:8080/api/import/comment"
-	if endpoints["comment"] != expectedCommentEndpoint {
-		t.Errorf("Expected %s, got %s", expectedCommentEndpoint, endpoints["Comment"])
+	if endpoints["comments"] != expectedCommentEndpoint {
+		t.Errorf("Expected %s, got %s", expectedCommentEndpoint, endpoints["comments"])
 	}
 
 	val, exists := endpoints["index"]
@@ -275,7 +280,7 @@ func TestGetPillarEndpoints(t *testing.T) {
 func TestGetDatetimeFormat(t *testing.T) {
 	fakeConf := fakeStrategy()
 
-	table := "Comment"
+	table := "comments"
 
 	// It should get the format for the strategy
 	field := "DateUpdated"
@@ -301,12 +306,23 @@ func TestGetDatetimeFormat(t *testing.T) {
 func TestGetStatus(t *testing.T) {
 	fakeConf := fakeStrategy()
 
-	table := "Comment"
+	table := "comments"
 	value := "ModeratorApproved"
 	expectedsfield := "1"
 
 	sfield := fakeConf.GetStatus(table, value)
 	if sfield != expectedsfield {
 		t.Errorf("Expected %s, got %s", expectedsfield, sfield)
+	}
+}
+
+func TestGetEntityForeignName(t *testing.T) {
+	fakeConf := fakeStrategy()
+	collectionName := "comments"
+	expectedForeigName := "crnr_comment"
+
+	foreigName := fakeConf.GetEntityForeignName(collectionName)
+	if foreigName != expectedForeigName {
+		t.Errorf("Expected %s, got %s", expectedForeigName, foreigName)
 	}
 }

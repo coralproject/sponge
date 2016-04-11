@@ -8,7 +8,7 @@ func TestPostgresGetTables(t *testing.T) {
 
 	setupPostgreSQL()
 
-	s, e := mp.GetTables()
+	s, e := GetEntities()
 	if e != nil {
 		t.Fatalf("expected no error, got %s.", e)
 	}
@@ -42,7 +42,7 @@ func TestPostgresGetData(t *testing.T) {
 	var query string
 
 	// no error
-	data, err := mp.GetData(coralName, offset, limit, orderby, query)
+	data,_, err := mp.GetData(coralName, offset, limit, orderby, query)
 	if err != nil {
 		t.Fatalf("expected no error, got %s.", err)
 	}
