@@ -183,7 +183,7 @@ func importAll() {
 func importFromAPI(collections []string) {
 
 	finish := false
-	pageAfter := "1.399743732"
+	pageAfter := "1" //"1.399743732"
 	log.User(uuid, "sponge.importFromAPI", "### Reading data from API. \n")
 
 	api, ok := dbsource.(source.API)
@@ -195,7 +195,7 @@ func importFromAPI(collections []string) {
 	var err error
 	var data []map[string]interface{}
 
-	for !finish {
+	for true {
 		data, finish, pageAfter, err = api.GetAPIData(pageAfter)
 		if err != nil {
 			log.Error(uuid, "sponge.importFromAPI", err, "Getting data from API")
@@ -204,6 +204,10 @@ func importFromAPI(collections []string) {
 
 		if data != nil {
 			processAPI(collections, data)
+		}
+
+		if finish {
+			time.Sleep(5 * time.Minute) // sleep 5 minutes
 		}
 	}
 
@@ -332,7 +336,6 @@ func processAPI(collections []string, data []map[string]interface{}) {
 	totalDocuments := int64(len(data))
 
 	for _, row := range data {
-
 		// output benchmarking for each block of documents
 		if documents%blockSize == 0 && documents > 0 {
 
@@ -358,6 +361,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 				if options.reportOnFailedRecords {
 					report.Record(name, id, "Failing transform data", err)
 				}
+				break
 			}
 
 			// Usually newRows only will have a document but in the case that we have subcollections
