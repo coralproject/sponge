@@ -105,6 +105,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 			return nil, fmt.Errorf("%v not expected type", f["foreign"])
 		}
 		foreign = strings.ToLower(foreign)
+
 		relation, ok := f["relation"].(string)
 		if !ok {
 			return nil, fmt.Errorf("%v not expected type", f["relation"])
@@ -115,11 +116,23 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 			return nil, fmt.Errorf("%v not expected type", f["local"])
 		}
 		local = strings.ToLower(local)
+
+		// If this is a required field but the value we got is null then skip this document
+		required, ok := f["required"]
+		if ok && required == "true" && row[foreign] == nil {
+			return nil, fmt.Errorf("Required field %s is null.", foreign)
+		}
+
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue, err := transformField(row[foreign], relation, local, modelName)
 		if err != nil {
-			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v.", f["foreign"])
+			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v, value %v.", foreign, row[foreign])
 			return nil, err
+		}
+
+		// We are not adding fields which have an empty value
+		if newValue == nil {
+			break
 		}
 
 		switch f["relation"] {
@@ -347,16 +360,16 @@ func transformField(oldValue interface{}, relation string, coralName string, for
 	var err error
 
 	if oldValue != nil {
-		ov, ok := oldValue.(string)
-		if !ok {
-			return nil, fmt.Errorf("%v not expected type", oldValue)
-		}
 		switch strings.ToLower(relation) {
 		case "identity":
 			return oldValue, err
 		case "source":
 			return oldValue, err
 		case "status":
+			ov, ok := oldValue.(string)
+			if !ok {
+				return nil, fmt.Errorf("%v not expected type string", oldValue)
+			}
 			return strategy.GetStatus(coralName, ov), err
 		case "subdocument":
 			//oldvalue is [map[_id:terrence-mccoy name:Terrence McCoy url:http://www.washingtonpost.com/people/terrence-mccoy twitter:@terrence_mccoy]]
@@ -376,9 +389,11 @@ func transformField(oldValue interface{}, relation string, coralName string, for
 		case "parsetimedate":
 			switch v := oldValue.(type) {
 			case string:
-				return parseDate(ov)
+				return parseDate(v)
 			case time.Time:
 				return v.Format(time.RFC3339), nil
+			case float64:
+				return time.Unix(int64(v), 0).Format(time.RFC3339), nil
 			default:
 				return "", fmt.Errorf("Type of data %v not recognizable.", v)
 			}
