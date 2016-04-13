@@ -157,12 +157,6 @@ func (a API) GetAPIData(pageAfter string) ([]map[string]interface{}, bool, strin
 		return nil, finish, nextPageAfter, err
 	}
 
-	// // continue trying to get the data
-	// if d["errorCode"] == "waiting" {
-	// 	time.Sleep(10 * time.Second)
-	// 	return nil, true, pageAfter, nil
-	// }
-
 	recordsField := credA.GetRecordsFieldName()
 
 	// Emtpy records means there are no more data to send
@@ -192,10 +186,7 @@ func (a API) GetAPIData(pageAfter string) ([]map[string]interface{}, bool, strin
 
 	// TO DO: NEEDS TO MOVE THIS ATTRIBUTES TO THE STRATEGY FILE!!
 	nextPageAfter, ok = d["nextPageAfter"].(string) //strconv.ParseFloat(d["nextPageAfter"].(string), 64)
-	if !ok {
-		finish = true
-		//fmt.Println("DEBUG: no nextPageAfter: ", d)
-	}
+	finish = !ok
 
 	return flattenData, finish, nextPageAfter, err
 }
