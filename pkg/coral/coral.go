@@ -7,22 +7,22 @@
 //
 // Assets
 //
-// The endpoint is setup in the ASSET_URL environment variable. It receives one document per POST.
-// The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
+// The endpoint is setup in the translations file. It receives one document per POST.
+// The structure of the json we are sending is at the package models in https://github.com/coralproject/pillar/
 //
 // Users
 //
-// The endpoint is setup in the USER_URL environment variable. It receives one document per POST.
-// The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
+// The endpoint is setup in the translations file. It receives one document per POST.
+// The structure of the json we are sending is at the package models in https://github.com/coralproject/pillar/
 //
 // Comments
 //
-// The endpoint is setup in the COMMENT_URL environment variable. It receives one document per POST.
-// The structure of the json we are sending is at https://github.com/coralproject/pillar/blob/master/server/model/model.go
+// The endpoint is setup in the translations file. It receives one document per POST.
+// The structure of the json we are sending is at the package models in https://github.com/coralproject/pillar/
 //
 // CreateIndex
 //
-// The endpoint is setup in the CREATE_INDEX_URL environment variable. It receives information about what indexes to create.
+// The endpoint is setup in the translations file. It receives one document per POST.
 // In the strategy file, for each collection, we are getting
 // "Index": [{
 // 	"name": "asset-url",
@@ -41,19 +41,16 @@
 // 			}
 // 	 },
 //
-//
 package coral
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"time"
 
 	"github.com/ardanlabs/kit/log"
 	"github.com/coralproject/sponge/pkg/strategy"
+	"github.com/coralproject/sponge/pkg/webservice"
 )
 
 const (
@@ -61,12 +58,6 @@ const (
 	methodGet  string = "GET"
 	methodPost string = "POST"
 )
-
-type restResponse struct {
-	status  string
-	header  http.Header
-	payload string
-}
 
 var (
 	endpoints map[string]string // model -> endpoint
@@ -95,14 +86,13 @@ func Init(u string) {
 func AddRow(data map[string]interface{}, tableName string) error {
 
 	var err error
-
 	if _, ok := endpoints[tableName]; ok {
 
 		d, err := json.Marshal(data)
 		if err != nil {
 			log.Error(uuid, "coral.Addrow", err, "Marshalling %v.", data)
 		}
-		err = doRequest(methodPost, endpoints[tableName], bytes.NewBuffer(d))
+		_, err = webservice.DoRequest(uuid, methodPost, endpoints[tableName], bytes.NewBuffer(d))
 		if err != nil {
 			log.Error(uuid, "coral.Addrow", err, "Sending request to PILLAR with %v.", data)
 		}
@@ -148,46 +138,12 @@ func CreateIndex(collection string) error {
 			log.Error(uuid, "coral.createIndex", err, "Marshal index information.")
 		}
 
-		err = doRequest(methodPost, createIndexURL, bytes.NewBuffer(data))
+		_, err = webservice.DoRequest(uuid, methodPost, createIndexURL, bytes.NewBuffer(data))
 		if err != nil {
 			log.Error(uuid, "coral.createIndex", err, "Sending request to create Index to Pillar.")
 		}
 
 	}
 
-	return err
-}
-
-func doRequest(method string, urlStr string, payload io.Reader) error {
-
-	var err error
-	request, err := http.NewRequest(method, urlStr, payload)
-	if err != nil {
-		log.Error(uuid, "coral.doRequest", err, "New http request.")
-		return err
-	}
-	request.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	var response *http.Response
-
-	// only retry if there is a network Errorf
-
-	// Retry retryTimes times if it fails to do the request
-	for i := 0; i < retryTimes; i++ {
-		response, err = client.Do(request)
-		if err != nil {
-			log.Error(uuid, "coral.doRequest", err, "Sending request number %d to Pillar.", i)
-		} else {
-			defer response.Body.Close()
-			if response.StatusCode != 200 {
-				err = fmt.Errorf("Not succesful status code: %s.", response.Status)
-				// wait and retry to do the request
-				time.Sleep(250 * time.Millisecond)
-			} else {
-				break
-			}
-		}
-	}
 	return err
 }
