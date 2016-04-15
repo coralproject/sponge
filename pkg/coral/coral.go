@@ -77,7 +77,7 @@ func Init(u string) {
 	strategy.Init(uuid)
 	str, err = strategy.New()
 	if err != nil {
-		log.Error(uuid, "fiddler.init", err, "Reading the streategy file.")
+		log.Error(uuid, "coral.init", err, "Reading the streategy file.")
 	}
 	endpoints = str.GetPillarEndpoints()
 }
@@ -92,7 +92,9 @@ func AddRow(data map[string]interface{}, tableName string) error {
 		if err != nil {
 			log.Error(uuid, "coral.Addrow", err, "Marshalling %v.", data)
 		}
-		_, err = webservice.DoRequest(uuid, methodPost, endpoints[tableName], bytes.NewBuffer(d))
+
+		userAgent := fmt.Sprintf("Sponge Publisher %s.", str.Name)
+		_, err = webservice.DoRequest(uuid, userAgent, methodPost, endpoints[tableName], bytes.NewBuffer(d))
 		if err != nil {
 			log.Error(uuid, "coral.Addrow", err, "Sending request to PILLAR with %v.", data)
 		}
@@ -122,14 +124,6 @@ func CreateIndex(collection string) error {
 	for i := range is {
 		indexes[i] = make(map[string]interface{})
 		indexes[i]["target"] = collection
-
-		// indexes[i]["index"] = map[string]interface{}{
-		// 	"name":     is[i]["name"].(string),
-		// 	"key":      is[i]["keys"],
-		// 	"unique":   is[i]["unique"].(string),
-		// 	"dropdups": is[i]["dropdups"].(string),
-		// }
-
 		indexes[i]["index"] = is[i]
 
 		var data []byte
@@ -138,7 +132,8 @@ func CreateIndex(collection string) error {
 			log.Error(uuid, "coral.createIndex", err, "Marshal index information.")
 		}
 
-		_, err = webservice.DoRequest(uuid, methodPost, createIndexURL, bytes.NewBuffer(data))
+		userAgent := fmt.Sprintf("Sponge Publisher %s.", str.Name)
+		_, err = webservice.DoRequest(uuid, userAgent, methodPost, createIndexURL, bytes.NewBuffer(data))
 		if err != nil {
 			log.Error(uuid, "coral.createIndex", err, "Sending request to create Index to Pillar.")
 		}
