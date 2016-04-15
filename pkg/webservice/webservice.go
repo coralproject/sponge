@@ -11,11 +11,6 @@ import (
 )
 
 const (
-	GET    string = "GET"
-	POST   string = "POST"
-	PUT    string = "PUT"
-	DELETE string = "DELETE"
-
 	retryTimes int = 3
 )
 
@@ -23,11 +18,12 @@ const (
 type Response struct {
 	Status     string
 	Header     http.Header
-	Body       string
+	Body       []byte //io.Reader
 	StatusCode int
 }
 
-func DoRequest(uuid string, method string, urlStr string, payload io.Reader) (*Response, error) {
+// DoRequest will do a request to the web service
+func DoRequest(uuid string, userAgent string, method string, urlStr string, payload io.Reader) (*Response, error) {
 
 	var err error
 	request, err := http.NewRequest(method, urlStr, payload)
@@ -36,6 +32,7 @@ func DoRequest(uuid string, method string, urlStr string, payload io.Reader) (*R
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Add("User-Agent", userAgent)
 
 	client := &http.Client{}
 	var response *http.Response
@@ -52,17 +49,18 @@ func DoRequest(uuid string, method string, urlStr string, payload io.Reader) (*R
 		} else {
 
 			defer response.Body.Close()
-			resBody, _ := ioutil.ReadAll(response.Body)
+			//resBody, _ := ioutil.ReadAll(response.Body)
 
 			if response.StatusCode != 200 {
 				err = fmt.Errorf("Not succesful status code: %s.", response.Status)
 				// wait and retry to do the request
 				time.Sleep(250 * time.Millisecond)
 			} else {
+				resBody, _ := ioutil.ReadAll(response.Body)
 				return &Response{
 					response.Status,
 					response.Header,
-					string(resBody),
+					resBody,
 					response.StatusCode,
 				}, nil
 			}

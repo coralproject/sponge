@@ -24,28 +24,27 @@ type MongoDB struct {
 /* Exported Functions */
 
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby string, query string) ([]map[string]interface{}, bool, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]interface{}, error) { // offset int, limit int, orderby string, query string) ([]map[string]interface{}, bool, error) { //(*sql.Rows, error) {
 
 	var data []map[string]interface{}
-	var notFinish = false
 
 	// Get the corresponding entity to the coral collection name
-	collectionName := strategy.GetEntityForeignName(coralTableName)
-	fields := strategy.GetEntityForeignFields(coralTableName) //[]]map[string]string
+	//	entity := strategy.GetEntityForeignName(entityname)
+	fields := strategy.GetEntityForeignFields(entityname) //[]]map[string]string
 
 	// open a connection
 	session, err := m.initSession()
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Initializing mongo session.")
-		return nil, notFinish, err
+		log.Error(uuid, "mongodb.getdata", err, "Initializing mongo session.")
+		return nil, err
 	}
 	defer m.closeSession(session)
 
 	credentialD, ok := credential.(str.CredentialDatabase)
 	if !ok {
 		err = fmt.Errorf("Error asserting type CredentialDatabase from interface Credential.")
-		log.Error(uuid, "source.getdata", err, "Asserting Type CredentialDatabase")
-		return nil, notFinish, err
+		log.Error(uuid, "mongodb.getdata", err, "Asserting Type CredentialDatabase")
+		return nil, err
 	}
 	cred := mgo.Credential{
 		Username: credentialD.Username,
@@ -54,62 +53,67 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 
 	err = session.Login(&cred)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Login mongo session.")
-		return nil, notFinish, err
+		log.Error(uuid, "mongodb.getdata", err, "Login mongo session.")
+		return nil, err
 	}
 
 	db := session.DB(credentialD.Database)
-	col := db.C(collectionName)
+	col := db.C(entityname)
 
 	//Get all the fields that we are going to get from the document { field: 1}
 	fieldsToGet := make(map[string]bool)
 	//var fieldsNames []string
 	for _, f := range fields {
-		fieldsToGet[f["foreign"].(string)] = true
+		ff, ok := f["foreign"].(string)
+		if !ok {
+			err := fmt.Errorf("Error asserting type String from field.")
+			log.Error(uuid, "mongodb.getdata", err, "Type asserting %v into string.", f["foreign"])
+		}
+		fieldsToGet[ff] = true
 		//fieldsNames = append(fieldsNames, f["local"])
 	}
 
 	var mquery map[string]interface{}
-	if query != "" {
-		err = json.Unmarshal([]byte(query), &mquery)
+	if options.query != "" {
+		err = json.Unmarshal([]byte(options.query), &mquery)
 		if err != nil {
-			log.Error(uuid, "mongo.getdata", err, "Unmarshalling query %v", query)
-			return nil, notFinish, err
+			log.Error(uuid, "mongodb.getdata", err, "Unmarshalling query %v", options.query)
+			return nil, err
 		}
 	}
 
-	//.Select(fieldsToGet) <--- SOME FIELDS ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
-	err = col.Find(mquery).Limit(limit).All(&data)
+	//.Select(fieldsToGet) <--- I'm not using Select because SOME FIELDS IN THE TRANSLATION FILE ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
+	err = col.Find(mquery).Limit(options.limit).All(&data)
 	if err != nil {
-		log.Error(uuid, "mongo.getdata", err, "Getting collection %s.", collectionName)
-		return nil, notFinish, err
+		log.Error(uuid, "mongodb.getdata", err, "Getting collection %s.", entityname)
+		return nil, err
 	}
 
 	flattenData, err := normalizeData(data)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Normalizing data from mongo to fit into fiddler.")
-		return nil, notFinish, err
+		log.Error(uuid, "mongodb.getdata", err, "Normalizing data from mongo to fit into fiddler.")
+		return nil, err
 	}
 
-	return flattenData, notFinish, nil
+	return flattenData, nil
 }
 
 // GetQueryData needs to be implemented for mongodb to implement the sourcer interface
-func (m MongoDB) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
+func (m MongoDB) GetQueryData(entity string, options *Options, ids []string) ([]map[string]interface{}, error) { //offset int, limit int, orderby string
 
 	var d []map[string]interface{}
 	var err error
 
 	// if we are quering specifics recrords
 	if len(ids) > 0 {
-		idField := strategy.GetIDField(coralTableName)
+		idField := strategy.GetIDField(entity)
 
 		for i, j := range ids {
 			ids[i] = fmt.Sprintf("\"%s\"", j)
 		}
-		query := fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
+		options.query = fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
 
-		d, _, err = m.GetData(coralTableName, offset, limit, orderby, query)
+		d, err = m.GetData(entity, options)
 	} else {
 		err = fmt.Errorf("No ids to get.")
 	}
@@ -117,6 +121,7 @@ func (m MongoDB) GetQueryData(coralTableName string, offset int, limit int, orde
 	return d, err
 }
 
+// IsAPI is used to check what is that sourcerer interface
 func (m MongoDB) IsAPI() bool {
 	return false
 }
@@ -127,7 +132,7 @@ func (m MongoDB) IsAPI() bool {
 func connectionMongoDB() string {
 	credentialD, ok := credential.(str.CredentialDatabase)
 	if !ok {
-		log.Error(uuid, "source.getdata", fmt.Errorf("Error asserting type CredentialDatabase from interface Credential."), "Asserting Type CredentialDatabase")
+		log.Error(uuid, "mongodb.connectionMongoDB", fmt.Errorf("Error asserting type CredentialDatabase from interface Credential."), "Asserting Type CredentialDatabase")
 		return ""
 	}
 	return fmt.Sprintf("%s:%s@/%s", credentialD.Username, credentialD.Password, credentialD.Database)
@@ -138,7 +143,7 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 
 	database, err := mgo.Dial(m.Connection)
 	if err != nil {
-		log.Error(uuid, "source.initsession", err, "Dial into session.")
+		log.Error(uuid, "mongodb.initsession", err, "Dial into session.")
 		return nil, err
 	}
 

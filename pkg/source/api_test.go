@@ -3,7 +3,6 @@ package source
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +19,7 @@ var (
 	fakeStr str.Strategy
 )
 
-func mockAPI() {
+func mockAPI() string {
 
 	// Initialization of stub server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -28,26 +27,15 @@ func mockAPI() {
 		var err error
 		var d map[string]interface{}
 
-		file, e := ioutil.ReadFile("tests/response.json")
+		file, e := ioutil.ReadFile("../../tests/response.json")
 		if e != nil {
-			fmt.Println("ERROR on setting up response in the test.")
+			fmt.Printf("ERROR %v on setting up response in the test.", e)
 			os.Exit(1)
 		}
 
 		json.Unmarshal(file, &d)
-		fmt.Println(d)
 
-		// check that the row is what we want it to be
-		switch r.RequestURI {
-		case "/v1/search":
-
-			d = make(map[string]interface{})
-			// look at query parameters
-			// setup d
-			//q=((scope: https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage: 100 sortOrder:reverseChronological ))&appkey=dev.washpost.com
-		default:
-			err = errors.New("Bad request")
-		}
+		// err = errors.New("Bad request")
 
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -56,11 +44,12 @@ func mockAPI() {
 			w.WriteHeader(http.StatusOK)
 		}
 		w.Header().Set("Content-Type", "application/json")
+		w.Write(file)
 
-		fmt.Fprintln(w, d)
+		fmt.Fprintln(w, file)
 	}))
 
-	fmt.Println("DEBUG server url: ", server.URL)
+	return server.URL
 }
 
 func TestMain(m *testing.M) {
@@ -75,13 +64,7 @@ func TestMain(m *testing.M) {
 
 func TestAPIGetData(t *testing.T) {
 
-	coralTableName := ""
-	offset := 0
-	limit := 0
-	orderby := ""
-	q := ""
-
-	data, _, err := mapi.GetData(coralTableName, offset, limit, orderby, q)
+	data, _, err := mapi.GetWebServiceData()
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -98,40 +81,34 @@ func TestGetAPIData(t *testing.T) {
 	pageAfter := "1.399743732"
 
 	// no error
-	data, finish, pageAfter1, err := mapi.GetAPIData(pageAfter)
+	data, pageAfter1, err := mapi.GetFireHoseData(pageAfter)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
 
 	// data should be []map[string]interface{}
-	expectedlen := 200
+	expectedlen := 4
 	if len(data) != expectedlen { // this is a setup for the seed data
 		t.Fatalf("expected %d, got %d", expectedlen, len(data))
 	}
 
 	expectedUser := "Duck504"
-	if data[100]["actor.title"] != expectedUser {
-		t.Fatalf("expected %s, got %s", expectedUser, data[100]["actor.title"])
+	if data[2]["actor.title"] != expectedUser {
+		t.Fatalf("expected %s, got %s", expectedUser, data[2]["actor.title"])
 	}
 
-	if !finish {
-		if pageAfter1 == pageAfter {
-			t.Fatalf("expected different pages %s and %s", pageAfter1, pageAfter)
-		}
-
-		data, _, pageAfter2, err := mapi.GetAPIData(pageAfter1)
-		if err != nil {
-			t.Fatalf("expected no error, got '%s'.", err)
-		}
-
-		expectedlen := 200
-		if len(data) != expectedlen { // this is a setup for the seed data
-			t.Fatalf("expected %d, got %d", expectedlen, len(data))
-		}
-
-		if pageAfter1 == pageAfter2 {
-			t.Fatalf("expected different pages %s and %s", pageAfter1, pageAfter2)
-		}
-
+	if pageAfter1 == pageAfter {
+		t.Fatalf("expected different pages %s and %s", pageAfter1, pageAfter)
 	}
+
+	data, _, err = mapi.GetFireHoseData(pageAfter1)
+	if err != nil {
+		t.Fatalf("expected no error, got '%s'.", err)
+	}
+
+	expectedlen = 4
+	if len(data) != expectedlen { // this is a setup for the seed data
+		t.Fatalf("expected %d, got %d", expectedlen, len(data))
+	}
+
 }

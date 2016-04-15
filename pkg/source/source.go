@@ -18,6 +18,18 @@ import (
 	"github.com/stretchr/stew/objects"
 )
 
+// Options will hold all the options that came from flags
+type Options struct {
+	limit                 int
+	offset                int
+	orderby               string
+	query                 string
+	types                 string
+	importonlyfailed      bool
+	reportOnFailedRecords bool
+	reportdbfile          string
+}
+
 // global variables related to strategy
 var (
 	strategy str.Strategy
@@ -52,8 +64,9 @@ func Init(u string) (string, error) {
 
 // Sourcer is where the data is coming from (mysql, api)
 type Sourcer interface {
-	GetData(string, int, int, string, string) ([]map[string]interface{}, bool, error) //tableName, offset, limit, orderby
-	GetQueryData(string, int, int, string, []string) ([]map[string]interface{}, error)
+	// GetData returns data for a specific entity filter by all the options
+	GetData(string, *Options) ([]map[string]interface{}, error)                //int, int, string, string // args ...interface{}) ([]map[string]interface{}, error) //
+	GetQueryData(string, *Options, []string) ([]map[string]interface{}, error) //int, int, string
 	IsAPI() bool
 }
 

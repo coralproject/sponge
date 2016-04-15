@@ -36,13 +36,13 @@ func TestGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	offset := 0
-	limit := 9999999999
-	orderby := "createdate"
-	query := ""
+	options := &Options{offset: 0,
+		limit:   9999999999,
+		orderby: "createdate",
+		query:   ""}
 
 	// no error
-	data, _, err := mm.GetData(coralName, offset, limit, orderby, query)
+	data, err := mm.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got %s.", err)
 	}
@@ -62,13 +62,15 @@ func TestQueryGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "assets"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
-	query := "updatedate > 2013-12-12"
+	options := &Options{
+		offset:  0,
+		limit:   9999999999,
+		orderby: "",
+		query:   "updatedate > 2013-12-12",
+	}
 
 	// no error
-	data, _, err := mm.GetData(coralName, offset, limit, orderby, query)
+	data, err := mm.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got %s.", err)
 	}

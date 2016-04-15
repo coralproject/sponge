@@ -10,13 +10,14 @@ func TestMongoGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
-	query := ""
+	options := &Options{offset: 0,
+		limit:   9999999999,
+		orderby: "",
+		query:   "",
+	}
 
 	// no error
-	data, _, err := mdb.GetData(coralName, offset, limit, orderby, query)
+	data, err := mdb.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -33,13 +34,14 @@ func TestMongoQueryGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
-	query := "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }"
-
+	options := &Options{
+		offset:  0,
+		limit:   9999999999,
+		orderby: "",
+		query:   "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }",
+	}
 	// no error
-	data, _, err := mdb.GetData(coralName, offset, limit, orderby, query)
+	data, err := mdb.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -57,13 +59,13 @@ func TestMongoGetQueryData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
+	options := &Options{offset: 0,
+		limit:   9999999999,
+		orderby: ""}
 	ids := []string{"56ac0c7010780b0a357bdec3", "56ac0c7010780b0a357bdec1", "56ac0c7010780b0a357bdec4"}
 
 	// no error
-	data, err := mdb.GetQueryData(coralName, offset, limit, orderby, ids)
+	data, err := mdb.GetQueryData(coralName, options, ids)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}

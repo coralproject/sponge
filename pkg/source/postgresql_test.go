@@ -36,13 +36,15 @@ func TestPostgresGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "users"
-	offset := 0
-	limit := 9999999999
-	var orderby string
-	var query string
+	options := &Options{
+		offset:  0,
+		limit:   9999999999,
+		orderby: "",
+		query:   "",
+	}
 
 	// no error
-	data,_, err := mp.GetData(coralName, offset, limit, orderby, query)
+	data, err := mp.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got %s.", err)
 	}

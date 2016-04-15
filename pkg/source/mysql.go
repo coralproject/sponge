@@ -26,20 +26,18 @@ type MySQL struct {
 
 /* Exported Functions */
 
-// GetData returns the raw data from the tableName
-func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby string, q string) ([]map[string]interface{}, bool, error) {
-
-	notFinish := false
+// GetData returns the raw data from that entity
+func (m MySQL) GetData(entityname string, options *Options) ([]map[string]interface{}, error) { //offset int, limit int, orderby string, q string
 
 	// Get the corresponding table to the modelName
-	tableName := strategy.GetEntityForeignName(coralTableName)
-	tableFields := strategy.GetEntityForeignFields(coralTableName) // []map[string]string
+	tableName := strategy.GetEntityForeignName(entityname)
+	tableFields := strategy.GetEntityForeignFields(entityname) // []map[string]string
 
 	// open a connection
 	db, err := m.open()
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Connecting to mysql database.")
-		return nil, notFinish, err
+		log.Error(uuid, "mysql.getdata", err, "Connecting to mysql database.")
+		return nil, err
 	}
 	defer m.close(db)
 
@@ -52,23 +50,23 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	}
 
 	fields := strings.Join(f, ", ")
-	if orderby == "" {
-		orderby = strategy.GetOrderBy(coralTableName)
+	if options.orderby == "" {
+		options.orderby = strategy.GetOrderBy(entityname)
 	}
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
 	//query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
 	var where string
-	if q != "" {
-		where = fmt.Sprintf("where %s ", q)
+	if options.query != "" {
+		where = fmt.Sprintf("where %s ", options.query)
 	}
-	query := fmt.Sprintf("SELECT %s from %s %s order by %s limit %v, %v", fields, tableName, where, orderby, offset, limit)
+	query := fmt.Sprintf("SELECT %s from %s %s order by %s limit %v, %v", fields, tableName, where, options.orderby, options.offset, options.limit)
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Running SQL query.")
-		return nil, notFinish, err
+		log.Error(uuid, "mysql.getdata", err, "Running SQL query.")
+		return nil, err
 	}
 
 	byt := []byte(data)
@@ -76,24 +74,24 @@ func (m MySQL) GetData(coralTableName string, offset int, limit int, orderby str
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Unmarshalling the result of the query.")
-		return nil, notFinish, err
+		log.Error(uuid, "mysql.getdata", err, "Unmarshalling the result of the query.")
+		return nil, err
 	}
 
-	return dat, notFinish, nil
+	return dat, nil
 }
 
-// GetQueryData returns the raw data from the tableName based on the ids
-func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
+// GetQueryData returns the raw data from the table based on the ids
+func (m MySQL) GetQueryData(entityname string, options *Options, ids []string) ([]map[string]interface{}, error) { //offset int, limit int, orderby string
 
-	// Get the corresponding entity to the modelName
-	tableName := strategy.GetEntityForeignName(coralTableName)
-	tableFields := strategy.GetEntityForeignFields(coralTableName) // []map[string]string
+	// Get the corresponding entity to the entityname
+	tableName := strategy.GetEntityForeignName(entityname)
+	tableFields := strategy.GetEntityForeignFields(entityname) // []map[string]string
 
 	// open a connection
 	db, err := m.open()
 	if err != nil {
-		log.Error(uuid, "source.getquerydata", err, "Error connecting to mysql database.")
+		log.Error(uuid, "mysql.getquerydata", err, "Error connecting to mysql database.")
 		return nil, err
 	}
 	defer m.close(db)
@@ -110,24 +108,24 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 	fields := strings.Join(f, ", ")
 
 	// if we are ordering by
-	if len(orderby) == 0 {
-		orderby = strategy.GetOrderBy(coralTableName)
+	if len(options.orderby) == 0 {
+		options.orderby = strategy.GetOrderBy(entityname)
 	}
 
 	var queryWhere string
 	// if we are quering specifics recrords
 	if len(ids) > 0 {
-		idField := strategy.GetIDField(coralTableName)
+		idField := strategy.GetIDField(entityname)
 		queryWhere = fmt.Sprintf("where %s in (%s)", idField, strings.Join(ids, ", "))
 	}
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
-	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
+	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", options.orderby, "limit", fmt.Sprintf("%v", options.offset), ", ", fmt.Sprintf("%v", options.limit)}, " ")
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Running SQL query.")
+		log.Error(uuid, "mysql.getquerydata", err, "Running SQL query.")
 		return nil, err
 	}
 
@@ -136,7 +134,7 @@ func (m MySQL) GetQueryData(coralTableName string, offset int, limit int, orderb
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Unmarshalling the query.")
+		log.Error(uuid, "mysql.getquerydata", err, "Unmarshalling the query.")
 		return nil, err
 	}
 
@@ -155,7 +153,7 @@ func connectionMySQL() string {
 	credentialD, ok := credential.(str.CredentialDatabase)
 	if !ok {
 		err := fmt.Errorf("Error asserting type CredentialDatabase from interface Credential.")
-		log.Error(uuid, "source.getdata", err, "Asserting Type CredentialDatabase")
+		log.Error(uuid, "mysql.connectionMySQL", err, "Asserting Type CredentialDatabase")
 		return ""
 	}
 	return fmt.Sprintf("%s:%s@/%s", credentialD.Username, credentialD.Password, credentialD.Database)

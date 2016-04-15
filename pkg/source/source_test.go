@@ -33,7 +33,7 @@ func init() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel)
 }
 
 func setupMysql() {
@@ -46,7 +46,7 @@ func setupMysql() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
@@ -86,7 +86,7 @@ func setupMongo() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
@@ -126,7 +126,7 @@ func setupPostgreSQL() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
@@ -159,7 +159,7 @@ func setupPostgreSQL() {
 func setupAPI() {
 
 	// Mock the API Server
-	mockAPI()
+	serverurl := mockAPI()
 
 	// Initialize logging
 	logLevel := func() int {
@@ -169,7 +169,7 @@ func setupAPI() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel)
 
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
@@ -188,7 +188,7 @@ func setupAPI() {
 		fmt.Printf("Error when initializing strategy, %v.\n", e)
 	}
 
-	m, e := New(s) // function being tested
+	m, e := New(s)
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
@@ -197,6 +197,7 @@ func setupAPI() {
 	if !ok {
 		fmt.Println("It should return a type API")
 	}
+	mapi.Connection = serverurl + "/v1/search?q=((scope%3Ahttps%3A%2F%2Fwww.washingtonpost.com%2Flifestyle%2Fstyle%2Fcarolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor%2F2015%2F09%2F24%2F299ec776-5e2d-11e5-9757-e49273f05f65_story.html+source%3Awashpost.com+itemsPerPage%3A100+sortOrder%3AreverseChronological))&appkey=dev.washpost.com"
 
 }
 
