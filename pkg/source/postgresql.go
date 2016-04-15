@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
+	str "github.com/coralproject/sponge/pkg/strategy"
 	"github.com/gabelula/gosqljson"
 	// import postgresql driver
 	_ "github.com/lib/pq"
@@ -25,32 +26,20 @@ type PostgreSQL struct {
 
 /* Exported Functions */
 
-// GetTables gets all the tables names from this data source
-func (m PostgreSQL) GetTables() ([]string, error) {
-	keys := make([]string, len(strategy.Map.Tables))
-
-	for k, val := range strategy.Map.Tables {
-		keys[val.Priority] = k
-	}
-	return keys, nil
-}
-
-//GetData(string, int, int, string, string) ([]map[string]interface{}, error) //tableName, offset, limit, orderby
-
 // GetData returns the raw data from the tableName
-func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderby string, q string) ([]map[string]interface{}, error) {
+func (p PostgreSQL) GetData(entityname string, options *Options) ([]map[string]interface{}, error) { //offset int, limit int, orderby string, q string
 
-	// Get the corresponding table to the modelName
-	tableName := strategy.GetTableForeignName(coralTableName)
-	tableFields := strategy.GetTableForeignFields(coralTableName) // []map[string]string
+	// Get the corresponding entity to the modelName
+	tableName := strategy.GetEntityForeignName(entityname)
+	tableFields := strategy.GetEntityForeignFields(entityname) // []map[string]string
 
 	// open a connection
-	db, err := m.open()
+	db, err := p.open()
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Connecting to postgresql database.")
+		log.Error(uuid, "postgresql.getdata", err, "Connecting to postgresql database.")
 		return nil, err
 	}
-	defer m.close(db)
+	defer p.close(db)
 
 	// Fields for that external source table
 	f := make([]string, 0, len(tableFields))
@@ -61,21 +50,21 @@ func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderb
 	}
 
 	fields := strings.Join(f, ", ")
-	if orderby == "" {
-		orderby = strategy.GetOrderBy(coralTableName)
+	if options.Orderby == "" {
+		options.Orderby = strategy.GetOrderBy(entityname)
 	}
 
 	// Get only the fields that we are going to use
 	var where string
-	if q != "" {
-		where = fmt.Sprintf("where %s ", q)
+	if options.Query != "" {
+		where = fmt.Sprintf("where %s ", options.Query)
 	}
 
-	query := fmt.Sprintf("SELECT %s from %s %s order by %s OFFSET %v LIMIT %v", fields, tableName, where, orderby, offset, limit)
+	query := fmt.Sprintf("SELECT %s from %s %s order by %s OFFSET %v LIMIT %v", fields, tableName, where, options.Orderby, options.Offset, options.Limit)
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Running SQL query.")
+		log.Error(uuid, "postgresql.getdata", err, "Running SQL query.")
 		return nil, err
 	}
 
@@ -84,7 +73,7 @@ func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderb
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Unmarshalling the result of the query.")
+		log.Error(uuid, "postgresql.getdata", err, "Unmarshalling the result of the query.")
 		return nil, err
 	}
 
@@ -92,19 +81,19 @@ func (m PostgreSQL) GetData(coralTableName string, offset int, limit int, orderb
 }
 
 // GetQueryData returns the raw data from the tableName
-func (m PostgreSQL) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
+func (p PostgreSQL) GetQueryData(entityname string, options *Options, ids []string) ([]map[string]interface{}, error) { //offset int, limit int, orderby string
 
 	// Get the corresponding table to the modelName
-	tableName := strategy.GetTableForeignName(coralTableName)
-	tableFields := strategy.GetTableForeignFields(coralTableName) // []map[string]string
+	tableName := strategy.GetEntityForeignName(entityname)
+	tableFields := strategy.GetEntityForeignFields(entityname) // []map[string]string
 
 	// open a connection
-	db, err := m.open()
+	db, err := p.open()
 	if err != nil {
-		log.Error(uuid, "source.getquerydata", err, "Error connecting to postgresql database.")
+		log.Error(uuid, "postgresql.getquerydata", err, "Error connecting to postgresql database.")
 		return nil, err
 	}
-	defer m.close(db)
+	defer p.close(db)
 
 	// Fields for that external source table
 	f := make([]string, 0, len(tableFields))
@@ -118,24 +107,24 @@ func (m PostgreSQL) GetQueryData(coralTableName string, offset int, limit int, o
 	fields := strings.Join(f, ", ")
 
 	// if we are ordering by
-	if len(orderby) == 0 {
-		orderby = strategy.GetOrderBy(coralTableName)
+	if len(options.Orderby) == 0 {
+		options.Orderby = strategy.GetOrderBy(entityname)
 	}
 
 	var queryWhere string
 	// if we are quering specifics recrords
 	if len(ids) > 0 {
-		idField := strategy.GetIDField(coralTableName)
+		idField := strategy.GetIDField(entityname)
 		queryWhere = fmt.Sprintf("where %s in (%s)", idField, strings.Join(ids, ", "))
 	}
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
-	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
+	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", options.Orderby, "limit", fmt.Sprintf("%v", options.Offset), ", ", fmt.Sprintf("%v", options.Limit)}, " ")
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Running SQL query.")
+		log.Error(uuid, "postgresql.getquerydata", err, "Running SQL query.")
 		return nil, err
 	}
 
@@ -144,30 +133,36 @@ func (m PostgreSQL) GetQueryData(coralTableName string, offset int, limit int, o
 	var dat []map[string]interface{}
 	err = json.Unmarshal(byt, &dat)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Unmarshalling the query.")
+		log.Error(uuid, "postgresql.getquerydata", err, "Unmarshalling the query.")
 		return nil, err
 	}
 
 	return dat, nil
 }
 
+// IsWebService is a func from the Sourcer interface to check if the external source is api or database
+func (p PostgreSQL) IsWebService() bool {
+	return false
+}
+
 //////* Not exported functions *//////
 
 // ConnectionPostgresSQL returns the connection string
 func connectionPostgreSQL() string {
-	//return fmt.Sprintf("%s:%s@%s:%s/%s", credential.Username, credential.Password, credential.Host, credential.Port, credential.Database)
-	//return fmt.Sprintf("%s?user=%s&password=%s&host=%s&port=%s&sslmode=disable", credential.Database, credential.Username, credential.Password, credential.Host, credential.Port)
-	//return fmt.Sprintf("user=%s dbname=%s sslmode=verify-full", credential.Username, credential.Database)
-
-	//db, err := sql.Open("postgres", "postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full")
-	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", credential.Username, credential.Password, credential.Host, credential.Database)
+	credentialD, ok := credential.(str.CredentialDatabase)
+	if !ok {
+		err := fmt.Errorf("Error asserting type CredentialDatabase from interface Credential.")
+		log.Error(uuid, "postgresql.getquerydata", err, "Asserting Type CredentialDatabase")
+		return ""
+	}
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", credentialD.Username, credentialD.Password, credentialD.Host, credentialD.Database)
 
 }
 
 // Open gives back  DB
-func (m *PostgreSQL) open() (*sql.DB, error) {
+func (p *PostgreSQL) open() (*sql.DB, error) {
 
-	database, err := sql.Open("postgres", m.Connection)
+	database, err := sql.Open("postgres", p.Connection)
 	if err != nil {
 		return nil, err
 	}
@@ -176,12 +171,12 @@ func (m *PostgreSQL) open() (*sql.DB, error) {
 		return nil, err
 	}
 
-	m.Database = database
+	p.Database = database
 
 	return database, nil
 }
 
 // Close closes the db
-func (m PostgreSQL) close(db *sql.DB) error {
+func (p PostgreSQL) close(db *sql.DB) error {
 	return db.Close()
 }

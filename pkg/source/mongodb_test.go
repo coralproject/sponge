@@ -9,20 +9,21 @@ func TestMongoGetData(t *testing.T) {
 	setupMongo()
 
 	// Default Flags
-	coralName := "comment"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
-	query := ""
+	coralName := "comments"
+	options := &Options{offset: 0,
+		limit:   9999999999,
+		orderby: "",
+		query:   "",
+	}
 
 	// no error
-	data, err := mdb.GetData(coralName, offset, limit, orderby, query)
+	data, err := mdb.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
 
 	// data should be []map[string]interface{}
-	expectedlen := 0
+	expectedlen := 150901
 	if len(data) != expectedlen { // this is a setup for the seed data
 		t.Fatalf("expected %d, got %d", expectedlen, len(data))
 	}
@@ -32,14 +33,15 @@ func TestMongoQueryGetData(t *testing.T) {
 	setupMongo()
 
 	// Default Flags
-	coralName := "comment"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
-	query := "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }"
-
+	coralName := "comments"
+	options := &Options{
+		offset:  0,
+		limit:   9999999999,
+		orderby: "",
+		query:   "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }",
+	}
 	// no error
-	data, err := mdb.GetData(coralName, offset, limit, orderby, query)
+	data, err := mdb.GetData(coralName, options)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -56,14 +58,14 @@ func TestMongoGetQueryData(t *testing.T) {
 	setupMongo()
 
 	// Default Flags
-	coralName := "comment"
-	offset := 0
-	limit := 9999999999
-	orderby := ""
+	coralName := "comments"
+	options := &Options{offset: 0,
+		limit:   9999999999,
+		orderby: ""}
 	ids := []string{"56ac0c7010780b0a357bdec3", "56ac0c7010780b0a357bdec1", "56ac0c7010780b0a357bdec4"}
 
 	// no error
-	data, err := mdb.GetQueryData(coralName, offset, limit, orderby, ids)
+	data, err := mdb.GetQueryData(coralName, options, ids)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -75,27 +77,27 @@ func TestMongoGetQueryData(t *testing.T) {
 	}
 }
 
-// Signature func (m MongoDB) GetTables() ([]string, error) {
-func TestMongoGetTables(t *testing.T) {
+// Signature func (m MongoDB) GetEntities() ([]string, error) {
+func TestMongoGetEntities(t *testing.T) {
 
 	setupMongo()
 
-	s, e := mdb.GetTables()
+	s, e := GetEntities()
 	if e != nil {
 		t.Fatalf("expected no error, got %s.", e)
 	}
 
-	expectedLen := 3
+	expectedLen := 4
 	if len(s) != expectedLen {
 		t.Fatalf("got %d, it should be %d", len(s), expectedLen)
 	}
 
-	if s[0] != "asset" {
+	if s[0] != "users" {
 		t.Fatalf("got %s, it should be asset", s[0])
 	}
 
-	if s[2] != "comment" {
-		t.Fatalf("got %s, it should be asset", s[0])
+	if s[1] != "comments" {
+		t.Fatalf("got %s, it should be comments", s[1])
 	}
 
 	teardown()

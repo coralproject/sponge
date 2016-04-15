@@ -21,7 +21,7 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel )
 }
 
 func teardown() {

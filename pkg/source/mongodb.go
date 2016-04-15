@@ -6,11 +6,10 @@ package source
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
-	"github.com/stretchr/stew/objects"
+	str "github.com/coralproject/sponge/pkg/strategy"
 	"gopkg.in/mgo.v2"
 )
 
@@ -24,74 +23,75 @@ type MongoDB struct {
 
 /* Exported Functions */
 
-// GetTables gets all the collections names from this data source
-func (m MongoDB) GetTables() ([]string, error) {
-	keys := make([]string, len(strategy.Map.Tables))
-
-	for k, val := range strategy.Map.Tables {
-		keys[val.Priority] = k
-	}
-	return keys, nil
-}
-
 // GetData returns the raw data from the tableName
-func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby string, query string) ([]map[string]interface{}, error) { //(*sql.Rows, error) {
+func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]interface{}, error) { // offset int, limit int, orderby string, query string) ([]map[string]interface{}, bool, error) { //(*sql.Rows, error) {
 
 	var data []map[string]interface{}
 
-	// Get the corresponding table to the modelName
-	collectionName := strategy.GetTableForeignName(coralTableName)
-	fields := strategy.GetTableForeignFields(coralTableName) //[]]map[string]string
+	// Get the corresponding entity to the coral collection name
+	//	entity := strategy.GetEntityForeignName(entityname)
+	fields := strategy.GetEntityForeignFields(entityname) //[]]map[string]string
 
 	// open a connection
 	session, err := m.initSession()
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Initializing mongo session.")
+		log.Error(uuid, "mongodb.getdata", err, "Initializing mongo session.")
 		return nil, err
 	}
 	defer m.closeSession(session)
 
+	credentialD, ok := credential.(str.CredentialDatabase)
+	if !ok {
+		err = fmt.Errorf("Error asserting type CredentialDatabase from interface Credential.")
+		log.Error(uuid, "mongodb.getdata", err, "Asserting Type CredentialDatabase")
+		return nil, err
+	}
 	cred := mgo.Credential{
-		Username: credential.Username,
-		Password: credential.Password,
+		Username: credentialD.Username,
+		Password: credentialD.Password,
 	}
 
 	err = session.Login(&cred)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Login mongo session.")
+		log.Error(uuid, "mongodb.getdata", err, "Login mongo session.")
 		return nil, err
 	}
 
-	db := session.DB(credential.Database)
-	col := db.C(collectionName)
+	db := session.DB(credentialD.Database)
+	col := db.C(entityname)
 
 	//Get all the fields that we are going to get from the document { field: 1}
 	fieldsToGet := make(map[string]bool)
 	//var fieldsNames []string
 	for _, f := range fields {
-		fieldsToGet[f["foreign"].(string)] = true
+		ff, ok := f["foreign"].(string)
+		if !ok {
+			err := fmt.Errorf("Error asserting type String from field.")
+			log.Error(uuid, "mongodb.getdata", err, "Type asserting %v into string.", f["foreign"])
+		}
+		fieldsToGet[ff] = true
 		//fieldsNames = append(fieldsNames, f["local"])
 	}
 
 	var mquery map[string]interface{}
-	if query != "" {
-		err = json.Unmarshal([]byte(query), &mquery)
+	if options.Query != "" {
+		err = json.Unmarshal([]byte(options.Query), &mquery)
 		if err != nil {
-			log.Error(uuid, "mongo.getdata", err, "Unmarshalling query %v", query)
+			log.Error(uuid, "mongodb.getdata", err, "Unmarshalling query %v", options.Query)
 			return nil, err
 		}
 	}
 
-	//.Select(fieldsToGet) <--- SOME FIELDS ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
-	err = col.Find(mquery).Limit(limit).All(&data)
+	//.Select(fieldsToGet) <--- I'm not using Select because SOME FIELDS IN THE TRANSLATION FILE ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
+	err = col.Find(mquery).Limit(options.Limit).All(&data)
 	if err != nil {
-		log.Error(uuid, "mongo.getdata", err, "Getting collection %s.", collectionName)
+		log.Error(uuid, "mongodb.getdata", err, "Getting collection %s.", entityname)
 		return nil, err
 	}
 
 	flattenData, err := normalizeData(data)
 	if err != nil {
-		log.Error(uuid, "source.getdata", err, "Normalizing data from mongo to fit into fiddler.")
+		log.Error(uuid, "mongodb.getdata", err, "Normalizing data from mongo to fit into fiddler.")
 		return nil, err
 	}
 
@@ -99,21 +99,21 @@ func (m MongoDB) GetData(coralTableName string, offset int, limit int, orderby s
 }
 
 // GetQueryData needs to be implemented for mongodb to implement the sourcer interface
-func (m MongoDB) GetQueryData(coralTableName string, offset int, limit int, orderby string, ids []string) ([]map[string]interface{}, error) {
+func (m MongoDB) GetQueryData(entity string, options *Options, ids []string) ([]map[string]interface{}, error) { //offset int, limit int, orderby string
 
 	var d []map[string]interface{}
 	var err error
 
 	// if we are quering specifics recrords
 	if len(ids) > 0 {
-		idField := strategy.GetIDField(coralTableName)
+		idField := strategy.GetIDField(entity)
 
 		for i, j := range ids {
 			ids[i] = fmt.Sprintf("\"%s\"", j)
 		}
-		query := fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
+		options.Query = fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
 
-		d, err = m.GetData(coralTableName, offset, limit, orderby, query)
+		d, err = m.GetData(entity, options)
 	} else {
 		err = fmt.Errorf("No ids to get.")
 	}
@@ -121,11 +121,21 @@ func (m MongoDB) GetQueryData(coralTableName string, offset int, limit int, orde
 	return d, err
 }
 
+// IsWebService is used to check what is that sourcerer interface
+func (m MongoDB) IsWebService() bool {
+	return false
+}
+
 //////* Not exported functions *//////
 
 // ConnectionMongoDB returns the connection string
 func connectionMongoDB() string {
-	return fmt.Sprintf("%s:%s@/%s", credential.Username, credential.Password, credential.Database)
+	credentialD, ok := credential.(str.CredentialDatabase)
+	if !ok {
+		log.Error(uuid, "mongodb.connectionMongoDB", fmt.Errorf("Error asserting type CredentialDatabase from interface Credential."), "Asserting Type CredentialDatabase")
+		return ""
+	}
+	return fmt.Sprintf("%s:%s@/%s", credentialD.Username, credentialD.Password, credentialD.Database)
 }
 
 // Open gives back a pointer to the DB
@@ -133,7 +143,7 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 
 	database, err := mgo.Dial(m.Connection)
 	if err != nil {
-		log.Error(uuid, "source.initsession", err, "Dial into session.")
+		log.Error(uuid, "mongodb.initsession", err, "Dial into session.")
 		return nil, err
 	}
 
@@ -145,154 +155,4 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 // Close closes the db
 func (m MongoDB) closeSession(session *mgo.Session) {
 	session.Close()
-}
-
-// it prepares the data to have the transformations in fiddler
-// normalize converts into a map[string]string with the key a breadcrumb to the leaf, and the value being the leaf itself
-func flattenData(fields []string, mongoData []map[string]interface{}) ([]map[string]interface{}, error) {
-	var dat []map[string]interface{}
-
-	for _, j := range mongoData { // this is a slice of maps
-		d, e := flattDocument(fields, j)
-		if e != nil {
-			return nil, e
-		}
-		// add d to dat
-		dat = append(dat, d)
-	}
-
-	return dat, nil
-}
-
-func flattDocument(fields []string, document map[string]interface{}) (map[string]interface{}, error) {
-
-	var err error
-	result := make(map[string]interface{})
-
-	for _, field := range fields {
-		result[field] = objects.Map(document).Get(field)
-	}
-
-	return result, err
-}
-
-// it prepares the data to have the transformations in fiddler
-// normalize converts into a map[string]string with the key a breadcrumb to the leaf, and the value being the leaf itself
-func normalizeData(mongoData []map[string]interface{}) ([]map[string]interface{}, error) {
-	var dat []map[string]interface{}
-
-	for _, j := range mongoData { // this is a slice of maps
-		d, e := normalizeDocument(j)
-		if e != nil {
-			return nil, e
-		}
-		// add d to dat
-		dat = append(dat, d)
-	}
-
-	return dat, nil
-}
-
-func normalizeDocument(document map[string]interface{}) (map[string]interface{}, error) {
-	d := make(map[string]interface{})
-
-	for i, k := range document { // this is the actual map
-		//fmt.Printf("## Index %s, normalizing %v \n\n", i, k)
-		m := normalize(i, k) // gets the id being the breadcrumb and val the leaf
-		//fmt.Printf("- Got %v\n\n\n", m)
-		for r, p := range m {
-			d[r] = p
-		}
-	}
-
-	return d, nil
-}
-
-// i is the first key. k could be a string or a map
-// it returns key and value
-func normalize(i string, k interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-
-	switch v := k.(type) {
-	case map[string]interface{}: // if k is a map then go deeper
-		//fmt.Printf("** %v is map[string]interface{}\n\n", k)
-		for p, e := range k.(map[string]interface{}) {
-			switch v := e.(type) {
-			case map[string]interface{}:
-				//fmt.Printf("* %v is map[string]interface{}\n\n", e)
-				newi := strings.Join([]string{i, p}, ".")
-				newresult := normalize(newi, e)
-				// copy newresult into result
-				for v1, v2 := range newresult {
-					result[v1] = v2
-				}
-			case []map[string]interface{}:
-				//fmt.Printf("* %v is []map[string]interface{}\n\n", e)
-				for u, c := range v {
-					newi := strings.Join([]string{i, p, strconv.Itoa(u)}, ".")
-					newresult := normalize(newi, c)
-					for v1, v2 := range newresult {
-						result[v1] = v2
-					}
-				}
-			case map[string]string:
-				//fmt.Printf("* %v is map[string]string\n\n", e)
-				for a, b := range v {
-					newi := strings.Join([]string{i, p, a}, ".")
-					result[newi] = b
-				}
-			case []map[string]string:
-				//fmt.Printf("* %v is []map[string]string\n\n", e)
-				for u, c := range v {
-					newi := strings.Join([]string{i, p, strconv.Itoa(u)}, ".")
-					newresult := normalize(newi, c)
-					for v1, v2 := range newresult {
-						result[v1] = v2
-					}
-				}
-			case []interface{}:
-				//fmt.Printf("* %v is []interface{}\n\n", e)
-				for d1, d2 := range v {
-					newi := strings.Join([]string{i, p, strconv.Itoa(d1)}, ".")
-					newresult := normalize(newi, d2)
-					for v1, v2 := range newresult {
-						result[v1] = v2
-					}
-				}
-			default:
-				// fmt.Printf("* %v is no idea\n\n", e)
-				// fmt.Println(reflect.TypeOf(v))
-				newi := strings.Join([]string{i, p}, ".")
-				result[newi] = e
-			}
-		}
-	case map[string]string:
-		//fmt.Printf("** %v is map[string]string\n\n", k)
-		for p, e := range v {
-			newi := strings.Join([]string{i, p}, ".")
-			result[newi] = e
-		}
-	case []map[string]string:
-		//fmt.Printf("** %v is []map[string]string\n\n", k)
-		for u, c := range v {
-			newi := strings.Join([]string{i, strconv.Itoa(u)}, ".")
-			newresult := normalize(newi, c)
-			for v1, v2 := range newresult {
-				result[v1] = v2
-			}
-		}
-	case []map[string]interface{}:
-		for u, c := range v {
-			newi := strings.Join([]string{i, strconv.Itoa(u)}, ".")
-			newresult := normalize(newi, c)
-			for v1, v2 := range newresult {
-				result[v1] = v2
-			}
-		}
-	default: // if k is not a map then just return it as a string
-		//fmt.Printf("** %v is no idea\n\n", k)
-		result[i] = k
-	}
-
-	return result
 }

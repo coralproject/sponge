@@ -23,17 +23,6 @@ var (
 func Init(u string) {
 
 	uuid = u
-
-	// logLevel := func() int {
-	// 	ll, err := cfg.Int("LOGGING_LEVEL")
-	// 	if err != nil {
-	// 		return log.USER
-	// 	}
-	// 	return ll
-	// }
-	//
-	// log.Init(os.Stderr, logLevel)
-
 	pillarURL = os.Getenv("PILLAR_URL")
 }
 
@@ -46,24 +35,24 @@ type Strategy struct {
 	Credentials Credentials // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
 }
 
-// Map explains which tables or data we are getting from the source.
+// Map explains which entities or data we are getting from the source.
 type Map struct {
-	Foreign        string           `json:"foreign"`
-	DateTimeFormat string           `json:"datetimeformat"`
-	Tables         map[string]Table `json:"tables"`
+	Foreign        string            `json:"foreign"`
+	DateTimeFormat string            `json:"datetimeformat"`
+	Entities       map[string]Entity `json:"entities"`
 }
 
-// Table holds the struct on what is the external source's table name and fields
-type Table struct {
-	Foreign  string                   `json:"foreign"`
-	Local    string                   `json:"local"`
-	Priority int                      `json:"priority"`
-	OrderBy  string                   `json:"orderby"`
-	ID       string                   `json:"id"`
-	Index    []mgo.Index              `json:"index"`  //map[string]interface{} `json:"index"`
-	Fields   []map[string]interface{} `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
-	Status   map[string]string        `json:"status"`
-	Endpoint string                   `json:"endpoint"`
+// Entity holds the struct on what is the external source's entity name and fields
+type Entity struct {
+	Foreign        string                   `json:"foreign"`
+	Local          string                   `json:"local"`
+	Priority       int                      `json:"priority"`
+	OrderBy        string                   `json:"orderby"`
+	ID             string                   `json:"id"`
+	Index          []mgo.Index              `json:"index"`  //map[string]interface{} `json:"index"`
+	Fields         []map[string]interface{} `json:"fields"` // foreign (name in the foreign source), local (name in the local source), relation (relationship between each other), type (data type)
+	Status         map[string]string        `json:"status"`
+	PillarEndpoint string                   `json:"endpoint"`
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,8 +61,8 @@ type Table struct {
 
 // Credentials are all the credentials for external and internal data sources
 type Credentials struct {
-	Databases []CredentialDatabase
-	APIs      []CredentialAPI
+	Databases []CredentialDatabase `json:"databases"`
+	APIs      []CredentialAPI      `json:"apis"`
 }
 
 // Credential is the interface that CredentialDatabase and CredentialAPI will implement
@@ -104,10 +93,19 @@ func (c CredentialDatabase) GetType() string {
 
 // CredentialAPI has the information to connect to an external API source.
 type CredentialAPI struct {
-	Username  string            `json:"username"` // BasicAuth
-	Password  string            `json:"password"` // BasicAuth
-	Adapter   string            `json:"adapter"`
-	Endpoints map[string]string `json:"endpoints"`
+	AppKey     string `json:"appkey"`
+	Endpoint   string `json:"endpoint"`
+	Adapter    string `json:"adapter"`
+	Type       string `json:"type"`
+	Records    string `json:"records"`
+	Pagination string `json:"pagination"`
+	UserAgent  string `json:"useragent"`
+	Attributes string `json:"attributes"`
+}
+
+// GetAppKey gets the app key to access the api
+func (c CredentialAPI) GetAppKey() string {
+	return c.AppKey
 }
 
 // GetAdapter returns the adapter
@@ -115,32 +113,34 @@ func (c CredentialAPI) GetAdapter() string {
 	return c.Adapter
 }
 
-// GetEndpoints returns all the endpoints
-func (c CredentialAPI) GetEndpoints() map[string]string {
-	return c.Endpoints
+// GetType returns the adapter
+func (c CredentialAPI) GetType() string {
+	return c.Type
 }
 
-// GetEndpoint gives the endpoint for that modelName
-func (c CredentialAPI) GetEndpoint(modelName string) (string, error) {
-	endpoints := c.GetEndpoints()
-	for k, e := range endpoints {
-		if k == modelName {
-			return e, nil
-		}
-	}
-
-	return "", fmt.Errorf("Error when trying to get endpoint %s.", modelName)
+// GetEndpoint returns all the endpoints
+func (c CredentialAPI) GetEndpoint() string {
+	return c.Endpoint
 }
 
-// GetAuthenticationEndpoint returns the authentication url
-func (c CredentialAPI) GetAuthenticationEndpoint() (string, error) {
-	for key, val := range c.Endpoints {
-		if key == "authentication" {
-			return val, nil
-		}
-	}
+// GetRecordsFieldName returns the name of the field that holds the records
+func (c CredentialAPI) GetRecordsFieldName() string {
+	return c.Records
+}
 
-	return "", fmt.Errorf("Error when trying to get endpoint authentication.")
+// GetPaginationFieldName returns the name of the field where to look for pagination
+func (c CredentialAPI) GetPaginationFieldName() string {
+	return c.Pagination
+}
+
+// GetUserAgent returns the name of the field that holds the user agent
+func (c CredentialAPI) GetUserAgent() string {
+	return c.UserAgent
+}
+
+// GetAttributes returns the attributes for the query
+func (c CredentialAPI) GetAttributes() string {
+	return c.Attributes
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,16 +169,24 @@ func New() (Strategy, error) {
 }
 
 // GetCredential returns the credentials for connection with the external source adapter a, type t
-func (s Strategy) GetCredential(a string, t string) (CredentialDatabase, error) {
-	var cred CredentialDatabase
+func (s Strategy) GetCredential(a string, t string) (Credential, error) {
+	var cred Credential
 	var err error
 
-	creda := s.Credentials.Databases
+	creda := s.Credentials
 
 	// look at the credentials related to local database (mongodb in our original example)
-	for i := 0; i < len(creda); i++ {
-		if creda[i].GetAdapter() == a && creda[i].GetType() == t {
-			cred = creda[i]
+	for i := 0; i < len(creda.Databases); i++ {
+		if creda.Databases[i].GetAdapter() == a && creda.Databases[i].GetType() == t {
+			cred = creda.Databases[i]
+			return cred, err
+		}
+	}
+
+	// look at the credentials related to local database (mongodb in our original example)
+	for i := 0; i < len(creda.APIs); i++ {
+		if creda.APIs[i].GetAdapter() == a && creda.APIs[i].GetType() == t {
+			cred = creda.APIs[i]
 			return cred, err
 		}
 	}
@@ -200,9 +208,9 @@ func (s Strategy) GetDefaultDateTimeFormat() string {
 }
 
 // GetDateTimeFormat returns the datetime format for this strategy
-func (s Strategy) GetDateTimeFormat(table string, field string) string {
+func (s Strategy) GetDateTimeFormat(entity string, field string) string {
 
-	for _, f := range s.Map.Tables[table].Fields {
+	for _, f := range s.Map.Entities[entity].Fields {
 		if f["local"] == field {
 			val, exists := f["datetimeformat"]
 			if exists {
@@ -213,13 +221,13 @@ func (s Strategy) GetDateTimeFormat(table string, field string) string {
 	return s.GetDefaultDateTimeFormat()
 }
 
-// GetTables returns a list of tables to be imported
-func (s Strategy) GetTables() map[string]Table {
-	return s.Map.Tables
+// GetEntities returns a list of the entities defined in the transformations file
+func (s Strategy) GetEntities() map[string]Entity {
+	return s.Map.Entities
 }
 
-// HasArrayField returns true if the table has fields that are type array and need to be loop through
-func (s Strategy) HasArrayField(t Table) bool {
+// HasArrayField returns true if the entity has fields that are type array and need to be loop through
+func (s Strategy) HasArrayField(t Entity) bool {
 	//Fields   []map[string]interface{}
 
 	for _, f := range t.Fields {
@@ -234,7 +242,7 @@ func (s Strategy) HasArrayField(t Table) bool {
 func (s Strategy) GetFieldsForSubDocument(model string, foreignfield string) []map[string]interface{} {
 	var fields []map[string]interface{}
 
-	for _, f := range s.Map.Tables[model].Fields { // search foreign field in []map[string]interface{}
+	for _, f := range s.Map.Entities[model].Fields { // search foreign field in []map[string]interface{}
 		if f["foreign"] == foreignfield {
 			fi := f["fields"].([]interface{})
 			// Convert the []interface into []map[string]interface{}
@@ -248,43 +256,43 @@ func (s Strategy) GetFieldsForSubDocument(model string, foreignfield string) []m
 	return fields
 }
 
-// GetTableForeignName returns the external source's table mapped to the coral model
-func (s Strategy) GetTableForeignName(coralName string) string {
-	return s.Map.Tables[coralName].Foreign
+// GetEntityForeignName returns the external source's entity mapped to the coral model
+func (s Strategy) GetEntityForeignName(coralName string) string {
+	return s.Map.Entities[coralName].Foreign
 }
 
-// GetTableForeignFields returns the external source's table fields mapped to the coral model
-func (s Strategy) GetTableForeignFields(coralName string) []map[string]interface{} {
-	return s.Map.Tables[coralName].Fields
+// GetEntityForeignFields returns the external source's entity fields mapped to the coral model
+func (s Strategy) GetEntityForeignFields(coralName string) []map[string]interface{} {
+	return s.Map.Entities[coralName].Fields
 }
 
-// GetOrderBy returns the order by field definied in the strategy
+// GetOrderBy returns the order by field definied in the transformations file
 func (s Strategy) GetOrderBy(coralName string) string {
-	return s.Map.Tables[coralName].OrderBy
+	return s.Map.Entities[coralName].OrderBy
 }
 
-// GetIndexBy returns the structure to use to create indexes for the coral table
-func (s Strategy) GetIndexBy(coralName string) []mgo.Index { //map[string]interface{} {
-	return s.Map.Tables[coralName].Index
+// GetIndexBy returns the structure to use to create indexes for the coral entity
+func (s Strategy) GetIndexBy(coralName string) []mgo.Index {
+	return s.Map.Entities[coralName].Index
 }
 
-// GetIDField returns the identifier for the table coralname setup in the strategy file
+// GetIDField returns the identifier for the entity coralname setup in the transformations file
 func (s Strategy) GetIDField(coralName string) string {
-	return s.Map.Tables[coralName].ID
+	return s.Map.Entities[coralName].ID
 }
 
 // GetStatus returns the mapping of the external status into the coral one
 func (s Strategy) GetStatus(coralName string, foreign string) string {
-	return s.Map.Tables[coralName].Status[foreign]
+	return s.Map.Entities[coralName].Status[foreign]
 }
 
 // GetPillarEndpoints return the endpoints configured in the strategy
 func (s Strategy) GetPillarEndpoints() map[string]string {
 	endpoints := map[string]string{}
 
-	tables := s.GetTables()
-	for _, table := range tables {
-		endpoints[table.Local] = pillarURL + table.Endpoint
+	entities := s.GetEntities()
+	for _, entity := range entities {
+		endpoints[entity.Local] = pillarURL + entity.PillarEndpoint
 	}
 
 	// adds CREATE_INDEX endpoints

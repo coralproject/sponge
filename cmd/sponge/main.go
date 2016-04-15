@@ -27,7 +27,7 @@ func main() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel )
 
 	// Generate UUID to use with the logs
 	uid := uuid.New()

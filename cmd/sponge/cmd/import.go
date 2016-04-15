@@ -57,5 +57,6 @@ func init() {
 
 func addImport(cmd *cobra.Command, args []string) {
 
-	sponge.Import(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, reportErrorsFlag, localErrorsDBFlag)
+	sponge.AddOptions(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, reportErrorsFlag, localErrorsDBFlag)
+	sponge.Import()
 }

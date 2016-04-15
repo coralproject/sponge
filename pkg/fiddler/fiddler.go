@@ -43,7 +43,7 @@ func GetID(modelName string) string {
 
 // GetCollections give the names of all the collections in the strategy file
 func GetCollections() []string {
-	tables := strategy.GetTables() // map[string]Table
+	tables := strategy.GetEntities() // map[string]Table
 	keys := []string{}
 	for k := range tables {
 		keys = append(keys, k)
@@ -57,12 +57,12 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, []
 	var newRows []map[string]interface{}
 	var err error
 
-	table := strategy.GetTables()[modelName]
+	table := strategy.GetEntities()[modelName]
 	idField := GetID(modelName)
 	id := row[idField]
 
 	if table.Local == "" {
-		return "", nil, fmt.Errorf("No table %s found in the strategy file.", table)
+		return "", nil, fmt.Errorf("No table %v found in the strategy file.", table)
 	}
 
 	// if has an array field type array
@@ -105,6 +105,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 			return nil, fmt.Errorf("%v not expected type", f["foreign"])
 		}
 		foreign = strings.ToLower(foreign)
+
 		relation, ok := f["relation"].(string)
 		if !ok {
 			return nil, fmt.Errorf("%v not expected type", f["relation"])
@@ -115,11 +116,23 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 			return nil, fmt.Errorf("%v not expected type", f["local"])
 		}
 		local = strings.ToLower(local)
+
+		// If this is a required field but the value we got is null then skip this document
+		required, ok := f["required"]
+		if ok && required == "true" && row[foreign] == nil {
+			return nil, fmt.Errorf("Required field %s is null.", foreign)
+		}
+
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
 		newValue, err := transformField(row[foreign], relation, local, modelName)
 		if err != nil {
-			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v.", f["foreign"])
+			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v, value %v.", foreign, row[foreign])
 			return nil, err
+		}
+
+		// We are not adding fields which have an empty value
+		if newValue == nil {
+			break
 		}
 
 		switch f["relation"] {
@@ -277,18 +290,18 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 	for !finish {
 		fis, ok := fields.([]interface{})
 		if !ok {
-			log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", fields), "Not expected interface{} type")
+			log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", fields), "Not expected interface{} type")
 		}
 
 		for _, f := range fis { // loop through all the fields that we need to create the row
 
 			field, ok := f.(map[string]interface{})
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", f), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", f), "Not expected type")
 			}
 			lastfield, ok := field["foreign"].(string)
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["foreign"]), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", field["foreign"]), "Not expected type")
 			}
 			lastfield = strings.ToLower(lastfield)
 
@@ -296,12 +309,12 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 
 			relation, ok := field["relation"].(string)
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["relation"]), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", field["relation"]), "Not expected type")
 			}
 			relation = strings.ToLower(relation)
 			local, ok := field["local"].(string)
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["local"]), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", field["local"]), "Not expected type")
 			}
 			local = strings.ToLower(local)
 
@@ -347,16 +360,16 @@ func transformField(oldValue interface{}, relation string, coralName string, for
 	var err error
 
 	if oldValue != nil {
-		ov, ok := oldValue.(string)
-		if !ok {
-			return nil, fmt.Errorf("%v not expected type", oldValue)
-		}
 		switch strings.ToLower(relation) {
 		case "identity":
 			return oldValue, err
 		case "source":
 			return oldValue, err
 		case "status":
+			ov, ok := oldValue.(string)
+			if !ok {
+				return nil, fmt.Errorf("%v not expected type string", oldValue)
+			}
 			return strategy.GetStatus(coralName, ov), err
 		case "subdocument":
 			//oldvalue is [map[_id:terrence-mccoy name:Terrence McCoy url:http://www.washingtonpost.com/people/terrence-mccoy twitter:@terrence_mccoy]]
@@ -376,9 +389,11 @@ func transformField(oldValue interface{}, relation string, coralName string, for
 		case "parsetimedate":
 			switch v := oldValue.(type) {
 			case string:
-				return parseDate(ov)
+				return parseDate(v)
 			case time.Time:
 				return v.Format(time.RFC3339), nil
+			case float64:
+				return time.Unix(int64(v), 0).Format(time.RFC3339), nil
 			default:
 				return "", fmt.Errorf("Type of data %v not recognizable.", v)
 			}
