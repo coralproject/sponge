@@ -121,8 +121,8 @@ func (m MongoDB) GetQueryData(entity string, options *Options, ids []string) ([]
 	return d, err
 }
 
-// IsAPI is used to check what is that sourcerer interface
-func (m MongoDB) IsAPI() bool {
+// IsWebService is used to check what is that sourcerer interface
+func (m MongoDB) IsWebService() bool {
 	return false
 }
 

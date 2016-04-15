@@ -178,8 +178,8 @@ func (a API) GetQueryData(entityname string, options *Options, ids []string) ([]
 	return d, err
 }
 
-// IsAPI is a func from the Sourcer interface. It tell us if the external source is a database or API
-func (a API) IsAPI() bool {
+// IsWebService is a func from the Sourcer interface. It tell us if the external source is a database or API
+func (a API) IsWebService() bool {
 	return true
 }
 

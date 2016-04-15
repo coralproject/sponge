@@ -150,7 +150,7 @@ func importAll() {
 		return
 	}
 
-	if dbsource.IsAPI() {
+	if dbsource.IsWebService() {
 		importFromAPI(collections)
 		return
 	}

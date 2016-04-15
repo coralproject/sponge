@@ -140,8 +140,8 @@ func (p PostgreSQL) GetQueryData(entityname string, options *Options, ids []stri
 	return dat, nil
 }
 
-// IsAPI is a func from the Sourcer interface to check if the external source is api or database
-func (p PostgreSQL) IsAPI() bool {
+// IsWebService is a func from the Sourcer interface to check if the external source is api or database
+func (p PostgreSQL) IsWebService() bool {
 	return false
 }
 

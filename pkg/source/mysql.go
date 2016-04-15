@@ -141,8 +141,8 @@ func (m MySQL) GetQueryData(entityname string, options *Options, ids []string) (
 	return dat, nil
 }
 
-// IsAPI returns true only if the implementation of Sourcer is an API
-func (m MySQL) IsAPI() bool {
+// IsWebService returns true only if the implementation of Sourcer is an API
+func (m MySQL) IsWebService() bool {
 	return false
 }
 

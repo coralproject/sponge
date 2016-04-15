@@ -36,7 +36,7 @@ var (
 	uuid     string
 )
 
-// Global configuration variables that holds the credentials for the foreign database connection
+// Global configuration variables that holds the credentials for the foreign data source connection
 var credential str.Credential
 
 // Init initialize the needed variables
@@ -62,12 +62,12 @@ func Init(u string) (string, error) {
 	return strategy.Map.Foreign, err
 }
 
-// Sourcer is where the data is coming from (mysql, api)
+// Sourcer is where the data is coming from (webservice or database)
 type Sourcer interface {
 	// GetData returns data for a specific entity filter by all the options
 	GetData(string, *Options) ([]map[string]interface{}, error)                //int, int, string, string // args ...interface{}) ([]map[string]interface{}, error) //
 	GetQueryData(string, *Options, []string) ([]map[string]interface{}, error) //int, int, string
-	IsAPI() bool
+	IsWebService() bool
 }
 
 // New returns a new Source struct with the connection string in it
