@@ -74,16 +74,16 @@ func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]inte
 	}
 
 	var mquery map[string]interface{}
-	if options.query != "" {
-		err = json.Unmarshal([]byte(options.query), &mquery)
+	if options.Query != "" {
+		err = json.Unmarshal([]byte(options.Query), &mquery)
 		if err != nil {
-			log.Error(uuid, "mongodb.getdata", err, "Unmarshalling query %v", options.query)
+			log.Error(uuid, "mongodb.getdata", err, "Unmarshalling query %v", options.Query)
 			return nil, err
 		}
 	}
 
 	//.Select(fieldsToGet) <--- I'm not using Select because SOME FIELDS IN THE TRANSLATION FILE ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
-	err = col.Find(mquery).Limit(options.limit).All(&data)
+	err = col.Find(mquery).Limit(options.Limit).All(&data)
 	if err != nil {
 		log.Error(uuid, "mongodb.getdata", err, "Getting collection %s.", entityname)
 		return nil, err
@@ -111,7 +111,7 @@ func (m MongoDB) GetQueryData(entity string, options *Options, ids []string) ([]
 		for i, j := range ids {
 			ids[i] = fmt.Sprintf("\"%s\"", j)
 		}
-		options.query = fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
+		options.Query = fmt.Sprintf("{\"%s\": {\"$in\":[ %v ] } }", idField, strings.Join(ids, ", "))
 
 		d, err = m.GetData(entity, options)
 	} else {

@@ -20,14 +20,14 @@ import (
 
 // Options will hold all the options that came from flags
 type Options struct {
-	limit                 int
-	offset                int
-	orderby               string
-	query                 string
-	types                 string
-	importonlyfailed      bool
-	reportOnFailedRecords bool
-	reportdbfile          string
+	Limit                 int
+	Offset                int
+	Orderby               string
+	Query                 string
+	Types                 string
+	Importonlyfailed      bool
+	ReportOnFailedRecords bool
+	Reportdbfile          string
 }
 
 // global variables related to strategy

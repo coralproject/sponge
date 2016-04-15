@@ -30,7 +30,7 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel, log.Ldefault)
+	log.Init(os.Stderr, logLevel )
 
 	// Mock strategy configuration
 	strategyConf := "../../tests/strategy_test.json"

@@ -50,18 +50,18 @@ func (m MySQL) GetData(entityname string, options *Options) ([]map[string]interf
 	}
 
 	fields := strings.Join(f, ", ")
-	if options.orderby == "" {
-		options.orderby = strategy.GetOrderBy(entityname)
+	if options.Orderby == "" {
+		options.Orderby = strategy.GetOrderBy(entityname)
 	}
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
 	//query := strings.Join([]string{"SELECT", fields, "from", tableName, "order by", orderby, "limit", fmt.Sprintf("%v", offset), ", ", fmt.Sprintf("%v", limit)}, " ")
 	var where string
-	if options.query != "" {
-		where = fmt.Sprintf("where %s ", options.query)
+	if options.Query != "" {
+		where = fmt.Sprintf("where %s ", options.Query)
 	}
-	query := fmt.Sprintf("SELECT %s from %s %s order by %s limit %v, %v", fields, tableName, where, options.orderby, options.offset, options.limit)
+	query := fmt.Sprintf("SELECT %s from %s %s order by %s limit %v, %v", fields, tableName, where, options.Orderby, options.Offset, options.Limit)
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {
@@ -108,8 +108,8 @@ func (m MySQL) GetQueryData(entityname string, options *Options, ids []string) (
 	fields := strings.Join(f, ", ")
 
 	// if we are ordering by
-	if len(options.orderby) == 0 {
-		options.orderby = strategy.GetOrderBy(entityname)
+	if len(options.Orderby) == 0 {
+		options.Orderby = strategy.GetOrderBy(entityname)
 	}
 
 	var queryWhere string
@@ -121,7 +121,7 @@ func (m MySQL) GetQueryData(entityname string, options *Options, ids []string) (
 
 	// Get only the fields that we are going to use
 	// the query string . To Do. Select only the stuff you are going to use
-	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", options.orderby, "limit", fmt.Sprintf("%v", options.offset), ", ", fmt.Sprintf("%v", options.limit)}, " ")
+	query := strings.Join([]string{"SELECT", fields, "from", tableName, queryWhere, "order by", options.Orderby, "limit", fmt.Sprintf("%v", options.Offset), ", ", fmt.Sprintf("%v", options.Limit)}, " ")
 
 	data, err := gosqljson.QueryDbToMapJSON(db, "lower", query)
 	if err != nil {

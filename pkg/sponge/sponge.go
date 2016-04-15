@@ -21,20 +21,8 @@ const (
 var (
 	dbsource source.Sourcer
 	uuid     string
-	options  Options
+	options  source.Options
 )
-
-// Options will hold all the options that came from flags
-type Options struct {
-	limit                 int
-	offset                int
-	orderby               string
-	query                 string
-	types                 string
-	importonlyfailed      bool
-	reportOnFailedRecords bool
-	reportdbfile          string
-}
 
 // Init initialize the packages that are going to be used by sponge
 func Init(u string) error {
@@ -62,35 +50,26 @@ func Init(u string) error {
 
 // AddOptions adds flags to the sponge
 func AddOptions(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string) {
-	options = Options{
-		limit:                 limit,
-		offset:                offset,
-		orderby:               orderby,
-		query:                 query,
-		types:                 types,
-		importonlyfailed:      importonlyfailed,
-		reportOnFailedRecords: reportOnFailedRecords,
-		reportdbfile:          reportdbfile,
-	}
+	options = source.Options{limit, offset, orderby, query, types, importonlyfailed, reportOnFailedRecords, reportdbfile}
 }
 
 // Import gets data, transform it and send it to pillar
 func Import() {
 
 	// if there is a flag to start recording a report of failed records, then initialize it
-	if options.reportOnFailedRecords {
-		report.Init(uuid, options.reportdbfile)
+	if options.ReportOnFailedRecords {
+		report.Init(uuid, options.Reportdbfile)
 	}
 
 	//import only failed reportOnFailedRecords
-	if options.importonlyfailed {
+	if options.Importonlyfailed {
 		importOnlyFailedRecords() //dbsource, options)
 		return
 	}
 
 	// import only the collections from the options
-	if options.types != "" {
-		for _, t := range strings.Split(options.types, ",") {
+	if options.Types != "" {
+		for _, t := range strings.Split(options.Types, ",") {
 			importType(strings.Trim(t, " ")) //dbsource, limit, offset, orderby, query, strings.Trim(t, " "), reportOnFailedRecords) // removes any extra space
 		}
 		return
@@ -132,7 +111,7 @@ func importOnlyFailedRecords() { //dbsource source.Sourcer, limit int, offset in
 	log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading file of data to import.")
 
 	// get the data that needs to be imported
-	tables, err := report.ReadReport(options.reportdbfile) //map[model]map[id]interface{}
+	tables, err := report.ReadReport(options.Reportdbfile) //map[model]map[id]interface{}
 	if err != nil {
 		log.Error(uuid, "sponge.importOnlyFailedRecords", err, "Getting the rows that will be imported")
 	}
@@ -144,12 +123,12 @@ func importOnlyFailedRecords() { //dbsource source.Sourcer, limit int, offset in
 		if len(ids) < 1 { // only one ID
 			// Get the data
 			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s'. \n", table)
-			data, _, err = dbsource.GetData(table, options.offset, options.limit, options.orderby, "")
+			data, err = dbsource.GetData(table, &options) //options.offset, options.limit, options.orderby, options.query)
 		} else {
 			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s', quering '%s'. \n", table, ids)
-			data, err = dbsource.GetQueryData(table, options.offset, options.limit, options.orderby, ids)
+			data, err = dbsource.GetQueryData(table, &options, ids)
 		}
-		if err != nil && options.reportOnFailedRecords {
+		if err != nil && options.ReportOnFailedRecords {
 			report.Record(table, ids, "Failing getting data", err)
 		}
 
@@ -196,7 +175,7 @@ func importFromAPI(collections []string) {
 	var data []map[string]interface{}
 
 	for true {
-		data, finish, pageAfter, err = api.GetAPIData(pageAfter)
+		data, pageAfter, err = api.GetFireHoseData(pageAfter)
 		if err != nil {
 			log.Error(uuid, "sponge.importFromAPI", err, "Getting data from API")
 			return
@@ -220,11 +199,11 @@ func importFromDB(collections []string) {
 		// Get the data
 		log.User(uuid, "sponge.importAll", "### Reading data for collection '%s'. \n", name)
 
-		data, _, err := dbsource.GetData(name, options.offset, options.limit, options.orderby, "")
+		data, err := dbsource.GetData(name, &options) //options.offset, options.limit, options.orderby, "")
 		if err != nil {
 			log.Error(uuid, "sponge.importAll", err, "Get external data for collection %s.", name)
 			//RECORD to report about failing modelName
-			if options.reportOnFailedRecords {
+			if options.ReportOnFailedRecords {
 				report.Record(name, "", "Failing to get data.", err)
 			}
 			continue
@@ -240,11 +219,11 @@ func importType(name string) { //dbsource source.Sourcer, limit int, offset int,
 	// Get the data
 	log.User(uuid, "sponge.importTable", "### Reading data from table '%s'.", name)
 
-	data, _, err := dbsource.GetData(name, options.offset, options.limit, options.orderby, options.query)
+	data, err := dbsource.GetData(name, &options) //options.offset, options.limit, options.orderby, options.query)
 	if err != nil {
 		log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", name)
 		//RECORD to report about failing modelName
-		if options.reportOnFailedRecords {
+		if options.ReportOnFailedRecords {
 			report.Record(name, "", "Failing to get data", err)
 		}
 		return
@@ -291,7 +270,7 @@ func process(modelName string, data []map[string]interface{}) {
 		if err != nil {
 			log.Error(uuid, "sponge.process", err, "Error when transforming the row %s.", row)
 			//RECORD to report about failing transformation
-			if options.reportOnFailedRecords {
+			if options.ReportOnFailedRecords {
 				report.Record(modelName, id, "Failing transform data", err)
 			}
 		}
@@ -314,7 +293,7 @@ func process(modelName string, data []map[string]interface{}) {
 			if err != nil {
 				log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
 				//RECORD to report about failing adding row to coral db
-				if options.reportOnFailedRecords {
+				if options.ReportOnFailedRecords {
 					report.Record(modelName, id, "Failing add row to coral", err)
 				}
 			}
@@ -358,7 +337,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 			if err != nil {
 				log.Error(uuid, "sponge.process", err, "Error when transforming the row %s.", row)
 				//RECORD to report about failing transformation
-				if options.reportOnFailedRecords {
+				if options.ReportOnFailedRecords {
 					report.Record(name, id, "Failing transform data", err)
 				}
 				break
@@ -375,7 +354,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 				if err != nil {
 					log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
 					//RECORD to report about failing adding row to coral db
-					if options.reportOnFailedRecords {
+					if options.ReportOnFailedRecords {
 						report.Record(name, id, "Failing add row to coral", err)
 					}
 				}

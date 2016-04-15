@@ -62,7 +62,7 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, []
 	id := row[idField]
 
 	if table.Local == "" {
-		return "", nil, fmt.Errorf("No table %s found in the strategy file.", table)
+		return "", nil, fmt.Errorf("No table %v found in the strategy file.", table)
 	}
 
 	// if has an array field type array
@@ -290,18 +290,18 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 	for !finish {
 		fis, ok := fields.([]interface{})
 		if !ok {
-			log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", fields), "Not expected interface{} type")
+			log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", fields), "Not expected interface{} type")
 		}
 
 		for _, f := range fis { // loop through all the fields that we need to create the row
 
 			field, ok := f.(map[string]interface{})
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", f), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", f), "Not expected type")
 			}
 			lastfield, ok := field["foreign"].(string)
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["foreign"]), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", field["foreign"]), "Not expected type")
 			}
 			lastfield = strings.ToLower(lastfield)
 
@@ -309,12 +309,12 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 
 			relation, ok := field["relation"].(string)
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["relation"]), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", field["relation"]), "Not expected type")
 			}
 			relation = strings.ToLower(relation)
 			local, ok := field["local"].(string)
 			if !ok {
-				log.Error(uuid, "transformArrayFields", fmt.Errorf("%v not expected type", field["local"]), "Not expected type")
+				log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", field["local"]), "Not expected type")
 			}
 			local = strings.ToLower(local)
 

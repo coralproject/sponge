@@ -98,6 +98,7 @@ type CredentialAPI struct {
 	Adapter    string `json:"adapter"`
 	Type       string `json:"type"`
 	Records    string `json:"records"`
+	Pagination string `json:"pagination"`
 	UserAgent  string `json:"useragent"`
 	Attributes string `json:"attributes"`
 }
@@ -125,6 +126,11 @@ func (c CredentialAPI) GetEndpoint() string {
 // GetRecordsFieldName returns the name of the field that holds the records
 func (c CredentialAPI) GetRecordsFieldName() string {
 	return c.Records
+}
+
+// GetPaginationFieldName returns the name of the field where to look for pagination
+func (c CredentialAPI) GetPaginationFieldName() string {
+	return c.Pagination
 }
 
 // GetUserAgent returns the name of the field that holds the user agent
