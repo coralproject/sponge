@@ -27,6 +27,7 @@ Read the [INSTALL file](https://github.com/coralproject/sponge/blob/master/INSTA
 |  +-- source            -> drives to import data from different databases
 |  +-- sponge            -> it imports data, transform it and send it to pillar
 |  +-- strategy          -> parse the strategy file
+|  +-- webservice        -> utility that encapsulate the requests to a web service
 +-- tests                -> fixtures to use in the tests
 +-- vendor               -> vendoring of all the external packages needed
 ```

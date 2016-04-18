@@ -11,7 +11,6 @@ Pull data from Http(s) sources
 * Lyvewire - http://answers.livefyre.com/developers/api-reference/
 * Facebook - https://developers.facebook.com/docs/graph-api/reference/v2.5/comment
 
-
 ## Rate Limit Counter
 
 In order to protect source databases, we want to be able to throttle the number of queries sponge is making.
@@ -23,7 +22,7 @@ In order to protect source databases, we want to be able to throttle the number 
 * Each request sends a message to this routine each time a request is made.
 
 
-## Synchronization 
+## Synchronization
 
 An internal mechanism that regularly polls the source and imports any updates.
 
