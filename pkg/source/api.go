@@ -166,6 +166,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	if !ok {
 		err = fmt.Errorf("Error when asserting type string.")
 		log.Error(uuid, "api.getfirehosedata", err, "Type assigment to string")
+		return nil, nextPageAfter, err
 	}
 	return flattenData, nextPageAfter, err
 }
