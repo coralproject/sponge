@@ -10,7 +10,7 @@ LABEL Name="Sponge" \
       Version="0.1" \
       Vendor="The Coral Project" \
       Description="ETL utility to extract, transform and load data into the Coral's schema." \
-      Usage="docker run -d sponge  --env-file=PATHTO_ENV_FILE" \
+      Usage="docker run --env-file ./env.list -d sponge" \
       License="MIT"\
       Repository="Sponge" \
       Tag="Coral"
