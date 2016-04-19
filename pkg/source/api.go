@@ -149,7 +149,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 		return nil, nextPageAfter, err
 	}
 
-	r := make([]map[string]interface{}, len(records))
+	var r []map[string]interface{}
 	for _, i := range records { // all the entries in the type we need
 		r = append(r, i.(map[string]interface{}))
 	}
