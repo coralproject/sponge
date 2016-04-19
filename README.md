@@ -12,6 +12,12 @@ Where to get the data and how to translate it is expressed through _strategies_.
 
 Read the [INSTALL file](https://github.com/coralproject/sponge/blob/master/INSTALL.md)
 
+## Docker Image
+
+To build the docker image run this command:
+
+docker build -t "sponge:coral" -f Dockerfile ./
+
 ##### Folder structure
 
 ```

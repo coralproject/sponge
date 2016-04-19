@@ -1,17 +1,22 @@
 # Start from a Debian image with the latest version of Go installed
 # and a workspace (GOPATH) configured at /go.
 FROM golang:1.6
+MAINTAINER Gabriela Rodriguez <gabriela@mozillafoundation.org>
 
+# We are vendoring sponge
 ENV GO15VENDOREXPERIMENT="1"
 
-LABEL sponge.version="0.1"
-LABEL sponge.usage="docker run -d sponge  --env-file=PATHTOENVFILE /bin/sh -c \"sponge import\""
-LABEL sponge.license="MIT"
+LABEL Name="Sponge" \
+      Version="0.1" \
+      Vendor="The Coral Project" \
+      Description="ETL utility to extract, transform and load data into the Coral's schema." \
+      Usage="docker run -d sponge  --env-file=PATHTO_ENV_FILE" \
+      License="MIT"\
+      Repository="Sponge" \
+      Tag="Coral"
 
 # Copy the local package files to the container's workspace.
 COPY . /go/src/github.com/coralproject/sponge
-
-RUN echo $GOPATH
 
 # Build & Install
 RUN cd /go/src/github.com/coralproject/sponge/cmd/sponge && go install

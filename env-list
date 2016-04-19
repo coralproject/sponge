@@ -1,2 +1,2 @@
-ENV STRATEGY_CONF=/gocode/src/github.com/coralproject/sponge/data/strategy_wapo.json
-ENV PILLAR_URL=http://localhost:8080
+STRATEGY_CONF=/gocode/src/github.com/coralproject/sponge/data/strategy_wapo.json
+PILLAR_URL=http://localhost:8080
