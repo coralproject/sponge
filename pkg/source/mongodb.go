@@ -130,12 +130,24 @@ func (m MongoDB) IsWebService() bool {
 
 // ConnectionMongoDB returns the connection string
 func connectionMongoDB() string {
+
+	var conn string
+
 	credentialD, ok := credential.(str.CredentialDatabase)
 	if !ok {
 		log.Error(uuid, "mongodb.connectionMongoDB", fmt.Errorf("Error asserting type CredentialDatabase from interface Credential."), "Asserting Type CredentialDatabase")
 		return ""
 	}
-	return fmt.Sprintf("%s:%s@/%s", credentialD.Username, credentialD.Password, credentialD.Database)
+	if credentialD.Port == "" {
+		credentialD.Port = "27017"
+	}
+	if credentialD.Username == "" {
+		conn = fmt.Sprintf("%s:%s/%s", credentialD.Host, credentialD.Port, credentialD.Database)
+	} else {
+		conn = fmt.Sprintf("%s:%s@%s:%s/%s", credentialD.Username, credentialD.Password, credentialD.Host, credentialD.Port, credentialD.Database)
+	}
+
+	return conn
 }
 
 // Open gives back a pointer to the DB
