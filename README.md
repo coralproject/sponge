@@ -12,6 +12,16 @@ Where to get the data and how to translate it is expressed through _strategies_.
 
 Read the [INSTALL file](https://github.com/coralproject/sponge/blob/master/INSTALL.md)
 
+## Docker Image
+
+To build the docker image run this command:
+
+docker build -t "sponge:latest" -f Dockerfile ./
+
+To run it
+
+docker run --env-file env.list -d sponge
+
 ##### Folder structure
 
 ```
@@ -37,7 +47,7 @@ Read the [INSTALL file](https://github.com/coralproject/sponge/blob/master/INSTA
 
 Strategies are json configuration files that contain all the information Sponge needs to get data from a source, translate it to the coral schema and send it to the service layer.
 
-The strategy spec is still not complete. You can read this [living example](https://github.com/coralproject/sponge/blob/master/strategy/strategy.json.example) or [more information on Strategies](https://github.com/coralproject/sponge/tree/master/pkg/strategy).
+The strategy spec is still not complete. You can read this [living example](https://github.com/coralproject/sponge/blob/master/strategy/strategy_mysql.json.example) or [more information on Strategies](https://github.com/coralproject/sponge/tree/master/pkg/strategy).
 
 ## About LOGGING
 

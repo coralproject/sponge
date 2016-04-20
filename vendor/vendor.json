@@ -18,6 +18,11 @@
 			"revisionTime": "2016-03-10T12:43:05-07:00"
 		},
 		{
+			"path": "github.com/coralproject/pillar/pkg/model",
+			"revision": "9809b260894f204002cd35410fa9c0810a328ec8",
+			"revisionTime": "2016-04-15T11:03:42-04:00"
+		},
+		{
 			"path": "github.com/coralproject/shelf/pkg/cfg",
 			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
 			"revisionTime": "2015-12-09T01:47:32-05:00"
@@ -48,6 +53,11 @@
 			"revisionTime": "2015-12-09T01:47:32-05:00"
 		},
 		{
+			"path": "github.com/cpuguy83/go-md2man/md2man",
+			"revision": "71acacd42f85e5e82f70a55327789582a5200a90",
+			"revisionTime": "2015-08-03T11:35:22-04:00"
+		},
+		{
 			"path": "github.com/davecgh/go-spew/spew",
 			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
 			"revisionTime": "2015-11-05T15:09:06-06:00"
@@ -68,7 +78,22 @@
 			"revisionTime": "2016-01-05T13:30:22-08:00"
 		},
 		{
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "527bcd55aab2e53314f1a150922560174b493034",
+			"revisionTime": "2015-09-08T14:46:01+02:00"
+		},
+		{
+			"path": "github.com/inconshreveable/mousetrap",
+			"revision": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75",
+			"revisionTime": "2014-10-17T13:07:13-07:00"
+		},
+		{
 			"path": "github.com/lib/pq",
+			"revision": "69552e54d2a9d4c6a2438926a774930f7bc398ec",
+			"revisionTime": "2016-02-09T23:37:49+09:00"
+		},
+		{
+			"path": "github.com/lib/pq/oid",
 			"revision": "69552e54d2a9d4c6a2438926a774930f7bc398ec",
 			"revisionTime": "2016-02-09T23:37:49+09:00"
 		},
@@ -89,9 +114,49 @@
 			"revisionTime": "2015-10-28T10:42:44+01:00"
 		},
 		{
+			"path": "github.com/russross/blackfriday",
+			"revision": "300106c228d52c8941d4b3de6054a6062a86dda3",
+			"revisionTime": "2015-11-17T09:23:12+02:00"
+		},
+		{
+			"path": "github.com/shurcooL/sanitized_anchor_name",
+			"revision": "10ef21a441db47d8b13ebcc5fd2310f636973c77",
+			"revisionTime": "2015-10-27T17:19:15-07:00"
+		},
+		{
+			"path": "github.com/spf13/cobra",
+			"revision": "1c44ec8d3f1552cac48999f9306da23c4d8a288b",
+			"revisionTime": "2015-11-24T10:32:17-05:00"
+		},
+		{
+			"path": "github.com/spf13/pflag",
+			"revision": "08b1a584251b5b62f458943640fc8ebd4d50aaa5",
+			"revisionTime": "2015-10-13T15:06:43-05:00"
+		},
+		{
+			"path": "github.com/stretchr/signature",
+			"revision": "168b2a1e1b562bf381d47471e31f5979a2a51cd5",
+			"revisionTime": "2016-01-04T13:21:43Z"
+		},
+		{
+			"path": "github.com/stretchr/stew/objects",
+			"revision": "80ef0842b48b329a6120607c817a85aff5a2ec71",
+			"revisionTime": "2013-08-12T13:02:56-06:00"
+		},
+		{
+			"path": "github.com/stretchr/stew/strings",
+			"revision": "80ef0842b48b329a6120607c817a85aff5a2ec71",
+			"revisionTime": "2013-08-12T13:02:56-06:00"
+		},
+		{
 			"path": "github.com/stretchr/testify/assert",
 			"revision": "e7a1d8890c7638d7bb50e3e498de4a1e913a28cf",
 			"revisionTime": "2015-11-07T23:40:24Z"
+		},
+		{
+			"path": "github.com/stretchr/tracer",
+			"revision": "66d3696bba973e1697f7d68413b3f19c6d6e2a7c",
+			"revisionTime": "2014-01-24T11:41:52-07:00"
 		},
 		{
 			"origin": "github.com/coralproject/shelf/vendor/gopkg.in/bluesuncorp/validator.v6",
@@ -103,11 +168,6 @@
 			"path": "gopkg.in/check.v1",
 			"revision": "11d3bc7aa68e238947792f30573146a3231fc0f1",
 			"revisionTime": "2015-07-29T10:04:31+02:00"
-		},
-		{
-			"path": "gopkg.in/djherbis/stow.v2",
-			"revision": "52774f0516156e0e23216283da682d5b668bc1f3",
-			"revisionTime": "2016-03-05T12:40:48-08:00"
 		},
 		{
 			"path": "gopkg.in/mgo.v2",
