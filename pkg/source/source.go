@@ -106,6 +106,10 @@ func GetEntities() ([]string, error) {
 	return keys, nil
 }
 
+func GetForeignEntity(name string) string {
+	return strategy.GetEntityForeignName(name)
+}
+
 //**** Utility functions used for the API and Mongo GetData func ****//
 
 // it prepares the data to have the transformations in fiddler
