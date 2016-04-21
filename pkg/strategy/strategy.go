@@ -61,8 +61,8 @@ type Entity struct {
 
 // Credentials are all the credentials for external and internal data sources
 type Credentials struct {
-	Databases []CredentialDatabase `json:"databases"`
-	APIs      []CredentialAPI      `json:"apis"`
+	Database CredentialDatabase `json:"database"`
+	Service  CredentialService  `json:"service"`
 }
 
 // Credential is the interface that CredentialDatabase and CredentialAPI will implement
@@ -91,8 +91,8 @@ func (c CredentialDatabase) GetType() string {
 	return c.Type
 }
 
-// CredentialAPI has the information to connect to an external API source.
-type CredentialAPI struct {
+// CredentialService has the information to connect to an external web service source.
+type CredentialService struct {
 	AppKey     string `json:"appkey"`
 	Endpoint   string `json:"endpoint"`
 	Adapter    string `json:"adapter"`
@@ -104,42 +104,42 @@ type CredentialAPI struct {
 }
 
 // GetAppKey gets the app key to access the api
-func (c CredentialAPI) GetAppKey() string {
+func (c CredentialService) GetAppKey() string {
 	return c.AppKey
 }
 
 // GetAdapter returns the adapter
-func (c CredentialAPI) GetAdapter() string {
+func (c CredentialService) GetAdapter() string {
 	return c.Adapter
 }
 
 // GetType returns the adapter
-func (c CredentialAPI) GetType() string {
+func (c CredentialService) GetType() string {
 	return c.Type
 }
 
 // GetEndpoint returns all the endpoints
-func (c CredentialAPI) GetEndpoint() string {
+func (c CredentialService) GetEndpoint() string {
 	return c.Endpoint
 }
 
 // GetRecordsFieldName returns the name of the field that holds the records
-func (c CredentialAPI) GetRecordsFieldName() string {
+func (c CredentialService) GetRecordsFieldName() string {
 	return c.Records
 }
 
 // GetPaginationFieldName returns the name of the field where to look for pagination
-func (c CredentialAPI) GetPaginationFieldName() string {
+func (c CredentialService) GetPaginationFieldName() string {
 	return c.Pagination
 }
 
 // GetUserAgent returns the name of the field that holds the user agent
-func (c CredentialAPI) GetUserAgent() string {
+func (c CredentialService) GetUserAgent() string {
 	return c.UserAgent
 }
 
 // GetAttributes returns the attributes for the query
-func (c CredentialAPI) GetAttributes() string {
+func (c CredentialService) GetAttributes() string {
 	return c.Attributes
 }
 
@@ -163,36 +163,76 @@ func New() (Strategy, error) {
 	strategy, err = read(strategyFile)
 	if err != nil {
 		log.Error(uuid, "strategy.new", err, "Reading strategy file %s.", strategyFile)
+		return Strategy{}, err
+	}
+
+	err = strategy.setCredential()
+	if err != nil {
+		log.Error(uuid, "strategy.new", err, "Setting credentials.")
+		return Strategy{}, err
 	}
 
 	return strategy, err
 }
 
-// GetCredential returns the credentials for connection with the external source adapter a, type t
+func (s Strategy) setCredential() error {
+	var err error
+	// DATABASE
+	DBdatabase := os.Getenv("DB_DATABASE")
+	if DBdatabase != "" {
+		DBusername := os.Getenv("DB_USERNAME")
+		DBpassword := os.Getenv("DB_PASSWORD")
+		DBhost := os.Getenv("DB_HOST")
+		DBport := os.Getenv("DB_PORT")
+
+		s.Credentials.Database = CredentialDatabase{
+			Database: DBdatabase,
+			Username: DBusername,
+			Password: DBpassword,
+			Host:     DBhost,
+			Port:     DBport,
+		}
+	}
+
+	// WEB SERVICE
+	WSappkey := os.Getenv("WS_APPKEY")
+	if WSappkey != "" {
+
+		WSendpoint := os.Getenv("WS_ENDPOINT")
+		WSrecords := os.Getenv("WS_RECORDS")
+		WSpagination := os.Getenv("WS_PAGINATION")
+		WSuseragent := os.Getenv("WS_USERAGENT")
+		WSattributes := os.Getenv("WS_ATTRIBUTES")
+
+		s.Credentials.Service = CredentialService{
+			AppKey:     WSappkey,
+			Endpoint:   WSendpoint,
+			Records:    WSrecords,
+			Pagination: WSpagination,
+			UserAgent:  WSuseragent,
+			Attributes: WSattributes,
+		}
+	}
+	return err
+}
+
+// GetCredential returns the credential for connection with the external source adapter a, type t
 func (s Strategy) GetCredential(a string, t string) (Credential, error) {
 	var cred Credential
 	var err error
 
 	creda := s.Credentials
 
-	// look at the credentials related to local database (mongodb in our original example)
-	for i := 0; i < len(creda.Databases); i++ {
-		if creda.Databases[i].GetAdapter() == a && creda.Databases[i].GetType() == t {
-			cred = creda.Databases[i]
-			return cred, err
-		}
+	if creda.Database.GetAdapter() == a && creda.Database.GetType() == t {
+		return creda.Database, err
 	}
 
-	// look at the credentials related to local database (mongodb in our original example)
-	for i := 0; i < len(creda.APIs); i++ {
-		if creda.APIs[i].GetAdapter() == a && creda.APIs[i].GetType() == t {
-			cred = creda.APIs[i]
-			return cred, err
-		}
+	if creda.Service.GetAdapter() == a && creda.Service.GetType() == t {
+		return creda.Service, err
 	}
 
 	err = fmt.Errorf("Credential %s not found.", a)
-	log.Error(uuid, "strategy.getCredentials", err, "Getting credential %s for strategy.", a)
+	log.Error(uuid, "strategy.getCredentiawls", err, "Getting credential %s for strategy.", a)
 
 	return cred, err
 }

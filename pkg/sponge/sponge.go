@@ -50,7 +50,16 @@ func Init(u string) error {
 
 // AddOptions adds flags to the sponge
 func AddOptions(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string) {
-	options = source.Options{limit, offset, orderby, query, types, importonlyfailed, reportOnFailedRecords, reportdbfile}
+	options = source.Options{
+		Limit:                 limit,
+		Offset:                offset,
+		Orderby:               orderby,
+		Query:                 query,
+		Types:                 types,
+		Importonlyfailed:      importonlyfailed,
+		ReportOnFailedRecords: reportOnFailedRecords,
+		Reportdbfile:          reportdbfile,
+	}
 }
 
 // Import gets data, transform it and send it to pillar
@@ -122,10 +131,10 @@ func importOnlyFailedRecords() { //dbsource source.Sourcer, limit int, offset in
 
 		if len(ids) < 1 { // only one ID
 			// Get the data
-			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s'. \n", table)
+			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for entity '%s'. \n", table)
 			data, err = dbsource.GetData(table, &options) //options.offset, options.limit, options.orderby, options.query)
 		} else {
-			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for table '%s', quering '%s'. \n", table, ids)
+			log.User(uuid, "sponge.importOnlyFailedRecords", "### Reading data for entity '%s', quering '%s'. \n", table, ids)
 			data, err = dbsource.GetQueryData(table, &options, ids)
 		}
 		if err != nil && options.ReportOnFailedRecords {
@@ -145,6 +154,7 @@ func importAll() {
 
 	//Get all the collections's names that we have in the strategy json file
 	collections, err := source.GetEntities()
+
 	if err != nil {
 		log.Error(uuid, "sponge.importAll", err, "Get collections's names.")
 		return
@@ -196,10 +206,13 @@ func importFromDB(collections []string) {
 	// var data []map[string]interface{}
 
 	for _, name := range collections { // Reads through all the collections whose transformations are in the strategy configuration file
-		// Get the data
-		log.User(uuid, "sponge.importAll", "### Reading data for collection '%s'. \n", name)
 
-		data, err := dbsource.GetData(name, &options) //options.offset, options.limit, options.orderby, "")
+		foreignEntity := source.GetForeignEntity(name)
+
+		log.User(uuid, "sponge.importAll", "### Reading data to import from %s into collection '%s'. \n", foreignEntity, name)
+
+		// Get the data
+		data, err := dbsource.GetData(foreignEntity, &options) //options.offset, options.limit, options.orderby, "")
 		if err != nil {
 			log.Error(uuid, "sponge.importAll", err, "Get external data for collection %s.", name)
 			//RECORD to report about failing modelName
@@ -208,6 +221,8 @@ func importFromDB(collections []string) {
 			}
 			continue
 		}
+
+		log.User(uuid, "sponge.importAll", "### Transforming data and sending it to Coral. \n")
 		//transform and send to pillar the data
 		process(name, data)
 	}
@@ -234,7 +249,7 @@ func importType(name string) { //dbsource source.Sourcer, limit int, offset int,
 
 }
 
-func process(modelName string, data []map[string]interface{}) {
+func process(coralName string, data []map[string]interface{}) {
 
 	// Transform the data row by row
 	log.User(uuid, "sponge.process", "# Transforming data to the coral schema.\n")
@@ -266,12 +281,12 @@ func process(modelName string, data []map[string]interface{}) {
 		documents = documents + 1
 
 		// transform the row
-		id, newRows, err := fiddler.TransformRow(row, modelName)
+		id, newRows, err := fiddler.TransformRow(row, coralName)
 		if err != nil {
 			log.Error(uuid, "sponge.process", err, "Error when transforming the row %s.", row)
 			//RECORD to report about failing transformation
 			if options.ReportOnFailedRecords {
-				report.Record(modelName, id, "Failing transform data", err)
+				report.Record(coralName, id, "Failing transform data", err)
 			}
 		}
 
@@ -289,12 +304,12 @@ func process(modelName string, data []map[string]interface{}) {
 			log.Dev(uuid, "sponge.process", "Transforming: %v into %v.", row, newRow)
 
 			// send the row to pillar
-			err = coral.AddRow(newRow, modelName)
+			err = coral.AddRow(newRow, coralName)
 			if err != nil {
 				log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
 				//RECORD to report about failing adding row to coral db
 				if options.ReportOnFailedRecords {
-					report.Record(modelName, id, "Failing add row to coral", err)
+					report.Record(coralName, id, "Failing add row to coral", err)
 				}
 			}
 		}

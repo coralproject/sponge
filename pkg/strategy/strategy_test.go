@@ -11,9 +11,8 @@ import (
 // Stubing the Config
 func fakeStrategy() Strategy {
 
-	var cdatabases []CredentialDatabase
-	cdatabases = make([]CredentialDatabase, 2)
-	cdatabases[0] = CredentialDatabase{
+	var cdatabase CredentialDatabase
+	cdatabase = CredentialDatabase{
 		Database: "coral",
 		Username: "user",
 		Password: "password",
@@ -147,7 +146,7 @@ func fakeStrategy() Strategy {
 			},
 		},
 		Credentials: Credentials{
-			Databases: cdatabases,
+			Database: cdatabase,
 		},
 	}
 
