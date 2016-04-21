@@ -143,10 +143,11 @@ func flattDocument(fields []string, document map[string]interface{}) (map[string
 
 // it prepares the data to have the transformations in fiddler
 // normalize converts into a map[string]string with the key a breadcrumb to the leaf, and the value being the leaf itself
-func normalizeData(mongoData []map[string]interface{}) ([]map[string]interface{}, error) {
+func normalizeData(originalData []map[string]interface{}) ([]map[string]interface{}, error) {
 	var dat []map[string]interface{}
 
-	for _, j := range mongoData { // this is a slice of maps
+
+	for _, j := range originalData { // this is a slice of maps
 		d, e := normalizeDocument(j)
 		if e != nil {
 			return nil, e
