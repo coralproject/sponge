@@ -58,7 +58,6 @@ func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]inte
 	db := session.DB(credentialD.Database)
 	col := db.C(entityname)
 
-
 	//Get all the fields that we are going to get from the document { field: 1}
 	// fieldsToGet := make(map[string]bool)
 	// //var fieldsNames []string
@@ -82,7 +81,7 @@ func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]inte
 	}
 
 	//.Select(fieldsToGet) <--- I'm not using Select because SOME FIELDS IN THE TRANSLATION FILE ARE NOT THE RIGHT ONES TO DO THE SELECT. For example: context.object.0.uri
-	err = col.Find(mquery).Limit(options.Limit).All(&data)
+	err = col.Find(mquery).Skip(options.Offset).Limit(options.Limit).All(&data)
 	if err != nil {
 		log.Error(uuid, "mongodb.getdata", err, "Getting collection %s.", entityname)
 		return nil, err
