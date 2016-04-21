@@ -78,8 +78,10 @@ func Import() {
 
 	// import only the collections from the options
 	if options.Types != "" {
+		fmt.Println("DEBUG 0", options.Types)
 		for _, t := range strings.Split(options.Types, ",") {
-			importType(strings.Trim(t, " ")) //dbsource, limit, offset, orderby, query, strings.Trim(t, " "), reportOnFailedRecords) // removes any extra space
+			fmt.Println("DEBUG ", t)
+			importType(strings.Trim(t, " "))
 		}
 		return
 	}
@@ -229,23 +231,25 @@ func importFromDB(collections []string) {
 }
 
 // ImportType gets ony data related to table, transform it and send it to pillar
-func importType(name string) { //dbsource source.Sourcer, limit int, offset int, orderby string, query string, modelName string, reportOnFailedRecords bool) {
+func importType(coralEntity string) { //dbsource source.Sourcer, limit int, offset int, orderby string, query string, modelName string, reportOnFailedRecords bool) {
 
+	foreignEntity := source.GetForeignEntity(coralEntity)
 	// Get the data
-	log.User(uuid, "sponge.importTable", "### Reading data from table '%s'.", name)
+	log.User(uuid, "sponge.importTable", "### Reading data from table '%s'.", foreignEntity)
 
-	data, err := dbsource.GetData(name, &options) //options.offset, options.limit, options.orderby, options.query)
+	data, err := dbsource.GetData(foreignEntity, &options) //options.offset, options.limit, options.orderby, options.query)
 	if err != nil {
-		log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", name)
+		log.Error(uuid, "sponge.importAll", err, "Get external data for table %s.", foreignEntity)
 		//RECORD to report about failing modelName
 		if options.ReportOnFailedRecords {
-			report.Record(name, "", "Failing to get data", err)
+			report.Record(foreignEntity, "", "Failing to get data", err)
 		}
 		return
 	}
 
+	fmt.Println("DEBUG 3 ", len(data))
 	// Transform and send to pillar
-	process(name, data)
+	process(coralEntity, data)
 
 }
 

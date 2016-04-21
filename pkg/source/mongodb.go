@@ -58,19 +58,6 @@ func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]inte
 	db := session.DB(credentialD.Database)
 	col := db.C(entityname)
 
-	//Get all the fields that we are going to get from the document { field: 1}
-	// fieldsToGet := make(map[string]bool)
-	// //var fieldsNames []string
-	// for _, f := range fields {
-	// 	ff, ok := f["foreign"].(string)
-	// 	if !ok {
-	// 		err := fmt.Errorf("Error asserting type String from field.")
-	// 		log.Error(uuid, "mongodb.getdata", err, "Type asserting %v into string.", f["foreign"])
-	// 	}
-	// 	fieldsToGet[ff] = true
-	// 	//fieldsNames = append(fieldsNames, f["local"])
-	// }
-
 	var mquery map[string]interface{}
 	if options.Query != "" {
 		err = json.Unmarshal([]byte(options.Query), &mquery)

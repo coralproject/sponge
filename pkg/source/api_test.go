@@ -93,8 +93,8 @@ func TestGetAPIData(t *testing.T) {
 	}
 
 	expectedUser := "Duck504"
-	if data[2]["actor.title"] != expectedUser {
-		t.Fatalf("expected %s, got %s", expectedUser, data[2]["actor.title"])
+	if data[0]["actor.title"] != expectedUser {
+		t.Fatalf("expected %s, got %s", expectedUser, data[0]["actor.title"])
 	}
 
 	if pageAfter1 == pageAfter {
@@ -106,7 +106,7 @@ func TestGetAPIData(t *testing.T) {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
 
-	expectedlen = 4
+	expectedlen = 2
 	if len(data) != expectedlen { // this is a setup for the seed data
 		t.Fatalf("expected %d, got %d", expectedlen, len(data))
 	}
