@@ -152,7 +152,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
+    "Databases":
       {
         "database": "",
         "username": "",
@@ -162,6 +162,5 @@
         "adapter": "mysql",
         "type": "foreign"
       }
-    ]
   }
 }

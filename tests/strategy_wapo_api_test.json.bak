@@ -3,10 +3,10 @@
   "Map": {
     "Foreign": "api",
     "DateTimeFormat": "2006-01-02 15:04:05",
-    "Entities": {
-      "users": {
+    "Collections": {
+      "user": {
         "Foreign": "actor",
-        "Local": "users",
+        "Local": "user",
         "Priority": 0,
         "OrderBy": "userid",
         "ID": "userid",
@@ -38,9 +38,9 @@
         ],
         "Endpoint": "/api/import/user"
       },
-      "assets": {
+      "asset": {
         "Foreign": "object",
-        "Local": "assets",
+        "Local": "asset",
         "Priority": 1,
         "OrderBy": "object.context.0.uri",
         "ID": "object.context.0.uri",
@@ -65,7 +65,7 @@
             "datetimeformat": "2006-01-02T15:04:05Z"
           }
         ],
-        "endpoint": "/api/import/asset"
+        "Endpoint": "/api/import/asset"
       },
       "comments": {
         "Foreign": "object",
@@ -122,24 +122,24 @@
             "local": "date_updated",
             "relation": "ParseTimeDate",
             "type": "timedate",
-            "datetimeformat": "ISO"
+            "datetimeformat": "2006-01-02T15:04:05Z"
           }
         ],
-        "endpoint": "/api/import/comment"
+        "PillarEndpoint": "/api/import/comment"
       }
     }
   },
   "Credentials": {
-    "service":
+    "API":
       {
-        "appkey": "dev.washpost.com",
-        "endpoint": "https://comments-api-staging.ext.nile.works/v1/search",
+        "appkey": "prod.washpost.com",
+        "endpoint": "https://comments-api.ext.nile.works/v1/search",
         "adapter": "api",
         "type": "foreign",
         "records": "entries",
-        "pagination": "nextPageAfter",
-        "useragent": "Test Coral v 0.2",
-        "attributes": "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
+        "useragent": "Coral Testing",
+        "attributes": "scope:http://www.washingtonpost.com/&sortorder=reverseChronological"
       }
+
   }
 }

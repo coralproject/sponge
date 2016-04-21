@@ -3,7 +3,7 @@
   "Map": {
     "Foreign": "postgresql",
     "DateTimeFormat": "2006-01-02 15:04:05",
-    "Tables": {
+    "Entities": {
       "assets": {
         "Foreign": "posts",
         "Local": "assets",
@@ -65,7 +65,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
+    "Database":
       {
         "database": "coral_discourse",
         "username": "gaba",
@@ -75,6 +75,5 @@
         "adapter": "postgresql",
         "type": "foreign"
       }
-    ]
   }
 }

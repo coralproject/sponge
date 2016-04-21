@@ -262,16 +262,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
-      {
-        "database": "coral_test",
-        "username": "root",
-        "password": "",
-        "host": "localhost",
-        "port": "5432",
-        "adapter": "mysql",
-        "type": "foreign"
-      },
+    "Database":
       {
         "database": "coral_test",
         "username": "gaba",
@@ -281,6 +272,5 @@
         "adapter": "mongodb",
         "type": "foreign"
       }
-    ]
   }
 }

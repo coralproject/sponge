@@ -3,7 +3,7 @@
   "Map": {
     "Foreign": "mysql",
     "DateTimeFormat": "2006-01-02 15:04:05",
-    "Tables": {
+    "Entities": {
       "asset": {
         "Foreign": "crnr_asset",
         "Local": "asset",
@@ -152,7 +152,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
+    "Database":
       {
         "database": "",
         "username": "",
@@ -162,6 +162,5 @@
         "adapter": "mysql",
         "type": "foreign"
       }
-    ]
   }
 }

@@ -3,7 +3,7 @@
   "Map": {
     "Foreign": "mongodb",
     "DateTimeFormat": "2006-02-01T15:04:05Z",
-    "Entities": {
+    "Tables": {
       "assets": {
         "Foreign": "assets",
         "Local": "assets",
@@ -64,6 +64,18 @@
                 "local": "facebook"
               }
             ]
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
+          },
+          {
+            "foreign": "createdate",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "dateTime"
           }
         ],
         "Endpoint": "/api/import/asset"
@@ -299,11 +311,11 @@
   "Credentials": {
     "Database":
       {
-        "database": "",
-        "username": "",
-        "password": "",
-        "host": "",
-        "port": "",
+        "database": "original_wapo",
+        "username": "gaba",
+        "password": "gabita",
+        "host": "127.0.0.1",
+        "port": "27017",
         "adapter": "mongodb",
         "type": "foreign"
       }
