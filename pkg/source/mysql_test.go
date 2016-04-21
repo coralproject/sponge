@@ -36,10 +36,11 @@ func TestGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	options := &Options{offset: 0,
-		limit:   9999999999,
-		orderby: "createdate",
-		query:   ""}
+	options := &Options{
+		Offset:  0,
+		Limit:   9999999999,
+		Orderby: "createdate",
+		Query:   ""}
 
 	// no error
 	data, err := mm.GetData(coralName, options)
@@ -63,10 +64,10 @@ func TestQueryGetData(t *testing.T) {
 	// Default Flags
 	coralName := "assets"
 	options := &Options{
-		offset:  0,
-		limit:   9999999999,
-		orderby: "",
-		query:   "updatedate > 2013-12-12",
+		Offset:  0,
+		Limit:   9999999999,
+		Orderby: "",
+		Query:   "updatedate > 2013-12-12",
 	}
 
 	// no error
