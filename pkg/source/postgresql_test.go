@@ -37,10 +37,10 @@ func TestPostgresGetData(t *testing.T) {
 	// Default Flags
 	coralName := "users"
 	options := &Options{
-		offset:  0,
-		limit:   9999999999,
-		orderby: "",
-		query:   "",
+		Offset:  0,
+		Limit:   9999999999,
+		Orderby: "",
+		Query:   "",
 	}
 
 	// no error

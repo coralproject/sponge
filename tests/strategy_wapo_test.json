@@ -227,8 +227,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
-      {
+    "Database": {
         "database": "original_wapo",
         "username": "gaba",
         "password": "gabita",
@@ -237,6 +236,5 @@
         "adapter": "mongodb",
         "type": "foreign"
       }
-    ]
   }
 }

@@ -65,7 +65,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
+    "Database":
       {
         "database": "coral_test",
         "username": "",
@@ -75,6 +75,5 @@
         "adapter": "postgresql",
         "type": "foreign"
       }
-    ]
   }
 }

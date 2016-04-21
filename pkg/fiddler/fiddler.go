@@ -52,13 +52,13 @@ func GetCollections() []string {
 }
 
 // TransformRow transform a row of data into the coral schema
-func TransformRow(row map[string]interface{}, modelName string) (interface{}, []map[string]interface{}, error) { // id row, transformation, error
+func TransformRow(row map[string]interface{}, coralName string) (interface{}, []map[string]interface{}, error) { // id row, transformation, error
 
 	var newRows []map[string]interface{}
 	var err error
 
-	table := strategy.GetEntities()[modelName]
-	idField := GetID(modelName)
+	table := strategy.GetEntities()[coralName]
+	idField := GetID(coralName)
 	id := row[idField]
 
 	if table.Local == "" {
@@ -67,12 +67,12 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, []
 
 	// if has an array field type array
 	if strategy.HasArrayField(table) {
-		newRows, err = transformRowWithArrayField(modelName, row, table.Fields)
+		newRows, err = transformRowWithArrayField(coralName, row, table.Fields)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transform the row into several coral documents.")
 		}
 	} else {
-		newRow, err := transformRow(modelName, row, table.Fields)
+		newRow, err := transformRow(coralName, row, table.Fields)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transform the row into coral.")
 			return id, nil, err
@@ -84,7 +84,7 @@ func TransformRow(row map[string]interface{}, modelName string) (interface{}, []
 }
 
 // Convert a row into the comment coral structure
-func transformRow(modelName string, row map[string]interface{}, fields []map[string]interface{}) (map[string]interface{}, error) {
+func transformRow(coralName string, row map[string]interface{}, fields []map[string]interface{}) (map[string]interface{}, error) {
 
 	var err error
 	// newRow will hold the transformed row
@@ -98,7 +98,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 	// Loop on the fields for the transformation
 	for _, f := range fields {
 
-		dateLayout = strategy.GetDateTimeFormat(modelName, f["local"].(string))
+		dateLayout = strategy.GetDateTimeFormat(coralName, f["local"].(string))
 
 		foreign, ok := f["foreign"].(string)
 		if !ok {
@@ -124,7 +124,7 @@ func transformRow(modelName string, row map[string]interface{}, fields []map[str
 		}
 
 		// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-		newValue, err := transformField(row[foreign], relation, local, modelName)
+		newValue, err := transformField(row[foreign], relation, local, coralName)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transforming field %v, value %v.", foreign, row[foreign])
 			return nil, err

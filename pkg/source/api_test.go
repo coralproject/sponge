@@ -87,7 +87,7 @@ func TestGetAPIData(t *testing.T) {
 	}
 
 	// data should be []map[string]interface{}
-	expectedlen := 4
+	expectedlen := 2
 	if len(data) != expectedlen { // this is a setup for the seed data
 		t.Fatalf("expected %d, got %d", expectedlen, len(data))
 	}

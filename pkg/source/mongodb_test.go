@@ -10,10 +10,11 @@ func TestMongoGetData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	options := &Options{offset: 0,
-		limit:   9999999999,
-		orderby: "",
-		query:   "",
+	options := &Options{
+		Offset:  0,
+		Limit:   9999999999,
+		Orderby: "",
+		Query:   "",
 	}
 
 	// no error
@@ -35,10 +36,10 @@ func TestMongoQueryGetData(t *testing.T) {
 	// Default Flags
 	coralName := "comments"
 	options := &Options{
-		offset:  0,
-		limit:   9999999999,
-		orderby: "",
-		query:   "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }",
+		Offset:  0,
+		Limit:   9999999999,
+		Orderby: "",
+		Query:   "{ \"updated\": { \"$gt\": \"2013-01-02 15:04:05\", \"$lt\": \"2016-01-02 15:04:05\" } }",
 	}
 	// no error
 	data, err := mdb.GetData(coralName, options)
@@ -59,9 +60,10 @@ func TestMongoGetQueryData(t *testing.T) {
 
 	// Default Flags
 	coralName := "comments"
-	options := &Options{offset: 0,
-		limit:   9999999999,
-		orderby: ""}
+	options := &Options{
+		Offset:  0,
+		Limit:   9999999999,
+		Orderby: ""}
 	ids := []string{"56ac0c7010780b0a357bdec3", "56ac0c7010780b0a357bdec1", "56ac0c7010780b0a357bdec4"}
 
 	// no error

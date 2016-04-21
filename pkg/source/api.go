@@ -35,7 +35,7 @@ func (a API) GetWebServiceData() ([]map[string]interface{}, bool, error) {
 		log.Error(uuid, "api.getwebservicedata", err, "Getting credentials with API")
 	}
 
-	credA, ok := cred.(str.CredentialAPI)
+	credA, ok := cred.(str.CredentialService)
 	if !ok {
 		log.Error(uuid, "api.getwebservicedata", err, "Asserting type.")
 	}
@@ -92,7 +92,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	}
 
 	// Assert Type into a credential API struct
-	credA, ok := cred.(str.CredentialAPI)
+	credA, ok := cred.(str.CredentialService)
 	if !ok {
 		log.Error(uuid, "api.getFirehoseData", err, "Asserting type.")
 	}
@@ -189,9 +189,9 @@ func (a API) IsWebService() bool {
 // ConnectionMySQL returns the connection string
 func connectionAPI() *url.URL {
 
-	credA, ok := credential.(str.CredentialAPI)
+	credA, ok := credential.(str.CredentialService)
 	if !ok {
-		err := fmt.Errorf("Error when asserting type credentialAPI on credential.")
+		err := fmt.Errorf("Error when asserting type CredentialService on credential.")
 		log.Error(uuid, "api.connectionAPI", err, "Asserting type.")
 	}
 

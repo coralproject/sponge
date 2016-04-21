@@ -152,7 +152,7 @@
     }
   },
   "Credentials": {
-    "Databases": [
+    "Database": [
       {
         "database": "coral_test",
         "username": "root",
