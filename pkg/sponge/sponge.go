@@ -173,8 +173,7 @@ func importAll() {
 
 func importFromAPI(collections []string) {
 
-	finish := false
-	pageAfter := "1" //"1.399743732"
+	pageAfter := ""
 	log.User(uuid, "sponge.importFromAPI", "### Reading data from API. \n")
 
 	api, ok := dbsource.(source.API)
@@ -185,9 +184,10 @@ func importFromAPI(collections []string) {
 
 	var err error
 	var data []map[string]interface{}
+	var nextPageAfter string
 
 	for true {
-		data, pageAfter, err = api.GetFireHoseData(pageAfter)
+		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
 		if err != nil {
 			log.Error(uuid, "sponge.importFromAPI", err, "Getting data from API")
 			return
@@ -195,9 +195,10 @@ func importFromAPI(collections []string) {
 
 		if data != nil {
 			processAPI(collections, data)
+			pageAfter = nextPageAfter
 		}
 
-		if finish {
+		if data == nil {
 			time.Sleep(5 * time.Minute) // sleep 5 minutes
 		}
 	}

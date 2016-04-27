@@ -85,7 +85,7 @@ func New(d string) (Sourcer, error) {
 		return PostgreSQL{Connection: connectionPostgreSQL(), Database: nil}, nil
 	case "api":
 		// Get API connection url
-		u := connectionAPI()
+		u := connectionAPI("")
 		return API{Connection: u.String()}, nil
 	}
 
@@ -145,7 +145,6 @@ func flattDocument(fields []string, document map[string]interface{}) (map[string
 // normalize converts into a map[string]string with the key a breadcrumb to the leaf, and the value being the leaf itself
 func normalizeData(originalData []map[string]interface{}) ([]map[string]interface{}, error) {
 	var dat []map[string]interface{}
-
 
 	for _, j := range originalData { // this is a slice of maps
 		d, e := normalizeDocument(j)

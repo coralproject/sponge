@@ -98,13 +98,15 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	}
 
 	// TO DO: THIS IS VERY WAPO API HARCODED!
-	// We need to insert pageAfter inside the q
+	url := connectionAPI(pageAfter)
+
+	fmt.Println("DEBUG URL ", url.String())
 
 	// Build the request
-	req, err := http.NewRequest("GET", a.Connection, nil)
+	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "New request.")
-		return nil, nextPageAfter, err
+		return nil, pageAfter, err
 	}
 	req.Header.Add("User-Agent", credA.GetUserAgent())
 
@@ -120,7 +122,12 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Doing a call to API.")
-		return nil, nextPageAfter, err
+		return nil, pageAfter, err
+	}
+	if resp.StatusCode != 200 {
+		err := fmt.Errorf("Bad Request %v", resp.Status)
+		log.Error(uuid, "api.getFirehoseData", err, "Doing a call to API.")
+		return nil, pageAfter, err
 	}
 
 	// Callers should close resp.Body
@@ -162,11 +169,13 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 
 	paginationField := credA.GetPaginationFieldName()
 
-	nextPageAfter, ok = d[paginationField].(string) //strconv.ParseFloat(d["nextPageAfter"].(string), 64)
-	if !ok {
-		err = fmt.Errorf("Error when asserting type string.")
-		log.Error(uuid, "api.getfirehosedata", err, "Type assigment to string")
-		return nil, nextPageAfter, err
+	if d[paginationField] != nil {
+		nextPageAfter, ok = d[paginationField].(string) //strconv.ParseFloat(d["nextPageAfter"].(string), 64)
+		if !ok {
+			err = fmt.Errorf("Error when asserting type string.")
+			log.Error(uuid, "api.getfirehosedata", err, "Type assigment to string")
+			return nil, nextPageAfter, err
+		}
 	}
 	return flattenData, nextPageAfter, err
 }
@@ -187,7 +196,7 @@ func (a API) IsWebService() bool {
 //////* Not exported functions *//////
 
 // ConnectionMySQL returns the connection string
-func connectionAPI() *url.URL {
+func connectionAPI(pageAfter string) *url.URL {
 
 	credA, ok := credential.(str.CredentialService)
 	if !ok {
@@ -199,7 +208,13 @@ func connectionAPI() *url.URL {
 	appkey := credA.GetAppKey()                          //"prod.washpost.com"
 	attributes := url.QueryEscape(credA.GetAttributes()) // Attributes for the query. Eg, for WaPo we have scope and sortOrder
 
-	surl := fmt.Sprintf("%s?q=((%s))&appkey=%s", basicurl, attributes, appkey)
+	var surl string
+	if pageAfter != "" {
+		qpageAfter := fmt.Sprintf(" pageAfter:%s", pageAfter)
+		surl = fmt.Sprintf("%s?q=((%s%s))&appkey=%s", basicurl, attributes, url.QueryEscape(qpageAfter), appkey)
+	} else {
+		surl = fmt.Sprintf("%s?q=((%s))&appkey=%s", basicurl, attributes, appkey)
+	}
 
 	u, err := url.Parse(surl)
 	if err != nil {
