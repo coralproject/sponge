@@ -1,6 +1,6 @@
 # Sponge
 
-Move your existing community to Coral.
+Get your existing community to Coral. This is a command line tool to import comments, authors, assets, etc into the coral system. From there other services and applications can analyze data and use it.
 
 ## Overview
 
