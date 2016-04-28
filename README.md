@@ -72,7 +72,9 @@ More information the [reef wiki](https://github.com/coralproject/reef/wiki/Appli
 
 #### Development
 
-We welcome community contribution. If you're thinking about making more than a minor change, check in with the Coral team via Github issues to avoid unnecessary work for both parties.
+We welcome community contributions. If you're thinking about making more than a minor change, check in with the Coral team via Github issues to avoid programming conflicts.
+
+We will not accept commits or pushes to the `master` branch, as the latest version of master is automatically deployed. Any direct push to master will be reverted.
 
 Sequester all work in pull requests
 
@@ -82,7 +84,6 @@ Sequester all work in pull requests
   4. on github.com, you should see a button to create a pull request from your new branch
   5. There will be public code reviews before we merge any PRs into master
 
-We will not accept commits or pushes to the `master` branch, as the latest version of master is automatically deployed. Any direct push to master will be reverted.
 
 ## Code of conduct
 
