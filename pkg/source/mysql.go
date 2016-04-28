@@ -156,7 +156,7 @@ func connectionMySQL() string {
 		log.Error(uuid, "mysql.connectionMySQL", err, "Asserting Type CredentialDatabase")
 		return ""
 	}
-	return fmt.Sprintf("%s:%s@/%s", credentialD.Username, credentialD.Password, credentialD.Database)
+	return fmt.Sprintf("%s:%s@(%s:%s)/%s", credentialD.Username, credentialD.Password, credentialD.Host, credentialD.Port, credentialD.Database)
 }
 
 // Open gives back  DB
