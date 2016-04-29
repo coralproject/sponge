@@ -6,15 +6,13 @@ We are using (Ardanlabs Log's package)[https://github.com/ardanlabs/kit/tree/mas
 
 ###### Logging levels:
 
-    Dev: to be outputted in development environment only
-    User (prod): to be outputted in dev and production environments
+    * Dev: to be outputted in development environment only
+    * User (prod): to be outputted in dev and production environments
 
 ###### All logs should contain:
 
-    context uuid to identify a particular execution (aka, run of Sponge or a Request/Response execution from a web server.)
-    the name of the function that is executing
-    a readable message including relevant data
+    * context uuid to identify a particular execution (aka, run of Sponge or a Request/Response execution from a web server.)
+    * the name of the function that is executing
+    * a readable message including relevant data
 
-Logs should write to stdout so they can be directed flexibly.
-
-More information the [reef wiki](https://github.com/coralproject/reef/wiki/Application-Logging).
+Logs should write to stdout so they can be flexibly directed.

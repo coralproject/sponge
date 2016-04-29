@@ -4,8 +4,8 @@
 .
 +-- cmd
 |  +-- sponge
-|       +-- cmd
-+-- data                 -> examples for strategy files
+|       +-- cmd          -> where we build sponge to run it
++-- examples             -> examples for strategy files
 +-- pkg
 |  +-- coral             -> package to send data to pillar's endpoints
 |  +-- fiddler           -> it does all the transformation needed for the data

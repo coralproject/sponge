@@ -11,23 +11,23 @@ docker build -t "sponge:latest" -f Dockerfile ./
 
 ### Edit env.list
 
-STRATEGY_CONF=<path to strategy file>
-PILLAR_URL=<url where pillar is running>
+``STRATEGY_CONF=<path to strategy file>
+PILLAR_URL=<url where pillar is running>``
 
-// DATABASE (optional if you want to overwrite strategy file values)
-DB_database= ""
-DB_username= ""
-DB_password= ""
-DB_host= ""
-DB_port= ""
+`// DATABASE (optional if you want to overwrite strategy file values)
+- DB_database= ""
+- DB_username= ""
+- DB_password= ""
+- DB_host= ""
+- DB_port= ""``
 
-// WEB SERVICE (optional if you want to overwrite strategy file values)
+`// WEB SERVICE (optional if you want to overwrite strategy file values)
 WS_appkey= ""
 WS_endpoint= ""
 WS_records= ""
 WS_pagination= ""
 WS_useragent= ""
-WS_attributes= ""
+WS_attributes= ""``
 
 ### Running the container
 
