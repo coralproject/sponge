@@ -1,0 +1,16 @@
+# If you add a page, you must add it to the index here
+pages:
+  - Introduction: 'index.md'
+  - How to Install it: 'install.md'
+  - Development:
+    - Structure of this Repository: 'structure.md'
+    - Logging: 'logging.md'
+  - Packages included:
+    - Strategy:
+        - Introduction: 'strategy.md'
+        - Package: 'pkgstrategy.md'
+    - Source: 'source.md'
+    - Fiddler: 'fiddler.md'
+    - Coral: 'coral.md'
+  - Contributions: 'contributions.md'
+  - Troubleshooting: 'FAQ.md'

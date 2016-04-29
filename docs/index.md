@@ -2,7 +2,7 @@
 
 Sponge is an [Extract, Transform and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) command line tool to get data from your community into the coral system. It does the translation needed to start using the Coral applications.
 
-After [installing](/INSTALL.md) it, you will need to write the translations file, called [Strategy file](/pkg/sponge/README.md). And have [Pillar](/path/to/pillar/documentation)
+After [installing](/INSTALL.md) it, you will need to write the translations file, called [Strategy file](/README.md). And have [Pillar](https://github.com/coralproject/pillar)
 
 Setup the environment variables:
 
@@ -11,11 +11,11 @@ Setup the environment variables:
 
 ## Packages included
 
-* [Strategy](pkg/sponge/readme.md) reads the translations file.
-* [Source](pkg/source/readme.md) does the extraction.
-* [Fiddler](pkg/fiddler/readme.md) does the transformations.
-* [Coral](pkg/coral/readme.md) send data to Pillar.
-* [Sponge](pkg/sponge/readme.md) ties all the pieces together.
+* [Strategy](/pkg/sponge/readme.md) reads the translations file.
+* [Source](/pkg/source/readme.md) does the extraction.
+* [Fiddler](/pkg/fiddler/readme.md) does the transformations.
+* [Coral](/pkg/coral/readme.md) send data to Pillar.
+* [Sponge](/readme.md) ties all the pieces together.
 
 ## Command line tool
 

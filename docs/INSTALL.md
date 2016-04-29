@@ -1,5 +1,40 @@
 # Installation
 
+## Run it from Docker Image
+
+
+### Building image
+
+To build the docker image run this command:
+
+docker build -t "sponge:latest" -f Dockerfile ./
+
+### Edit env.list
+
+STRATEGY_CONF=<path to strategy file>
+PILLAR_URL=<url where pillar is running>
+
+// DATABASE (optional if you want to overwrite strategy file values)
+DB_database= ""
+DB_username= ""
+DB_password= ""
+DB_host= ""
+DB_port= ""
+
+// WEB SERVICE (optional if you want to overwrite strategy file values)
+WS_appkey= ""
+WS_endpoint= ""
+WS_records= ""
+WS_pagination= ""
+WS_useragent= ""
+WS_attributes= ""
+
+### Running the container
+
+It will start imorting everything setup in the [strategy file](strategy.md).
+
+``docker run --env-file env.list -d sponge``
+
 ## Development environment
 
 You will need an instance of mysql running for the external source and an instance of [Pillar](http://github.com/coralproject/pillar) running to send the data to.
