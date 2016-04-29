@@ -14,3 +14,18 @@ pages:
     - Coral: 'coral.md'
   - Contributions: 'contributions.md'
   - Troubleshooting: 'FAQ.md'
+
+
+# Do not edit in PRs below here
+site_name: The Coral Project Documentation
+
+markdown_extensions:
+  - admonition
+  - fenced_code
+  - sane_lists
+  - smarty
+
+extra_css:
+  - css/code_fixer.css
+
+theme: readthedocs
