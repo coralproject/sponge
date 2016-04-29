@@ -13,7 +13,7 @@ pages:
     - Fiddler: 'fiddler.md'
     - Coral: 'coral.md'
   - Contributions: 'contributions.md'
-  - Troubleshooting: 'FAQ.md'
+  - Troubleshooting: 'faq.md'
 
 
 # Do not edit in PRs below here
