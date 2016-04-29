@@ -11,18 +11,10 @@ docker build -t "sponge:latest" -f Dockerfile ./
 
 ### Edit env.list
 
-<<<<<<< HEAD
 ``STRATEGY_CONF=<path to strategy file>
 PILLAR_URL=<url where pillar is running>``
 
-`// DATABASE (optional if you want to overwrite strategy file values)
-=======
-STRATEGY_CONF=<path to strategy file>
-
-PILLAR_URL=<url where pillar is running>
-
-// DATABASE (optional if you want to overwrite strategy file values)
->>>>>>> 2cf8fa1853fa4c45b83283545eecdaf1619c321e
+``// DATABASE (optional if you want to overwrite strategy file values)
 - DB_database= ""
 - DB_username= ""
 - DB_password= ""
