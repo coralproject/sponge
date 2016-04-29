@@ -1,1 +1,0 @@
-../pkg/strategy/README.md

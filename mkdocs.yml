@@ -6,9 +6,7 @@ pages:
     - Structure of this Repository: 'structure.md'
     - Logging: 'logging.md'
   - Packages included:
-    - Strategy:
-        - Introduction: 'strategy.md'
-        - Package: 'pkgstrategy.md'
+    - Strategy: 'strategy.md'
     - Source: 'source.md'
     - Fiddler: 'fiddler.md'
     - Coral: 'coral.md'
