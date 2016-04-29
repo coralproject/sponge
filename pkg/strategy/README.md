@@ -1,4 +1,19 @@
-# Strategy configuration
+# Strategy
+
+import "github.com/coralproject/sponge/pkg/strategy"
+
+It handles the loading and distribution of configuration related with external sources. It has the translation from the external database to our coral schema.
+
+## Variables
+
+  ``var pillarURL string``
+
+URL to where the pillar service is working on
+
+  ``var uuid      string``
+
+Universally Unique Identifier used for the logs.
+
 
 Explaining how to write a strategy file.
 
@@ -125,11 +140,11 @@ The type of the value we are converting.
 
 ## Credentials
 
-This has the credentials for the source database to pull data from. It could be an API or a Database (MySQL, PostgreSQL or MongoDB).
+This has the credentials for the source database to pull data from. It could be a web service or a database (MySQL, PostgreSQL or MongoDB).
 
 ### adapter
 
-It tells us which drivers we need to use to pull data. Right now we have the "mysql" option.
+It tells us which drivers we need to use to pull data. Right now we have "mysql", "postgresql", "mongodb" or "service"
 
 ### type
 

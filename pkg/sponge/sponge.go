@@ -78,9 +78,7 @@ func Import() {
 
 	// import only the collections from the options
 	if options.Types != "" {
-		fmt.Println("DEBUG 0", options.Types)
 		for _, t := range strings.Split(options.Types, ",") {
-			fmt.Println("DEBUG ", t)
 			importType(strings.Trim(t, " "))
 		}
 		return

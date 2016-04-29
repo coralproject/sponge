@@ -1,6 +1,6 @@
 # Sponge
 
-Get your existing community to Coral. This is a command line tool to import comments, authors, assets, etc into the coral system. From there other services and applications can analyze data and use it.
+Get your existing community to Coral. This is a command line tool to import comments, authors, assets and other entities into the coral system.
 
 ## Overview
 
@@ -81,6 +81,7 @@ Sequester all work in pull requests
   3. push your changes to github with `git push origin your-fancy-branch-name`
   4. on github.com, you should see a button to create a pull request from your new branch
   5. There will be public code reviews before we merge any PRs into master
+  6. Add tests for it
 
 We will not accept commits or pushes to the `master` branch, as the latest version of master is automatically deployed. Any direct push to master will be reverted.
 
@@ -90,4 +91,4 @@ Please be civil when discussing contributions to the Sponge code and the Coral P
 
 ## Source support
 
-Sponge currently only supports importing data from foreign databases.  For our plans to support other sources, [see the roadmap](ROADMAP.md).
+Sponge currently only supports importing data from mysql, postgresql, mongodb or web services.  For our plans to support other sources, [see the roadmap](ROADMAP.md).
