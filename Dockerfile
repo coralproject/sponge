@@ -24,5 +24,7 @@ RUN cd /go/src/github.com/coralproject/sponge/cmd/sponge && go install
 
 ENV PATH /go/bin:$PATH
 
-# Run the app
-CMD ["sponge", "import"]
+ENTRYPOINT ["sponge"]
+
+# Run the app with the default import command.
+CMD ["import"]
