@@ -87,7 +87,7 @@ Example:
       "type": "dateTime"
     }
   ],
-  "Endpoint": "http://localhost:8080/api/import/asset"
+  "Endpoint": "/api/import/asset"
 }
 ```
 

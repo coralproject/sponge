@@ -232,7 +232,7 @@ func (s Strategy) GetCredential(a string, t string) (Credential, error) {
 	}
 
 	err = fmt.Errorf("Credential %s not found.", a)
-	log.Error(uuid, "strategy.getCredentiawls", err, "Getting credential %s for strategy.", a)
+	log.Error(uuid, "strategy.getCredentials", err, "Getting credential %s for strategy.", a)
 
 	return cred, err
 }
