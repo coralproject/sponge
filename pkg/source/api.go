@@ -86,7 +86,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	)
 
 	// Get the credentials to connect to the API
-	cred, err := strategy.GetCredential("api", "foreign")
+	cred, err := strategy.GetCredential("service", "foreign")
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Getting credentials with API")
 	}
