@@ -4,21 +4,26 @@ Washington Post uses Echo as a comment's platform. The import of data has been d
 
 ## Users
 
-* Actor.id      => User.Source.user_id
-* Actor.title   => User.Name
-* Actor.status  => User.Status
-* Actor.avatar  => User.Avatar
-* Actor.markers => User.tags
-* Actor.roles   => User.roles
+```
+Actor.id      => User.Source.user_id
+Actor.title   => User.Name
+Actor.status  => User.Status
+Actor.avatar  => User.Avatar
+Actor.markers => User.tags
+Actor.roles   => User.roles
+```
 
 ## Assets
 
+```
 Object.context.0.uri => Asset.Source.asset_id
 Object.context.0.uri => Asset.URL
 Object.published     => Asset.date_created
+```
 
 ## Comments
 
+```
 Object.content      => Comment.Body
 Object.status       => Comment.Status
 Object.postedTime   => Comment.date_created
@@ -28,3 +33,4 @@ Object.targets.0.id => Comment.Source.parent_id
 Object.source       => Comment.Metadata.source
 Object.markers      => Comment.Tags
 Object.tags         => Comment.Metadata.Markers
+```
