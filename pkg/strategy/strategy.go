@@ -331,8 +331,8 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 	endpoints := map[string]string{}
 
 	entities := s.GetEntities()
-	for _, entity := range entities {
-		endpoints[entity.Local] = pillarURL + entity.PillarEndpoint
+	for name, entity := range entities {
+		endpoints[name] = pillarURL + entity.PillarEndpoint //entity.Local
 	}
 
 	// adds CREATE_INDEX endpoints

@@ -373,6 +373,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 				err = coral.AddRow(newRow, name)
 				if err != nil {
 					log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
+
 					//RECORD to report about failing adding row to coral db
 					if options.ReportOnFailedRecords {
 						report.Record(name, id, "Failing add row to coral", err)
