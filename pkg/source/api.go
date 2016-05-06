@@ -30,7 +30,7 @@ func (a API) GetWebServiceData() ([]map[string]interface{}, bool, error) {
 	notFinish := false
 	var err error
 
-	cred, err := strategy.GetCredential("api", "foreign")
+	cred, err := strategy.GetCredential("service", "foreign")
 	if err != nil {
 		log.Error(uuid, "api.getwebservicedata", err, "Getting credentials with API")
 	}

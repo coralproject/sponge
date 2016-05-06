@@ -1,7 +1,7 @@
 {
   "Name": "Washington Post",
   "Map": {
-    "Foreign": "api",
+    "Foreign": "service",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Entities": {
       "users": {
@@ -134,7 +134,7 @@
       {
         "appkey": "dev.washpost.com",
         "endpoint": "https://comments-api-staging.ext.nile.works/v1/search",
-        "adapter": "api",
+        "adapter": "service",
         "type": "foreign",
         "records": "entries",
         "pagination": "nextPageAfter",
