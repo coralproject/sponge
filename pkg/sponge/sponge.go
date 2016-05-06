@@ -191,12 +191,15 @@ func importFromAPI(collections []string) {
 			return
 		}
 
+		//fmt.Println("DEBUG data ", data)
+
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
 		}
 
 		if data == nil {
+			log.User(uuid, "sponge.importFromAPI", "Waiting 5 minutes for more data.")
 			time.Sleep(5 * time.Minute) // sleep 5 minutes
 		}
 	}
@@ -246,7 +249,6 @@ func importType(coralEntity string) { //dbsource source.Sourcer, limit int, offs
 		return
 	}
 
-	fmt.Println("DEBUG 3 ", len(data))
 	// Transform and send to pillar
 	process(coralEntity, data)
 

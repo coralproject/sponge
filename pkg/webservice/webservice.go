@@ -25,6 +25,7 @@ type Response struct {
 // DoRequest will do a request to the web service
 func DoRequest(uuid string, userAgent string, method string, urlStr string, payload io.Reader) (*Response, error) {
 
+	//fmt.Println("DEBUG PAYLOAD ", payload)
 	var err error
 	request, err := http.NewRequest(method, urlStr, payload)
 	if err != nil {

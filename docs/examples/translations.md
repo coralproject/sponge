@@ -16,9 +16,10 @@ Actor.roles   => User.roles
 ## Assets
 
 ```
-Object.context.0.uri => Asset.Source.asset_id
-Object.context.0.uri => Asset.URL
-Object.published     => Asset.date_created
+Object.context.0.uri  => Asset.Source.asset_id
+Object.context.0.uri  => Asset.URL
+Object.published      => Asset.date_created
+Object.context.0.title => Asset.title
 ```
 
 ## Comments
@@ -29,7 +30,7 @@ Object.status       => Comment.Status
 Object.postedTime   => Comment.date_created
 Object.Likes        => Comment.actions  - likes
 Object.markers      => Comment.tags
-Object.targets.0.id => Comment.Source.parent_id
+Object.targets.0.conversation_id => Comment.Source.parent_id
 Object.source       => Comment.Metadata.source
 Object.markers      => Comment.Tags
 Object.tags         => Comment.Metadata.Markers

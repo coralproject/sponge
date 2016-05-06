@@ -189,22 +189,21 @@ func normalize(i string, k interface{}) map[string]interface{} {
 				newresult := normalize(newi, e)
 				// copy newresult into result
 				for v1, v2 := range newresult {
-					result[v1] = v2
+					result[strings.ToLower(v1)] = v2
 				}
 			case []map[string]interface{}:
-				//fmt.Printf("* %v is []map[string]interface{}\n\n", e)
 				for u, c := range v {
 					newi := strings.Join([]string{i, p, strconv.Itoa(u)}, ".")
 					newresult := normalize(newi, c)
 					for v1, v2 := range newresult {
-						result[v1] = v2
+						result[strings.ToLower(v1)] = v2
 					}
 				}
 			case map[string]string:
 				//fmt.Printf("* %v is map[string]string\n\n", e)
 				for a, b := range v {
 					newi := strings.Join([]string{i, p, a}, ".")
-					result[newi] = b
+					result[strings.ToLower(newi)] = b
 				}
 			case []map[string]string:
 				//fmt.Printf("* %v is []map[string]string\n\n", e)
@@ -212,30 +211,37 @@ func normalize(i string, k interface{}) map[string]interface{} {
 					newi := strings.Join([]string{i, p, strconv.Itoa(u)}, ".")
 					newresult := normalize(newi, c)
 					for v1, v2 := range newresult {
-						result[v1] = v2
+						result[strings.ToLower(v1)] = v2
 					}
 				}
 			case []interface{}:
-				//fmt.Printf("* %v is []interface{}\n\n", e)
+				// Ugly work-around to check if this is a []string and we need to send it as it is
+				if len(v) != 0 {
+					switch v[0].(type) {
+					case string:
+						newi := strings.Join([]string{i, p}, ".")
+						result[strings.ToLower(newi)] = e
+						continue
+					}
+				}
 				for d1, d2 := range v {
 					newi := strings.Join([]string{i, p, strconv.Itoa(d1)}, ".")
 					newresult := normalize(newi, d2)
 					for v1, v2 := range newresult {
-						result[v1] = v2
+						result[strings.ToLower(v1)] = v2
 					}
 				}
 			default:
-				// fmt.Printf("* %v is no idea\n\n", e)
-				// fmt.Println(reflect.TypeOf(v))
+
 				newi := strings.Join([]string{i, p}, ".")
-				result[newi] = e
+				result[strings.ToLower(newi)] = e
 			}
 		}
 	case map[string]string:
 		//fmt.Printf("** %v is map[string]string\n\n", k)
 		for p, e := range v {
 			newi := strings.Join([]string{i, p}, ".")
-			result[newi] = e
+			result[strings.ToLower(newi)] = e
 		}
 	case []map[string]string:
 		//fmt.Printf("** %v is []map[string]string\n\n", k)
@@ -243,7 +249,7 @@ func normalize(i string, k interface{}) map[string]interface{} {
 			newi := strings.Join([]string{i, strconv.Itoa(u)}, ".")
 			newresult := normalize(newi, c)
 			for v1, v2 := range newresult {
-				result[v1] = v2
+				result[strings.ToLower(v1)] = v2
 			}
 		}
 	case []map[string]interface{}:
@@ -251,12 +257,27 @@ func normalize(i string, k interface{}) map[string]interface{} {
 			newi := strings.Join([]string{i, strconv.Itoa(u)}, ".")
 			newresult := normalize(newi, c)
 			for v1, v2 := range newresult {
-				result[v1] = v2
+				result[strings.ToLower(v1)] = v2
 			}
 		}
+	case []interface{}:
+		//[map[
+		//		conversationID:http://washingtonpost.com/ECHO/item/2eed2934-e531-4051-b926-eb5260c11b45
+		//		id:http://washingtonpost.com/ECHO/item/2eed2934-e531-4051-b926-eb5260c11b45
+		//	  ]
+		//]
+		for u, c := range v {
+			newi := strings.Join([]string{i, strconv.Itoa(u)}, ".")
+			newresult := normalize(newi, c)
+			for v1, v2 := range newresult {
+				result[strings.ToLower(v1)] = v2
+				//fmt.Printf("v1 %v v2 %v \n\n", v1, v2)
+			}
+		}
+
 	default: // if k is not a map then just return it as a string
 		//fmt.Printf("** %v is no idea\n\n", k)
-		result[i] = k
+		result[strings.ToLower(i)] = k
 	}
 
 	return result

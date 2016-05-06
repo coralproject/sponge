@@ -100,8 +100,6 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	// TO DO: THIS IS VERY WAPO API HARCODED!
 	url := connectionAPI(pageAfter)
 
-	fmt.Println("DEBUG URL ", url.String())
-
 	// Build the request
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
@@ -166,6 +164,8 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 		log.Error(uuid, "api.getdata", err, "Normalizing data from api to fit into fiddler.")
 		return nil, nextPageAfter, err
 	}
+
+	//fmt.Println("DEBUG FLATTEN DATA ", flattenData)
 
 	paginationField := credA.GetPaginationFieldName()
 
