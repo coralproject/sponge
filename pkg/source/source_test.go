@@ -212,8 +212,21 @@ func setupAPI() {
 	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_wapo_api_test.json"
 
 	// write down serverurl into the strategyconf
+	st := strategy
 	content, err := ioutil.ReadFile(strategyConf)
 	err = json.Unmarshal(content, &st)
+
+	st.Credentials.Service.Endpoint = serverurl
+
+	bst, err := json.Marshal(st)
+	if err != nil {
+		fmt.Println("Error when trying to marshall back the strategy file with server url of the mock server: ", err)
+	}
+	mode := os.FileMode(0777)
+	err = ioutil.WriteFile(strategyConf, bst, mode)
+	if err != nil {
+		fmt.Println("Error when saving back the strategy file with the mock server: ", err)
+	}
 
 	e := os.Setenv("STRATEGY_CONF", strategyConf)
 	if e != nil {
