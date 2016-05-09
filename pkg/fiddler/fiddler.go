@@ -95,6 +95,10 @@ func transformRow(coralName string, row map[string]interface{}, fields []map[str
 	var source map[string]interface{}
 	source = make(map[string]interface{})
 
+	// metadata is being used to send metadata
+	var metadata map[string]interface{}
+	metadata = make(map[string]interface{})
+
 	// Loop on the fields for the transformation
 	for _, f := range fields {
 
@@ -139,12 +143,19 @@ func transformRow(coralName string, row map[string]interface{}, fields []map[str
 		case "Source": // { 	"source": { "asset_id": xxx}, }
 			source[local] = newValue
 
+		case "Metadata": // { "metadata": { "source": xxx , "markers": [xxx]} }
+			metadata[local] = newValue
+
 		default: // Identity or SubDocument or Status or Constant
 			newRow[local] = newValue
 		}
 
 		if source != nil && len(source) > 0 {
 			newRow["source"] = source
+		}
+
+		if metadata != nil && len(metadata) > 0 {
+			newRow["metadata"] = metadata
 		}
 	}
 	return newRow, err
@@ -162,6 +173,9 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 	// source is being used only for the special ocation when the fields relatsionship is source
 	var source map[string]interface{}
 	source = make(map[string]interface{})
+
+	var metadata map[string]interface{}
+	metadata = make(map[string]interface{})
 
 	// Loop on the fields for the transformation
 	for _, f := range fields {
@@ -191,6 +205,16 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
 			source[local] = newValue
+
+		case "metadata": // { 	"metadata": { "source": xxx},  "markers": [ xxx ]}
+			local := f["local"].(string)
+			local = strings.ToLower(local)
+			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
+			newValue, err := transformField(row[foreign], relation, local, modelName)
+			if err != nil {
+				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
+			}
+			metadata[local] = newValue
 
 		case "constant":
 			local, ok := f["local"].(string)
@@ -225,7 +249,8 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 
 		for key := range newRow {
 			//fmt.Printf("Adding value %v for key %v. \n\n", newRow[key], key)
-			if key == "source" {
+
+			if key == "source" || key == "metadata" {
 				nr, ok := newRow[key].(map[string]interface{})
 				if !ok {
 					return nil, fmt.Errorf("%v not expected type", newRow[key])
@@ -283,6 +308,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 	// We are getting each row into newRow
 	newRow := make(map[string]interface{})
 	source := make(map[string]interface{})
+	metadata := make(map[string]interface{})
 
 	// While still have more rows to add
 	finish := false
@@ -328,11 +354,16 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 				switch field["relation"] {
 				case "Source":
 					source[local] = newvalue
+				case "Metadata":
+					metadata[local] = newvalue
 				default:
 					newRow[local] = newvalue
 				}
 				if source != nil && len(source) > 0 {
 					newRow["source"] = source
+				}
+				if metadata != nil && len(metadata) > 0 {
+					newRow["metadata"] = metadata
 				}
 			} else {
 				finish = true //I'm assuming that we are done when one of the fields.i.whatever has not data
@@ -343,6 +374,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 			newRows = append(newRows, newRow)
 			newRow = make(map[string]interface{}) // initialize the row to get the next one
 			source = make(map[string]interface{})
+			metadata = make(map[string]interface{})
 		}
 
 		i++ // NEXT POSSIBLE ROW
@@ -364,6 +396,8 @@ func transformField(oldValue interface{}, relation string, coralName string, for
 		case "identity":
 			return oldValue, err
 		case "source":
+			return oldValue, err
+		case "metadata":
 			return oldValue, err
 		case "status":
 			ov, ok := oldValue.(string)

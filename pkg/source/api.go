@@ -30,7 +30,7 @@ func (a API) GetWebServiceData() ([]map[string]interface{}, bool, error) {
 	notFinish := false
 	var err error
 
-	cred, err := strategy.GetCredential("api", "foreign")
+	cred, err := strategy.GetCredential("service", "foreign")
 	if err != nil {
 		log.Error(uuid, "api.getwebservicedata", err, "Getting credentials with API")
 	}
@@ -86,7 +86,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	)
 
 	// Get the credentials to connect to the API
-	cred, err := strategy.GetCredential("api", "foreign")
+	cred, err := strategy.GetCredential("service", "foreign")
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Getting credentials with API")
 	}
@@ -99,8 +99,6 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 
 	// TO DO: THIS IS VERY WAPO API HARCODED!
 	url := connectionAPI(pageAfter)
-
-	fmt.Println("DEBUG URL ", url.String())
 
 	// Build the request
 	req, err := http.NewRequest("GET", url.String(), nil)
@@ -166,6 +164,8 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 		log.Error(uuid, "api.getdata", err, "Normalizing data from api to fit into fiddler.")
 		return nil, nextPageAfter, err
 	}
+
+	//fmt.Println("DEBUG FLATTEN DATA ", flattenData)
 
 	paginationField := credA.GetPaginationFieldName()
 

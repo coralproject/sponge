@@ -87,7 +87,7 @@ Example:
       "type": "dateTime"
     }
   ],
-  "Endpoint": "http://localhost:8080/api/import/asset"
+  "Endpoint": "/api/import/asset"
 }
 ```
 
@@ -155,3 +155,9 @@ It tells us which drivers we need to use to pull data. Right now we have "mysql"
 ### type
 
 Right now it is always "foreign" but it could tell us which type of credential this one is.
+
+# Examples
+
+## Washington Post
+
+[Translations](examples/translations.md)

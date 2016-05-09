@@ -12,6 +12,7 @@ pages:
     - Coral: 'coral.md'
   - Contributions: 'contributions.md'
   - Troubleshooting: 'faq.md'
+  - Coral System: 'http://coral-docs.readthedocs.io'
 
 
 # Do not edit in PRs below here
