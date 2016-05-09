@@ -12,3 +12,19 @@ Sequester all work in pull requests
   6. Add tests for it
 
 We will not accept commits or pushes to the `master` branch, as the latest version of master is automatically deployed. Any direct push to master will be reverted.
+
+#### Testing
+
+We need help testing code and adding new drivers for data sources. All the bugs and new features are being posted in the [Github's issues](https://github.com/coralproject/sponge/issues) repository.
+
+#### Documentation
+
+[Doc's folder](/docs) has all the [documentation](http://sponge.readthedocs.io) for this repository. We accept contributions through pull requests.
+
+### Contact
+
+Ways to contact the maintainer:
+
+- @gaba at twitter.com
+- @gaba at irc.mozilla.org
+- gabriela at mozillafoundation.org
