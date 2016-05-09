@@ -21,7 +21,10 @@ type API struct {
 
 // GetData does the request to the webservice once and get back the data based on the parameters
 func (a API) GetData(entity string, options *Options) ([]map[string]interface{}, error) { //offset int, limit int, orderby string, q string
-	return nil, nil
+	var data []map[string]interface{}
+	var err error
+
+	return data, err
 }
 
 // GetWebServiceData does the request to the webservice once and get back the data
@@ -68,7 +71,7 @@ func (a API) GetWebServiceData() ([]map[string]interface{}, bool, error) {
 		r = append(r, i.(map[string]interface{}))
 	}
 
-	flattenData, err := normalizeData(r)
+	flattenData, err := flattenizeData(r)
 	if err != nil {
 		log.Error(uuid, "api.getwebservicedata", err, "Normalizing data from api to fit into fiddler.")
 		return nil, notFinish, err
@@ -159,7 +162,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 		r = append(r, i.(map[string]interface{}))
 	}
 
-	flattenData, err = normalizeData(r)
+	flattenData, err = flattenizeData(r)
 	if err != nil {
 		log.Error(uuid, "api.getdata", err, "Normalizing data from api to fit into fiddler.")
 		return nil, nextPageAfter, err

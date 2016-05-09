@@ -105,14 +105,14 @@ func TestMongoGetEntities(t *testing.T) {
 	teardown()
 }
 
-// Signature func normalize(i string, k interface{}) (string, string) {
-func TestNormalize(t *testing.T) {
+// Signature func flattenize(i string, k interface{}) (string, string) {
+func Testflattenize(t *testing.T) {
 
 	// when k is a map
 	i := "firstkey"
 	k1 := map[string]string{"secondkey1": "value1", "secondkey2": "value2"}
 
-	m := normalize(i, k1)
+	m := flattenize(i, k1)
 
 	if m["firstkey.secondkey1"] != "value1" {
 		t.Error("Expected different map")
@@ -125,7 +125,7 @@ func TestNormalize(t *testing.T) {
 	i = "firstkey"
 	k2 := "value"
 
-	m = normalize(i, k2)
+	m = flattenize(i, k2)
 
 	if m[i] != k2 {
 		t.Error("Expected different map")
@@ -142,7 +142,7 @@ func TestNormalize(t *testing.T) {
 		"secondkey2": n,
 	}
 
-	m = normalize(i, k3)
+	m = flattenize(i, k3)
 
 	if m["firstkey.secondkey1"] != "value1" {
 		t.Error("Expected different map")
@@ -157,13 +157,13 @@ func TestNormalize(t *testing.T) {
 	}
 }
 
-// Signature func (m MongoDB) normalize(mongoData []map[string]interface{}) ([]map[string]interface{}, error) {
-func TestNormalizeDocument(t *testing.T) {
+// Signature func (m MongoDB) flattenize(mongoData []map[string]interface{}) ([]map[string]interface{}, error) {
+func TestflattenizeDocument(t *testing.T) {
 
 	// Simple map[string]strings
 	k1 := map[string]interface{}{"a": "1", "b": "2"}
 
-	m, e := normalizeDocument(k1)
+	m, e := flattenizeDocument(k1)
 	if e != nil {
 		t.Errorf("Expected no error, got %v", e)
 	}
@@ -178,7 +178,7 @@ func TestNormalizeDocument(t *testing.T) {
 
 	k2 := map[string]interface{}{"a": "1", "b": map[string]string{"c": "3", "d": "4"}}
 
-	m, e = normalizeDocument(k2)
+	m, e = flattenizeDocument(k2)
 	if e != nil {
 		t.Errorf("Expected no error, got %v", e)
 	}
@@ -197,7 +197,7 @@ func TestNormalizeDocument(t *testing.T) {
 
 	k3 := map[string]interface{}{"a": map[string]string{"e": "5", "f": "6"}, "b": map[string]string{"c": "3", "d": "4"}}
 
-	m, e = normalizeDocument(k3)
+	m, e = flattenizeDocument(k3)
 	if e != nil {
 		t.Errorf("Expected no error, got %v", e)
 	}
@@ -212,7 +212,7 @@ func TestNormalizeDocument(t *testing.T) {
 
 	k4 := map[string]interface{}{"a": map[string]interface{}{"e": "5", "f": map[string]string{"g": "7", "h": "8"}}, "b": map[string]string{"c": "3", "d": "4"}}
 
-	m, e = normalizeDocument(k4)
+	m, e = flattenizeDocument(k4)
 	if e != nil {
 		t.Errorf("Expected no error, got %v", e)
 	}
@@ -243,7 +243,7 @@ func TestNormalizeDocument(t *testing.T) {
 		},
 	}
 
-	m, e = normalizeDocument(k5)
+	m, e = flattenizeDocument(k5)
 	if e != nil {
 		t.Errorf("Expected no error, got %v", e)
 	}
@@ -270,7 +270,7 @@ func TestNormalizeDocument(t *testing.T) {
 		},
 	}
 
-	m, e = normalizeDocument(k6)
+	m, e = flattenizeDocument(k6)
 	if e != nil {
 		t.Errorf("Expected no error, got %v", e)
 	}
@@ -317,7 +317,7 @@ func TestFlattenData(t *testing.T) {
 	//fields := []string{"_id", "object.context.0.uri", "object.published"}
 	//m, e := flattenData(fields, k)
 
-	m, e := normalizeData(k)
+	m, e := flattenizeData(k)
 
 	if e != nil {
 		t.Errorf("Expected not error, got %v", e)

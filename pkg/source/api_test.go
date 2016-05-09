@@ -2,10 +2,6 @@
 package source
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -19,43 +15,9 @@ var (
 	fakeStr str.Strategy
 )
 
-func mockAPI() string {
-
-	// Initialization of stub server
-	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		var err error
-		var d map[string]interface{}
-
-		file, e := ioutil.ReadFile("../../tests/response.json")
-		if e != nil {
-			fmt.Printf("ERROR %v on setting up response in the test.", e)
-			os.Exit(1)
-		}
-
-		json.Unmarshal(file, &d)
-
-		// err = errors.New("Bad request")
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-		if err == nil {
-			w.WriteHeader(http.StatusOK)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(file)
-
-		fmt.Fprintln(w, file)
-	}))
-
-	return server.URL
-}
-
 func TestMain(m *testing.M) {
 
 	setupAPI()
-
 	code := m.Run()
 	teardown()
 
