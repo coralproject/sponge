@@ -15,7 +15,7 @@ Sponge is maintained by:
 
 ## Contact
 
-Please, ways to contact the maintainer:
+Ways to contact the maintainer:
 
 - @gaba at twitter.com
 - @gaba at irc.mozilla.org

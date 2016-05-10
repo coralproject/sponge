@@ -1,7 +1,11 @@
 package source
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -22,6 +26,7 @@ var (
 	mapi API
 )
 
+// we save the strategy env to recover it on teardown
 var oStrategy string
 
 func init() {
@@ -37,7 +42,6 @@ func init() {
 }
 
 func setupMysql() {
-
 	// Initialize logging
 	logLevel := func() int {
 		ll, err := cfg.Int(cfgLoggingLevel)
@@ -65,7 +69,7 @@ func setupMysql() {
 	if e != nil {
 		fmt.Printf("Error when initializing strategy, %v.\n", e)
 	}
-	m, e := New(s) // function being tested
+	m, e := New(s) // setting up new source
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
@@ -105,7 +109,7 @@ func setupMongo() {
 		fmt.Printf("Error when initializing strategy, %v.\n", e)
 	}
 
-	m, e := New(s) // function being tested
+	m, e := New(s) // setting up new source
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
@@ -145,7 +149,7 @@ func setupPostgreSQL() {
 	if e != nil {
 		fmt.Printf("Error when initializing strategy, %v.\n", e)
 	}
-	m, e := New(s) // function being tested
+	m, e := New(s) // setup new source
 	if e != nil {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
@@ -154,6 +158,37 @@ func setupPostgreSQL() {
 	if !ok {
 		fmt.Println("It should return a type PostgreSQL")
 	}
+}
+
+func mockAPI() string {
+
+	// Initialization of stub server
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		var err error
+		var d map[string]interface{}
+
+		file, err := ioutil.ReadFile("../../tests/response.json")
+		if err != nil {
+			fmt.Printf("ERROR %v on setting up response in the test.", err)
+			os.Exit(1)
+		}
+
+		json.Unmarshal(file, &d)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+		if err == nil {
+			w.WriteHeader(http.StatusOK)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(file)
+
+		fmt.Fprintln(w, file)
+	}))
+
+	return server.URL
 }
 
 func setupAPI() {
@@ -175,6 +210,24 @@ func setupAPI() {
 
 	// MOCK STRATEGY CONF
 	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_wapo_api_test.json"
+
+	// write down serverurl into the strategyconf
+	st := strategy
+	content, err := ioutil.ReadFile(strategyConf)
+	err = json.Unmarshal(content, &st)
+
+	st.Credentials.Service.Endpoint = serverurl
+
+	bst, err := json.Marshal(st)
+	if err != nil {
+		fmt.Println("Error when trying to marshall back the strategy file with server url of the mock server: ", err)
+	}
+	mode := os.FileMode(0777)
+	err = ioutil.WriteFile(strategyConf, bst, mode)
+	if err != nil {
+		fmt.Println("Error when saving back the strategy file with the mock server: ", err)
+	}
+
 	e := os.Setenv("STRATEGY_CONF", strategyConf)
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")

@@ -1,9 +1,43 @@
 {
   "Name": "Washington Post",
   "Map": {
-    "foreign": "service",
-    "datetimeformat": "2006-01-02 15:04:05",
-    "entities": {
+    "Foreign": "service",
+    "DateTimeFormat": "2006-01-02 15:04:05",
+    "Entities": {
+      "users": {
+        "Foreign": "actor",
+        "Local": "users",
+        "Priority": 0,
+        "OrderBy": "userid",
+        "ID": "userid",
+        "Fields": [
+          {
+            "foreign": "actor.id",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "actor.title",
+            "local": "name",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "actor.status",
+            "local": "status",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "actor.avatar",
+            "local": "avatar",
+            "relation": "Identity",
+            "type": "[]byte"
+          }
+        ],
+        "Endpoint": "/api/import/user"
+      },
       "assets": {
         "foreign": "object",
         "local": "assets",
@@ -136,24 +170,16 @@
     }
   },
   "Credentials": {
-    "database": {
-      "database": "",
-      "username": "",
-      "password": "",
-      "host": "",
-      "port": "",
-      "adapter": "",
-      "type": ""
-    },
-    "service": {
-      "appkey": "dev.appkey",
-      "endpoint": "http://127.0.0.1:58810",
-      "adapter": "service",
-      "type": "foreign",
-      "records": "entries",
-      "pagination": "nextPageAfter",
-      "useragent": "Test Coral v 0.2",
-      "attributes": "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
-    }
+    "service":
+      {
+        "appkey": "dev.appkey",
+        "endpoint": "url_to_endpoint",
+        "adapter": "service",
+        "type": "foreign",
+        "records": "entries",
+        "pagination": "nextPageAfter",
+        "useragent": "Test Coral v 0.2",
+        "attributes": "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
+      }
   }
 }
