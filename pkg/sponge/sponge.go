@@ -216,7 +216,7 @@ func importFromDB(collections []string) {
 		log.User(uuid, "sponge.importAll", "### Reading data to import from %s into collection '%s'. \n", foreignEntity, name)
 
 		// Get the data
-		data, err := dbsource.GetData(foreignEntity, &options) //options.offset, options.limit, options.orderby, "")
+		data, err := dbsource.GetData(name, &options) //options.offset, options.limit, options.orderby, "")
 		if err != nil {
 			log.Error(uuid, "sponge.importAll", err, "Get external data for collection %s.", name)
 			//RECORD to report about failing modelName
