@@ -1,50 +1,17 @@
 {
   "Name": "Washington Post",
   "Map": {
-    "Foreign": "api",
-    "DateTimeFormat": "2006-01-02 15:04:05",
-    "Entities": {
-      "users": {
-        "Foreign": "actor",
-        "Local": "users",
-        "Priority": 0,
-        "OrderBy": "userid",
-        "ID": "userid",
-        "Fields": [
-          {
-            "foreign": "actor.id",
-            "local": "id",
-            "relation": "Source",
-            "type": "int"
-          },
-          {
-            "foreign": "actor.title",
-            "local": "name",
-            "relation": "Identity",
-            "type": "[]byte"
-          },
-          {
-            "foreign": "actor.status",
-            "local": "status",
-            "relation": "Identity",
-            "type": "[]byte"
-          },
-          {
-            "foreign": "actor.avatar",
-            "local": "avatar",
-            "relation": "Identity",
-            "type": "[]byte"
-          }
-        ],
-        "Endpoint": "/api/import/user"
-      },
+    "foreign": "service",
+    "datetimeformat": "2006-01-02 15:04:05",
+    "entities": {
       "assets": {
-        "Foreign": "object",
-        "Local": "assets",
-        "Priority": 1,
-        "OrderBy": "object.context.0.uri",
-        "ID": "object.context.0.uri",
-        "Fields": [
+        "foreign": "object",
+        "local": "assets",
+        "priority": 1,
+        "orderby": "object.context.0.uri",
+        "id": "object.context.0.uri",
+        "index": null,
+        "fields": [
           {
             "foreign": "object.context.0.uri",
             "local": "id",
@@ -58,22 +25,24 @@
             "type": "int"
           },
           {
+            "datetimeformat": "2006-01-02T15:04:05Z",
             "foreign": "object.published",
             "local": "date_created",
             "relation": "parsetimedate",
-            "type": "timedate",
-            "datetimeformat": "2006-01-02T15:04:05Z"
+            "type": "timedate"
           }
         ],
+        "status": null,
         "endpoint": "/api/import/asset"
       },
       "comments": {
-        "Foreign": "object",
-        "Local": "comments",
-        "Priority": 2,
-        "OrderBy": "postedTime",
-        "ID": "_id",
-        "Fields": [
+        "foreign": "object",
+        "local": "comments",
+        "priority": 2,
+        "orderby": "postedTime",
+        "id": "_id",
+        "index": null,
+        "fields": [
           {
             "foreign": "object.id",
             "local": "id",
@@ -111,35 +80,80 @@
             "type": "int"
           },
           {
+            "datetimeformat": "2006-01-02T15:04:05Z",
             "foreign": "postedTime",
             "local": "date_created",
             "relation": "ParseTimeDate",
-            "type": "timedate",
-            "datetimeformat": "2006-01-02T15:04:05Z"
+            "type": "timedate"
           },
           {
+            "datetimeformat": "ISO",
             "foreign": "updated",
             "local": "date_updated",
             "relation": "ParseTimeDate",
-            "type": "timedate",
-            "datetimeformat": "ISO"
+            "type": "timedate"
           }
         ],
+        "status": null,
         "endpoint": "/api/import/comment"
+      },
+      "users": {
+        "foreign": "actor",
+        "local": "users",
+        "priority": 0,
+        "orderby": "userid",
+        "id": "userid",
+        "index": null,
+        "fields": [
+          {
+            "foreign": "actor.id",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "actor.title",
+            "local": "name",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "actor.status",
+            "local": "status",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "actor.avatar",
+            "local": "avatar",
+            "relation": "Identity",
+            "type": "[]byte"
+          }
+        ],
+        "status": null,
+        "endpoint": "/api/import/user"
       }
     }
   },
   "Credentials": {
-    "service":
-      {
-        "appkey": "dev.washpost.com",
-        "endpoint": "https://comments-api-staging.ext.nile.works/v1/search",
-        "adapter": "api",
-        "type": "foreign",
-        "records": "entries",
-        "pagination": "nextPageAfter",
-        "useragent": "Test Coral v 0.2",
-        "attributes": "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
-      }
+    "database": {
+      "database": "",
+      "username": "",
+      "password": "",
+      "host": "",
+      "port": "",
+      "adapter": "",
+      "type": ""
+    },
+    "service": {
+      "appkey": "dev.appkey",
+      "endpoint": "http://127.0.0.1:58810",
+      "adapter": "service",
+      "type": "foreign",
+      "records": "entries",
+      "pagination": "nextPageAfter",
+      "useragent": "Test Coral v 0.2",
+      "attributes": "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
+    }
   }
 }
