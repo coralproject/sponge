@@ -1,49 +1,13 @@
 {
   "Name": "Washington Post",
   "Map": {
-    "Foreign": "api",
+    "Foreign": "service",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Entities": {
-        "users": {
-          "Foreign": "actor",
-          "Local": "users",
-          "Priority": 0,
-          "OrderBy": "userid",
-          "ID": "userid",
-          "Fields": [
-            {
-              "foreign": "actor.id",
-              "local": "id",
-              "relation": "Source",
-              "type": "int",
-              "required": "true"
-            },
-            {
-              "foreign": "actor.title",
-              "local": "name",
-              "relation": "Identity",
-              "type": "[]byte",
-              "required": "true"
-            },
-            {
-              "foreign": "actor.status",
-              "local": "status",
-              "relation": "Identity",
-              "type": "[]byte"
-            },
-            {
-              "foreign": "actor.avatar",
-              "local": "avatar",
-              "relation": "Identity",
-              "type": "[]byte"
-            }
-          ],
-          "Endpoint": "/api/import/user"
-        },
       "assets": {
         "Foreign": "object",
         "Local": "assets",
-        "Priority": 1,
+        "Priority": 0,
         "OrderBy": "object.context.0.uri",
         "ID": "object.context.0.uri",
         "Fields": [
@@ -51,20 +15,20 @@
             "foreign": "object.context.0.uri",
             "local": "id",
             "relation": "Source",
-            "type": "int",
+            "type": "string",
             "required": "true"
           },
           {
             "foreign": "object.context.0.uri",
             "local": "url",
             "relation": "Identity",
-            "type": "int",
+            "type": "string",
             "required": "true"
           },
           {
             "foreign": "object.published",
             "local": "date_created",
-            "relation": "parsetimedate",
+            "relation": "ParseTimeDate",
             "type": "timedate",
             "datetimeformat": "2006-01-02T15:04:05Z"
           }
@@ -74,47 +38,41 @@
       "comments": {
         "Foreign": "object",
         "Local": "comments",
-        "Priority": 2,
+        "Priority": 1,
         "OrderBy": "postedTime",
-        "ID": "_id",
+        "ID": "object.id",
         "Fields": [
           {
             "foreign": "object.id",
             "local": "id",
             "relation": "Source",
-            "type": "ObjectId",
+            "type": "objectid",
             "required": "true"
           },
           {
             "foreign": "object.content",
             "local": "body",
             "relation": "Identity",
-            "type": "String",
+            "type": "byte[]",
             "required": "true"
-          },
-          {
-            "foreign": "actor.id",
-            "local": "user_id",
-            "relation": "Source",
-            "type": "String"
           },
           {
             "foreign": "object.context.0.uri",
             "local": "asset_id",
             "relation": "Source",
-            "type": "String"
+            "type": "string"
           },
           {
             "foreign": "object.status",
             "local": "status",
             "relation": "Identity",
-            "type": "int"
+            "type": "string"
           },
           {
             "foreign": "targets.0.id",
             "local": "parent_id",
             "relation": "Source",
-            "type": "int"
+            "type": "string"
           },
           {
             "foreign": "postedTime",
@@ -129,9 +87,197 @@
             "relation": "ParseTimeDate",
             "type": "timedate",
             "datetimeformat": "2006-01-02T15:04:05Z"
+          },
+          {
+            "foreign": "object.markers",
+            "local": "tags",
+            "relation": "Identity",
+            "type": "list"
+          },
+          {
+            "foreign": "source.name",
+            "local": "source",
+            "relation": "Metadata",
+            "type": "string"
+          },
+          {
+            "foreign": "object.tags",
+            "local": "tags",
+            "relation": "Metadata",
+            "type": "list"
+          },
+          {
+            "foreign": "actor.roles",
+            "local": "roles",
+            "relation": "Identity",
+            "type": "list"
+          },
+          {
+            "foreign": "actor.id",
+            "local": "id",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.title",
+            "local": "name",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.status",
+            "local": "status",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.avatar",
+            "local": "avatar",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.markers",
+            "local": "tags",
+            "relation": "Source.User",
+            "type": "list"
           }
         ],
         "endpoint": "/api/import/comment"
+      },
+      "actionsLikes": {
+        "Foreign": "objects",
+        "Local": "actions",
+        "Priority": 2,
+        "OrderBy": "",
+        "ID": "",
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "likes",
+            "local": "type",
+            "relation": "Constant",
+            "type": "string"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "string"
+          },
+          {
+            "foreign": "object.id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "string"
+          },
+          {
+            "foreign": "object.likes",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "endpoint": "/api/import/action"
+      },
+      "actionsFlags": {
+        "Foreign": "objects",
+        "Local": "actions",
+        "Priority": 3,
+        "OrderBy": "",
+        "ID": "",
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "flags",
+            "local": "type",
+            "relation": "Constant",
+            "type": "string"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "string"
+          },
+          {
+            "foreign": "object.id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "string"
+          },
+          {
+            "foreign": "object.flags",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "endpoint": "/api/import/action"
       }
     }
   },
@@ -140,7 +286,7 @@
       {
         "appkey": "",
         "endpoint": "",
-        "adapter": "api",
+        "adapter": "service",
         "type": "foreign",
         "records": "",
         "pagination": "",
