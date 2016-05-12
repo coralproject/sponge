@@ -1,6 +1,6 @@
 Sponge is an [Extract, Transform and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) command line tool to get data from your community into the coral system. It does the translation needed to start using the Coral applications.
 
-After [installing](/INSTALL.md) it, you will need to write the translations file, called [Strategy file](/README.md). And have [Pillar](https://github.com/coralproject/pillar)
+After [installing](/install.md) it, you will need to write the translations file, called [Strategy file](/readme.md). And have [Pillar](https://github.com/coralproject/pillar)
 
 Setup the environment variables:
 
@@ -9,11 +9,11 @@ Setup the environment variables:
 
 ## Packages included
 
-* [Strategy](/pkg/sponge/readme.md) reads the translations file.
-* [Source](/pkg/source/readme.md) does the extraction.
-* [Fiddler](/pkg/fiddler/readme.md) does the transformations.
-* [Coral](/pkg/coral/readme.md) send data to Pillar.
-* [Sponge](/readme.md) ties all the pieces together.
+* [Strategy](/strategy.md) reads the translations file.
+* [Source](/source.md) does the extraction.
+* [Fiddler](/fiddler.md) does the transformations.
+* [Coral](/coral.md) send data to Pillar.
+* [Sponge](/sponge.md) ties all the pieces together.
 
 ## Command line tool
 
@@ -40,4 +40,7 @@ Setup the environment variables:
       --orderby="": order by field on the external source (default is not ordered)
       --query="": query on the external table (where condition on mysql, query document on mongodb). It only works with a specific --type. Example updated_date >'2003-12-31 01:02:03'
       --report[=false]: create report on records that fail importing (default is do not report)
-      --type="": import or create indexes for only these types of data (default is everything)```
+      --type="": import or create indexes for only these types of data (default is everything)
+```
+
+## The Coral Documentation
