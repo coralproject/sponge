@@ -136,14 +136,34 @@ func transformRow(coralName string, row map[string]interface{}, fields []map[str
 
 		// We are not adding fields which have an empty value
 		if newValue == nil {
-			break
+			continue
 		}
 
 		switch f["relation"] {
-		case "Source": // { 	"source": { "asset_id": xxx}, }
+		case "Source": // { 	"source": { "asset_id": xxx}, } . This is when we need to send the original ids in the source
 			source[local] = newValue
 
-		case "Metadata": // { "metadata": { "source": xxx , "markers": [xxx]} }
+		case "Source.User": // We sometimes are sending the whole user into Source
+			var user map[string]interface{}
+			// retrieve the user we already may have in source
+			user, ok := source["user"].(map[string]interface{})
+			if !ok {
+				user = make(map[string]interface{})
+			}
+
+			// SOURCE INSIDE USER
+			if local == "id" {
+				userSource := make(map[string]interface{})
+				userSource["id"] = newValue
+
+				user["source"] = userSource
+			} else {
+				user[local] = newValue // value for the User field
+			}
+
+			source["user"] = user // save it back in User
+
+		case "Metadata": // { "metadata": { "source": xxx , "markers": [xxx]} } . Here we are sending any data that we do not have in the coral structure
 			metadata[local] = newValue
 
 		default: // Identity or SubDocument or Status or Constant
@@ -206,6 +226,30 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			}
 			source[local] = newValue
 
+		case "source.user": // the source has the whole user
+			local := f["local"].(string)
+			local = strings.ToLower(local)
+			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
+			newValue, err := transformField(row[foreign], relation, local, modelName)
+			if err != nil {
+				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
+			}
+
+			var user map[string]interface{}
+			// retrieve the user we already may have in source
+			user, ok := source["user"].(map[string]interface{})
+			if !ok {
+				user = make(map[string]interface{})
+			}
+
+			if local == "id" { // if it is the ID we need to add to the Source of the User in Source...
+				userSource := make(map[string]interface{})
+				userSource[local] = newValue
+				user["source"] = userSource
+			}
+
+			source["user"] = user
+
 		case "metadata": // { 	"metadata": { "source": xxx},  "markers": [ xxx ]}
 			local := f["local"].(string)
 			local = strings.ToLower(local)
@@ -250,7 +294,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 		for key := range newRow {
 			//fmt.Printf("Adding value %v for key %v. \n\n", newRow[key], key)
 
-			if key == "source" || key == "metadata" {
+			if key == "source" || key == "metadata" || key == "source.user" {
 				nr, ok := newRow[key].(map[string]interface{})
 				if !ok {
 					return nil, fmt.Errorf("%v not expected type", newRow[key])
@@ -308,6 +352,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 	// We are getting each row into newRow
 	newRow := make(map[string]interface{})
 	source := make(map[string]interface{})
+	source["user"] = make(map[string]interface{})
 	metadata := make(map[string]interface{})
 
 	// While still have more rows to add
@@ -356,6 +401,17 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 					source[local] = newvalue
 				case "Metadata":
 					metadata[local] = newvalue
+				case "Source.User":
+					user := source["user"].(map[string]interface{})
+					if local == "id" { // we need to add it to the source of the user in source
+						userSource := make(map[string]interface{})
+						userSource[local] = newvalue
+						user["source"] = userSource
+					} else {
+						user[local] = newvalue
+					}
+					source["user"] = user
+
 				default:
 					newRow[local] = newvalue
 				}
@@ -396,6 +452,8 @@ func transformField(oldValue interface{}, relation string, coralName string, for
 		case "identity":
 			return oldValue, err
 		case "source":
+			return oldValue, err
+		case "source.user":
 			return oldValue, err
 		case "metadata":
 			return oldValue, err

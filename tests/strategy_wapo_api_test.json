@@ -130,42 +130,6 @@
         ],
         "status": null,
         "endpoint": "/api/import/comment"
-      },
-      "users": {
-        "foreign": "actor",
-        "local": "users",
-        "priority": 0,
-        "orderby": "userid",
-        "id": "userid",
-        "index": null,
-        "fields": [
-          {
-            "foreign": "actor.id",
-            "local": "id",
-            "relation": "Source",
-            "type": "int"
-          },
-          {
-            "foreign": "actor.title",
-            "local": "name",
-            "relation": "Identity",
-            "type": "[]byte"
-          },
-          {
-            "foreign": "actor.status",
-            "local": "status",
-            "relation": "Identity",
-            "type": "[]byte"
-          },
-          {
-            "foreign": "actor.avatar",
-            "local": "avatar",
-            "relation": "Identity",
-            "type": "[]byte"
-          }
-        ],
-        "status": null,
-        "endpoint": "/api/import/user"
       }
     }
   },
