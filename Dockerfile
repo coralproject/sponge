@@ -24,7 +24,8 @@ RUN cd /go/src/github.com/coralproject/sponge/cmd/sponge && go install
 
 ENV PATH /go/bin:$PATH
 
-ENTRYPOINT ["sponge"]
+# Remove this comment to run sponge by default when starting
+# ENTRYPOINT ["sponge"]
 
-# Run the app with the default import command.
-CMD ["import"]
+# Remove this comment to run the app with the default import command.
+# CMD ["import"]
