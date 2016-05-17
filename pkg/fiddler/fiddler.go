@@ -52,13 +52,13 @@ func GetCollections() []string {
 }
 
 // TransformRow transform a row of data into the coral schema
-func TransformRow(row map[string]interface{}, coralName string) (interface{}, []map[string]interface{}, error) { // id row, transformation, error
+func TransformRow(row map[string]interface{}, strategyTableName string) (interface{}, []map[string]interface{}, error) { // id row, transformation, error
 
 	var newRows []map[string]interface{}
 	var err error
 
-	table := strategy.GetEntities()[coralName]
-	idField := GetID(coralName)
+	table := strategy.GetEntities()[strategyTableName]
+	idField := GetID(strategyTableName)
 	id := row[idField]
 
 	if table.Local == "" {
@@ -67,12 +67,13 @@ func TransformRow(row map[string]interface{}, coralName string) (interface{}, []
 
 	// if has an array field type array
 	if strategy.HasArrayField(table) {
-		newRows, err = transformRowWithArrayField(coralName, row, table.Fields)
+
+		newRows, err = transformRowWithArrayField(strategyTableName, row, table.Fields)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transform the row into several coral documents.")
 		}
 	} else {
-		newRow, err := transformRow(coralName, row, table.Fields)
+		newRow, err := transformRow(strategyTableName, row, table.Fields)
 		if err != nil {
 			log.Error(uuid, "fiddler.transformRow", err, "Transform the row into coral.")
 			return id, nil, err
@@ -182,7 +183,7 @@ func transformRow(coralName string, row map[string]interface{}, fields []map[str
 }
 
 // when we are calling this func we are sure that the strategy has a field with an array
-func transformRowWithArrayField(modelName string, row map[string]interface{}, fields []map[string]interface{}) ([]map[string]interface{}, error) {
+func transformRowWithArrayField(strategyTableName string, row map[string]interface{}, fields []map[string]interface{}) ([]map[string]interface{}, error) {
 	var err error
 	var newRows []map[string]interface{}
 
@@ -199,6 +200,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 
 	// Loop on the fields for the transformation
 	for _, f := range fields {
+
 		foreign, ok := f["foreign"].(string)
 		if !ok {
 			return nil, fmt.Errorf("%v not expected type", f["foreign"])
@@ -212,7 +214,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 
 		switch relation {
 		case "loop":
-			newRows, err = transformArrayFields(foreign, f["fields"], row, modelName)
+			newRows, err = transformArrayFields(foreign, f["fields"], row, strategyTableName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -220,7 +222,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			local := f["local"].(string)
 			local = strings.ToLower(local)
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[foreign], relation, local, modelName)
+			newValue, err := transformField(row[foreign], relation, local, strategyTableName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -230,7 +232,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			local := f["local"].(string)
 			local = strings.ToLower(local)
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[foreign], relation, local, modelName)
+			newValue, err := transformField(row[foreign], relation, local, strategyTableName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -254,7 +256,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			local := f["local"].(string)
 			local = strings.ToLower(local)
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[foreign], relation, local, modelName)
+			newValue, err := transformField(row[foreign], relation, local, strategyTableName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -263,6 +265,7 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 		case "constant":
 			local, ok := f["local"].(string)
 			if !ok {
+				fmt.Println("WHAT?")
 				return nil, fmt.Errorf("%v not expected type", f["local"])
 			}
 
@@ -273,10 +276,10 @@ func transformRowWithArrayField(modelName string, row map[string]interface{}, fi
 			if !ok {
 				return nil, fmt.Errorf("%v not expected type", f["local"])
 			}
-			dateLayout = strategy.GetDateTimeFormat(modelName, local)
+			dateLayout = strategy.GetDateTimeFormat(strategyTableName, local)
 
 			// convert field f["foreign"] with value row[f["foreign"]] into field f["local"], whose relationship is f["relation"]
-			newValue, err := transformField(row[foreign], relation, local, modelName)
+			newValue, err := transformField(row[foreign], relation, local, strategyTableName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
 			}
@@ -363,7 +366,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 		if !ok {
 			log.Error(uuid, "fiddler.transformArrayFields", fmt.Errorf("%v not expected type", fields), "Not expected interface{} type")
 		}
-
+		firstfield := true
 		for _, f := range fis { // loop through all the fields that we need to create the row
 
 			field, ok := f.(map[string]interface{})
@@ -396,13 +399,18 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 				if err != nil {
 					log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", field["foreign"])
 				}
+
 				switch field["relation"] {
 				case "Source":
 					source[local] = newvalue
 				case "Metadata":
 					metadata[local] = newvalue
 				case "Source.User":
-					user := source["user"].(map[string]interface{})
+					var user map[string]interface{}
+					user, ok := source["user"].(map[string]interface{})
+					if !ok {
+						user = make(map[string]interface{})
+					}
 					if local == "id" { // we need to add it to the source of the user in source
 						userSource := make(map[string]interface{})
 						userSource[local] = newvalue
@@ -422,9 +430,10 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 					newRow["metadata"] = metadata
 				}
 			} else {
-				finish = true //I'm assuming that we are done when one of the fields.i.whatever has not data
+				finish = firstfield //I'm assuming that we are done when the firslt fields.i.whatever in the row has not data
 				break
 			}
+			firstfield = false
 		}
 		if len(newRow) > 0 { // Add the row only if we got any
 			newRows = append(newRows, newRow)

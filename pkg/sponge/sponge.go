@@ -191,8 +191,6 @@ func importFromAPI(collections []string) {
 			return
 		}
 
-		//fmt.Println("DEBUG data ", data)
-
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
@@ -295,13 +293,6 @@ func process(coralName string, data []map[string]interface{}) {
 			}
 		}
 
-		// To Do: acquire meta-data
-		/*
-		   hit API
-		   sponge.API.GetData(row)
-		   store result in newrow.metadata
-		*/
-
 		// Usually newRows only will have a document but in the case that we have subcollections
 		// we may get more than one document from a transformation
 		for _, newRow := range newRows {
@@ -352,6 +343,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 		documents = documents + 1
 
 		for _, name := range collections { // over the same row I look at the different collections in the strategy file
+
 			// transform the row
 			id, newRows, err := fiddler.TransformRow(row, name)
 			if err != nil {

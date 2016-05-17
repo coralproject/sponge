@@ -168,8 +168,6 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 		return nil, nextPageAfter, err
 	}
 
-	//fmt.Println("DEBUG FLATTEN DATA ", flattenData)
-
 	paginationField := credA.GetPaginationFieldName()
 
 	if d[paginationField] != nil {

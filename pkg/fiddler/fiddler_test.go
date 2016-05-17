@@ -30,7 +30,7 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel )
+	log.Init(os.Stderr, logLevel)
 
 	// Mock strategy configuration
 	strategyConf := "../../tests/strategy_test.json"
@@ -237,9 +237,96 @@ func TestTransformRowArrayTypes(t *testing.T) {
 	if id != expectedID {
 		t.Fatalf("got %s, expected %s", id, expectedID)
 	}
+	result0 := result[0]["source"].(map[string]interface{})["user"].(map[string]interface{})["source"].(map[string]interface{})["id"]
+	result1 := result[1]["source"].(map[string]interface{})["user"].(map[string]interface{})["source"].(map[string]interface{})["id"]
 
 	// all the rows have different ids
-	if result[0]["source"].(map[string]interface{})["user_id"] == result[1]["source"].(map[string]interface{})["user_id"] {
+	if result0 == result1 {
+
+		t.Fatalf("It is duplicating documents")
+	}
+}
+
+// Signature: TransformRow(row map[string]interface{}, modelName string) (interface{}, []map[string]interface{}, error) { // id row, transformation, error
+func TestTransformRowArrayTypesWithNullValues(t *testing.T) {
+
+	row := map[string]interface{}{
+		"provider.icon": "http://cdn.echoenabled.com/images/echo.png", "object.accumulators.likesCount": 1,
+		"object.status": "Untouched", "actor.avatar": "https://wpidentity.s3.amazonaws.com/assets/images/avatar-default.png",
+		"object.permalink": "",
+		"object.likes_obj.http://washingtonpostcom/E2vgkjF8Dr3osyRlhbNLC%BwKrkvbT4tmsKR0XWQVNYpoGeVxxhJF5A%3D%3D/.actor.avatar:https://wpidentity.s3.amazonaws.com/assets/images/avatar-default.png": "",
+		"actor._id": "http://washingtonpost.com/yH5FvK5Hcr6lmQeD6Xcx8fJkV59ZvvsMzHeNJ1Se1fpoGeVxxhJF5A%3D%3D/",
+		"actor.id":  "http://washingtonpost.com/yH5FvK5Hcr6lmQeD6Xcx8fJkV59ZvvsMzHeNJ1Se1fpoGeVxxhJF5A%3D%3D/",
+		"targets": []map[string]string{
+			map[string]string{"conversationID": "http://washingtonpost.com/ECHO/item/2d1d3956-08a4-4aaa-9ffd-22182fbb5b8f",
+				"id": "http://washingtonpost.com/ECHO/item/2d1d3956-08a4-4aaa-9ffd-22182fbb5b8f"},
+		},
+		"object.tags.0":        "replyto_Tropicat",
+		"object.content":       "Probably nothing since otherwise these folks would just have been sitting around the hotel waiting for meetings to start.",
+		"object.context.0.uri": "http://washingtonpost.com/news/to-your-health/wp/2015/05/31/no-stranger-to-brutal-sports-injuries-kerry-faces-a-long-road-to-recovery/",
+		"source.name":          "washpost.com", "provider.name": "echo", "object.likes.0.actor.title": "Yersinia_pestis",
+		"object.likes_obj.http://washingtonpostcom/E2vgkjF8Dr3osyRlhbNLC%2BwKrkvbT4tmsKR0XWQVNYpoGeVxxhJF5A%3D%3D/.published:2015-06-03T16:50:15Z": "",
+		"updated": "2015-06-03 09:50:15.668 -0700 PDT", "ip": "10.128.133.132",
+		"object.likes_obj.http://washingtonpostcom/E2vgkjF8Dr3osyRlhbNLC%2BwKrkvbT4tmsKR0XWQVNYpoGeVxxhJF5A%3D%3D/.actor.title:Yersinia_pestis":                                                                        "",
+		"object.likes_obj.http://washingtonpostcom/E2vgkjF8Dr3osyRlhbNLC%2BwKrkvbT4tmsKR0XWQVNYpoGeVxxhJF5A%3D%3D/.actor.id:http://washingtonpost.com/E2vgkjF8Dr3osyRlhbNLC%2BwKrkvbT4tmsKR0XWQVNYpoGeVxxhJF5A%3D%3D/": "",
+		"object.id":           "http://washingtonpost.com/ECHO/item/fc3be552-cb73-45e5-9d50-73b1b754663b",
+		"actor.objectTypes.0": "http://activitystrea.ms/schema/1.0/person",
+		"id":           "http://js-kit.com/activities/post/fc3be552-cb73-45e5-9d50-73b1b754663b",
+		"verbs":        []string{"http://activitystrea.ms/schema/1.0/post"},
+		"provider.uri": "http://aboutecho.com/", "object.content_type": "html",
+		"object.objectTypes.0": "http://activitystrea.ms/schema/1.0/comment", "actor.status": "ModeratorApproved",
+		"postedTime": "2015-05-31 17:00:12.683 -0700 PDT", "_id": "ObjectIdHex(\"556ba08cd710290035cf6c74\")",
+		"object.published": "2015-06-01T00:00:12Z",
+		"object.likes_obj.http://washingtonpostcom/E2vgkjF8Dr3osyRlhbNLC%2BwKrkvbT4tmsKR0XWQVNYpoGeVxxhJF5A%3D%3D/.actor.objectTypes.0:http://activitystrea.ms/schema/1.0/person": "",
+		"object.context.0.title": "", "actor.title": "Zeus Mom",
+		"object.likes.0.actor.id":            "http://washingtonpost.com/user0/",
+		"object.likes.0.actor.avatar":        "https://wpidentity.s3.amazonaws.com/assets/images/avatar-default.png",
+		"object.likes.0.actor.objectTypes.0": "http://activitystrea.ms/schema/1.0/person",
+		"object.likes.0.published":           "2015-06-03T16:50:15Z",
+		"object.likes.1.actor.id":            "http://washingtonpost.com/user1/",
+		"object.likes.1.actor.avatar":        "https://wpidentity.s3.amazonaws.com/assets/images/avatar-default.png",
+		"object.likes.1.actor.objectTypes.0": "http://activitystrea.ms/schema/1.0/person",
+		"object.likes.1.published":           "2015-06-03T16:50:15Z",
+	}
+	modelName := "actionslikes"
+
+	// interface{}, []map[string]interface{}, error)
+	id, result, err := TransformRow(row, modelName)
+	if err != nil {
+		t.Fatalf("error should be nil. Error is %v", err)
+	}
+
+	expectedResult := make([]map[string]interface{}, 2)
+	expectedResult[0] = map[string]interface{}{
+		"type": "likes", "target": "comments",
+		"date": "2015-06-03T16:50:15Z",
+		"source": map[string]interface{}{
+			"user_id":   "http://washingtonpost.com/user0/",
+			"target_id": "ObjectIdHex(\"556ba08cd710290035cf6c74\")",
+		},
+	}
+	expectedResult[1] = map[string]interface{}{
+		"type": "likes", "target": "comments",
+		"date": "2015-06-03T16:50:15Z",
+		"source": map[string]interface{}{
+			"user_id":   "http://washingtonpost.com/user1/",
+			"target_id": "ObjectIdHex(\"556ba08cd710290035cf6c74\")",
+		},
+	}
+
+	if len(result) != len(expectedResult) {
+		t.Fatalf("got %d , expected %d", len(result), len(expectedResult))
+	}
+
+	expectedID := "ObjectIdHex(\"556ba08cd710290035cf6c74\")"
+	if id != expectedID {
+		t.Fatalf("got %s, expected %s", id, expectedID)
+	}
+
+	result0 := result[0]["source"].(map[string]interface{})["user"].(map[string]interface{})["source"].(map[string]interface{})["id"]
+	result1 := result[1]["source"].(map[string]interface{})["user"].(map[string]interface{})["source"].(map[string]interface{})["id"]
+	// all the rows have different ids
+	if result0 == result1 {
 		t.Fatalf("It is duplicating documents")
 	}
 }

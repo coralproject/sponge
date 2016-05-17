@@ -194,8 +194,28 @@
               },
               {
                 "foreign": "actor.id",
-                "local" : "user_id",
-                "relation": "Source"
+                "local" : "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
               }
             ],
             "type": "Array",
