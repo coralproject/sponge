@@ -265,7 +265,6 @@ func transformRowWithArrayField(strategyTableName string, row map[string]interfa
 		case "constant":
 			local, ok := f["local"].(string)
 			if !ok {
-				fmt.Println("WHAT?")
 				return nil, fmt.Errorf("%v not expected type", f["local"])
 			}
 
