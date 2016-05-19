@@ -214,6 +214,11 @@ func transformRowWithArrayField(strategyTableName string, row map[string]interfa
 
 		switch relation {
 		case "loop":
+			// // get regex to get a special transformation
+			// val, ok := f["regex"]
+			// if ok {
+			// 	//
+			// }
 			newRows, err = transformArrayFields(foreign, f["fields"], row, strategyTableName)
 			if err != nil {
 				log.Error(uuid, "fiddler.transformRow", err, "Transforming field %s.", f["foreign"])
@@ -290,6 +295,7 @@ func transformRowWithArrayField(strategyTableName string, row map[string]interfa
 		}
 	}
 
+	// Combining the basic fields with the fields coming from looping the array
 	// add newRow to all rows in newRows
 	for i := range newRows {
 
@@ -356,6 +362,10 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 	source := make(map[string]interface{})
 	source["user"] = make(map[string]interface{})
 	metadata := make(map[string]interface{})
+
+	//get regex data
+	//var validID = regexp.MustCompile(`.[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*).`)
+	//fmt.Println(validID.MatchString(".http://washpost.com/pepe."))
 
 	// While still have more rows to add
 	finish := false
@@ -443,6 +453,7 @@ func transformArrayFields(foreign string, fields interface{}, row map[string]int
 
 		i++ // NEXT POSSIBLE ROW
 	}
+
 	return newRows, nil
 }
 
