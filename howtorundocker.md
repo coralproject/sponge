@@ -8,7 +8,7 @@
   docker build -f Dockerfile .
 ```
 
-## Create Strategy File on the same directory as Dockerfile
+## Create Strategy File and save it to a folder
 ## Edit env.list to set PILLAR_URL env variable
 
 Remember that you have to have Pillar running somewhere. If it is in your local computer check the ip of the host machine via
