@@ -13,6 +13,14 @@
 
 ## Run up the container
 
+Look at what is the id for the docker image you want to use.
+
 ```
-  docker run -v ./strategy.json:/usr/local/strategy.json --env-file ./env.list spongeimagename
+docker images
+```
+
+Run it
+
+```
+  docker run -v /PathToFolderWhereStrategyFile:/home/data --env-file ./env.list spongeimagename
 ```
