@@ -49,7 +49,7 @@ func Init(u string) error {
 }
 
 // AddOptions adds flags to the sponge
-func AddOptions(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string) {
+func AddOptions(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string, timeWaiting int) {
 	options = source.Options{
 		Limit:                 limit,
 		Offset:                offset,
@@ -59,6 +59,7 @@ func AddOptions(limit int, offset int, orderby string, query string, types strin
 		Importonlyfailed:      importonlyfailed,
 		ReportOnFailedRecords: reportOnFailedRecords,
 		Reportdbfile:          reportdbfile,
+		TimeWaiting:           timeWaiting,
 	}
 }
 
@@ -184,6 +185,8 @@ func importFromAPI(collections []string) {
 	var data []map[string]interface{}
 	var nextPageAfter string
 
+	timeWaiting := time.Duration(options.TimeWaiting) * time.Second
+
 	for true {
 		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
 		if err != nil {
@@ -194,11 +197,12 @@ func importFromAPI(collections []string) {
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
+			fmt.Println("NEXT PAGE AFTER IS ", nextPageAfter)
 		}
 
 		if data == nil {
-			log.User(uuid, "sponge.importFromAPI", "Waiting 5 minutes for more data.")
-			time.Sleep(5 * time.Minute) // sleep 5 minutes
+			log.User(uuid, "sponge.importFromAPI", "Waiting %s seconds for more data.", timeWaiting)
+			time.Sleep(timeWaiting) // sleep timeWaiting seconds
 		}
 	}
 

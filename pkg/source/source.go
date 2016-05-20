@@ -29,6 +29,7 @@ type Options struct {
 	Importonlyfailed      bool
 	ReportOnFailedRecords bool
 	Reportdbfile          string
+	TimeWaiting           int
 }
 
 // global variables related to strategy

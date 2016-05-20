@@ -28,6 +28,8 @@ var (
 	reportErrorsFlag     bool
 	localErrorsDBFlag    string
 
+	timeWaiting int
+
 	// Query on the indicated field
 	queryFlag string
 )
@@ -40,6 +42,7 @@ const (
 	defaultlocalErrorsDB    = "report.db"
 	defaultQuery            = ""
 	defaultReportErrors     = false
+	defaultTimeWaiting      = 5
 )
 
 func init() {
@@ -52,11 +55,13 @@ func init() {
 	RootCmd.PersistentFlags().BoolVar(&reportErrorsFlag, "report", defaultReportErrors, "create report on records that fail importing (default is do not report)")
 	RootCmd.PersistentFlags().StringVar(&localErrorsDBFlag, "filepath", defaultlocalErrorsDB, "set the file path for the report on errors (default is report.db)")
 
+	RootCmd.PersistentFlags().IntVar(&timeWaiting, "timewaiting", defaultTimeWaiting, "set how much time (in seconds) it waits to make a new request (default 5 seconds)")
+
 	RootCmd.AddCommand(importCmd)
 }
 
 func addImport(cmd *cobra.Command, args []string) {
 
-	sponge.AddOptions(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, reportErrorsFlag, localErrorsDBFlag)
+	sponge.AddOptions(limitFlag, offsetFlag, orderbyFlag, queryFlag, typeFlag, importonlyfailedFlag, reportErrorsFlag, localErrorsDBFlag, timeWaiting)
 	sponge.Import()
 }

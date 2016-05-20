@@ -93,19 +93,25 @@ func (c CredentialDatabase) GetType() string {
 
 // CredentialService has the information to connect to an external web service source.
 type CredentialService struct {
-	AppKey     string `json:"appkey"`
-	Endpoint   string `json:"endpoint"`
-	Adapter    string `json:"adapter"`
-	Type       string `json:"type"`
-	Records    string `json:"records"`
-	Pagination string `json:"pagination"`
-	UserAgent  string `json:"useragent"`
-	Attributes string `json:"attributes"`
+	AppKey          string `json:"appkey"`
+	Endpoint        string `json:"endpoint"`
+	Adapter         string `json:"adapter"`
+	Type            string `json:"type"`
+	Records         string `json:"records"`
+	PaginationField string `json:"paginationfield"`
+	Pagination      string `json:"pagination"`
+	UserAgent       string `json:"useragent"`
+	Attributes      string `json:"attributes"`
 }
 
 // GetAppKey gets the app key to access the api
 func (c CredentialService) GetAppKey() string {
 	return c.AppKey
+}
+
+// GetPageAfterField returns the field that I need to send to the API to get the next page
+func (c CredentialService) GetPageAfterField() string {
+	return c.PaginationField
 }
 
 // GetAdapter returns the adapter

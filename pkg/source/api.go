@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/ardanlabs/kit/log"
@@ -171,12 +172,13 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	paginationField := credA.GetPaginationFieldName()
 
 	if d[paginationField] != nil {
-		nextPageAfter, ok = d[paginationField].(string) //strconv.ParseFloat(d["nextPageAfter"].(string), 64)
+		pf, ok := d[paginationField].(float64)
 		if !ok {
-			err = fmt.Errorf("Error when asserting type string.")
-			log.Error(uuid, "api.getfirehosedata", err, "Type assigment to string")
+			err = fmt.Errorf("Error when asserting type float64.")
+			log.Error(uuid, "api.getfirehosedata", err, "Type assigment to float64")
 			return nil, nextPageAfter, err
 		}
+		nextPageAfter = strconv.FormatFloat(pf, 'f', 6, 64) //.(string) //strconv.ParseFloat(d["nextPageAfter"].(string), 64)
 	}
 	return flattenData, nextPageAfter, err
 }
@@ -205,14 +207,15 @@ func connectionAPI(pageAfter string) *url.URL {
 		log.Error(uuid, "api.connectionAPI", err, "Asserting type.")
 	}
 
-	basicurl := credA.GetEndpoint()                      //"https://comments-api.ext.nile.works/v1/search"
-	appkey := credA.GetAppKey()                          //"prod.washpost.com"
+	basicurl := credA.GetEndpoint() //"https://comments-api.ext.nile.works/v1/search"
+	appkey := credA.GetAppKey()     //"prod.washpost.com"
+	pageAfterField := credA.GetPageAfterField()
 	attributes := url.QueryEscape(credA.GetAttributes()) // Attributes for the query. Eg, for WaPo we have scope and sortOrder
 
 	var surl string
 	if pageAfter != "" {
-		qpageAfter := fmt.Sprintf(" pageAfter:%s", pageAfter)
-		surl = fmt.Sprintf("%s?q=((%s%s))&appkey=%s", basicurl, attributes, url.QueryEscape(qpageAfter), appkey)
+		qpageAfter := fmt.Sprintf("%s=%s", pageAfterField, pageAfter)
+		surl = fmt.Sprintf("%s?q=((%s))&appkey=%s&%s", basicurl, attributes, appkey, qpageAfter)
 	} else {
 		surl = fmt.Sprintf("%s?q=((%s))&appkey=%s", basicurl, attributes, appkey)
 	}
