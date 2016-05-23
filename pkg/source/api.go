@@ -1,12 +1,16 @@
 package source
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
+
+	"text/template"
 
 	"github.com/ardanlabs/kit/log"
 	str "github.com/coralproject/sponge/pkg/strategy"
@@ -18,6 +22,14 @@ import (
 // API is the struct that has the connection string to the external mysql database
 type API struct {
 	Connection string
+}
+
+// QueryData is used to get all the data about the different parameters of the query
+type QueryData struct {
+	Basicurl   string
+	Attributes string
+	Appkey     string
+	Next       string
 }
 
 // GetData does the request to the webservice once and get back the data based on the parameters
@@ -142,7 +154,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	// Use json.Decode for reading streams of JSON data
 	if err = json.NewDecoder(resp.Body).Decode(&d); err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Decoding data from API.")
-		return nil, nextPageAfter, err
+		return nil, pageAfter, err
 	}
 
 	recordsField := credA.GetRecordsFieldName()
@@ -155,7 +167,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	records, ok := d[recordsField].([]interface{}) //this are all the entries
 	if !ok {
 		log.Error(uuid, "api.getFirehoseData", err, "Asserting type.")
-		return nil, nextPageAfter, err
+		return nil, pageAfter, err
 	}
 
 	var r []map[string]interface{}
@@ -165,20 +177,21 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 
 	flattenData, err = flattenizeData(r)
 	if err != nil {
-		log.Error(uuid, "api.getdata", err, "Normalizing data from api to fit into fiddler.")
+		log.Error(uuid, "api.getfirehosedata", err, "Normalizing data from api to fit into fiddler.")
 		return nil, nextPageAfter, err
 	}
 
-	paginationField := credA.GetPaginationFieldName()
+	nextPageField := credA.GetNextPageField()
 
-	if d[paginationField] != nil {
-		pf, ok := d[paginationField].(float64)
-		if !ok {
-			err = fmt.Errorf("Error when asserting type float64.")
-			log.Error(uuid, "api.getfirehosedata", err, "Type assigment to float64")
-			return nil, nextPageAfter, err
+	if d[nextPageField] != nil {
+		switch pf := d[nextPageField].(type) {
+		case float64:
+			nextPageAfter = strconv.FormatFloat(pf, 'f', 6, 64)
+		case string:
+			nextPageAfter = pf
+		default:
+			log.User(uuid, "api.getfirehosedata", "Do not know what is the type asserting for the Next Pagination value.")
 		}
-		nextPageAfter = strconv.FormatFloat(pf, 'f', 6, 64) //.(string) //strconv.ParseFloat(d["nextPageAfter"].(string), 64)
 	}
 	return flattenData, nextPageAfter, err
 }
@@ -207,17 +220,19 @@ func connectionAPI(pageAfter string) *url.URL {
 		log.Error(uuid, "api.connectionAPI", err, "Asserting type.")
 	}
 
-	basicurl := credA.GetEndpoint() //"https://comments-api.ext.nile.works/v1/search"
-	appkey := credA.GetAppKey()     //"prod.washpost.com"
-	pageAfterField := credA.GetPageAfterField()
-	attributes := url.QueryEscape(credA.GetAttributes()) // Attributes for the query. Eg, for WaPo we have scope and sortOrder
+	data := QueryData{}
+	// Get all the data from credentials we need
+	data.Basicurl = credA.GetEndpoint() //"https://comments-api.ext.nile.works/v1/search"
+	data.Appkey = credA.GetAppKey()
+	data.Next = pageAfter                                        //credA.GetPageAfterField()                        // field that we are going to get the next value from
+	data.Attributes = credA.GetAttributes()                      // Attributes for the query. Eg, for WaPo we have scope and sortOrder
+	urltemplate, urltemplatepagination := credA.GetQueryFormat() //format for the query
 
-	var surl string
-	if pageAfter != "" {
-		qpageAfter := fmt.Sprintf("%s=%s", pageAfterField, pageAfter)
-		surl = fmt.Sprintf("%s?q=((%s))&appkey=%s&%s", basicurl, attributes, appkey, qpageAfter)
-	} else {
-		surl = fmt.Sprintf("%s?q=((%s))&appkey=%s", basicurl, attributes, appkey)
+	//url.QueryEscape(
+
+	surl, err := formatURL(data, urltemplate, urltemplatepagination)
+	if err != nil {
+		log.Error(uuid, "api.connectionAPI", err, "Parsing url %s", surl)
 	}
 
 	u, err := url.Parse(surl)
@@ -226,4 +241,48 @@ func connectionAPI(pageAfter string) *url.URL {
 	}
 
 	return u
+}
+
+//func doPrintf(format string, a []interface{}) string {
+func formatURL(data QueryData, urltemplate string, urltemplatepagination string) (string, error) {
+
+	//	"queryformat": "{{basicurl}}?q=(({{attributes}}))&appkey={{appkey}}&nextSince={{next}}",
+
+	var surl string
+	var tmpl *template.Template
+	var err error
+
+	if data.Next != "" {
+		tmpl, err = template.New("url").Parse(urltemplatepagination)
+		if err != nil {
+			log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
+			return surl, err
+		}
+
+	} else {
+		// this is the first time when we still do not have a page to query
+		tmpl, err = template.New("url").Parse(urltemplate)
+		if err != nil {
+			log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
+			return surl, err
+		}
+	}
+	buf := new(bytes.Buffer)
+	err = tmpl.Execute(buf, data)
+	if err != nil {
+		log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
+		return surl, err
+	}
+	surl = buf.String()
+
+	// I need to escape the attributes...
+	// First needs to look for the parameters to escape...
+	re := regexp.MustCompile("\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)")
+
+	whattoescape := strings.Trim(re.FindString(surl), "(())")
+	replaceWith := fmt.Sprintf("((%s))", url.QueryEscape(whattoescape))
+
+	escapedURL := string(re.ReplaceAll([]byte(surl), []byte(replaceWith)))
+
+	return escapedURL, nil
 }
