@@ -197,7 +197,6 @@ func importFromAPI(collections []string) {
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
-			fmt.Println("NEXT PAGE AFTER IS ", nextPageAfter)
 		}
 
 		if data == nil {
