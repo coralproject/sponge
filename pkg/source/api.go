@@ -227,10 +227,11 @@ func connectionAPI(pageAfter string) *url.URL {
 	data.Next = pageAfter                                        //credA.GetPageAfterField()                        // field that we are going to get the next value from
 	data.Attributes = credA.GetAttributes()                      // Attributes for the query. Eg, for WaPo we have scope and sortOrder
 	urltemplate, urltemplatepagination := credA.GetQueryFormat() //format for the query
+	regexToEscape := credA.GetRegexToEscape()
 
 	//url.QueryEscape(
 
-	surl, err := formatURL(data, urltemplate, urltemplatepagination)
+	surl, err := formatURL(data, urltemplate, urltemplatepagination, regexToEscape)
 	if err != nil {
 		log.Error(uuid, "api.connectionAPI", err, "Parsing url %s", surl)
 	}
@@ -244,7 +245,7 @@ func connectionAPI(pageAfter string) *url.URL {
 }
 
 //func doPrintf(format string, a []interface{}) string {
-func formatURL(data QueryData, urltemplate string, urltemplatepagination string) (string, error) {
+func formatURL(data QueryData, urltemplate string, urltemplatepagination string, regextoescape string) (string, error) {
 
 	//	"queryformat": "{{basicurl}}?q=(({{attributes}}))&appkey={{appkey}}&nextSince={{next}}",
 
@@ -277,10 +278,12 @@ func formatURL(data QueryData, urltemplate string, urltemplatepagination string)
 
 	// I need to escape the attributes...
 	// First needs to look for the parameters to escape...
-	re := regexp.MustCompile("\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)")
+	re := regexp.MustCompile(regextoescape) //"\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)")
 
-	whattoescape := strings.Trim(re.FindString(surl), "(())")
-	replaceWith := fmt.Sprintf("((%s))", url.QueryEscape(whattoescape))
+	beginCharacters := "((" // Move it to Strategy
+	endCharacters := "))"   // Move it to Strategy
+	whattoescape := strings.Trim(re.FindString(surl), beginCharacters+endCharacters)
+	replaceWith := fmt.Sprintf("%s%s%s", beginCharacters, url.QueryEscape(whattoescape), endCharacters)
 
 	escapedURL := string(re.ReplaceAll([]byte(surl), []byte(replaceWith)))
 

@@ -101,6 +101,7 @@ type CredentialService struct {
 	QueryFormat           string `json:"queryformat"`
 	QueryFormatPagination string `json:"queryformatpagination"`
 	NextPageField         string `json:"pagination"`
+	RegexToEscape         string `json:"regextoescape"`
 	UserAgent             string `json:"useragent"`
 	Attributes            string `json:"attributes"`
 }
@@ -113,6 +114,11 @@ func (c CredentialService) GetAppKey() string {
 // GetNextPageField returns the field that I need to send to the API to get the next page
 func (c CredentialService) GetNextPageField() string {
 	return c.NextPageField
+}
+
+// GetRegexToEscape returns the regex to match for the query that needs to be escaped
+func (c CredentialService) GetRegexToEscape() string {
+	return c.RegexToEscape
 }
 
 // GetQueryFormat returns the URL format for the request to get data
