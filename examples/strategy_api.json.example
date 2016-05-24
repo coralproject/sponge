@@ -206,8 +206,8 @@
                 "relation": "Source.User"
               }
             ],
-            "type": "Array",
-            "relation": "Loop"
+            "relation": "Loop",
+            "type": "Array"
           }
         ],
         "endpoint": "/api/import/action"
@@ -288,8 +288,11 @@
         "endpoint": "",
         "adapter": "service",
         "type": "foreign",
-        "records": "",
-        "pagination": "",
+        "records": "entries",
+        "queryformatpagination": "{{.Basicurl}}?q=(({{.Attributes}} pageAfter:{{.Next}}))&appkey={{.Appkey}}",
+        "queryformat": "{{.Basicurl}}?q=(({{.Attributes}}))&appkey={{.Appkey}}",
+        "pagination": "nextPageAfter",
+        "regextoescape": "\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)",
         "useragent": "Test Coral v 0.2",
         "attributes": ""
       }
