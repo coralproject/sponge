@@ -116,6 +116,7 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	// TO DO: THIS IS VERY WAPO API HARCODED!
 	url := connectionAPI(pageAfter)
 
+	log.User(uuid, "api.getFirehoseData", "Querying URL %s", url)
 	// Build the request
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
