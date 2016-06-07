@@ -30,6 +30,7 @@ type QueryData struct {
 	Attributes string
 	Appkey     string
 	Next       string
+	NextPage   string
 }
 
 // GetData does the request to the webservice once and get back the data based on the parameters
@@ -94,36 +95,33 @@ func (a API) GetWebServiceData() ([]map[string]interface{}, bool, error) {
 }
 
 // GetFireHoseData use the firehose to constantly GET data from the web service
-func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string, error) {
+func (a API) GetFireHoseData(pageAfter string, since string) ([]map[string]interface{}, string, string, error) {
 	var (
 		flattenData   []map[string]interface{}
 		nextPageAfter string
+		nextSince     string
 		err           error
 	)
 
 	// Get the credentials to connect to the API
-	cred, err := strategy.GetCredential("service", "foreign")
+	cred, err := strategy.GetCredentialService("service", "foreign")
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Getting credentials with API")
 	}
 
-	// Assert Type into a credential API struct
-	credA, ok := cred.(str.CredentialService)
-	if !ok {
-		log.Error(uuid, "api.getFirehoseData", err, "Asserting type.")
-	}
+	url := connectionAPI(pageAfter, since)
+	userAgent := cred.GetUserAgent()
+	method := "GET"
 
-	// TO DO: THIS IS VERY WAPO API HARCODED!
-	url := connectionAPI(pageAfter)
+	log.User(uuid, "api.getFirehoseData", "Querying URL: %s", url)
 
-	log.User(uuid, "api.getFirehoseData", "Querying URL %s", url)
 	// Build the request
-	req, err := http.NewRequest("GET", url.String(), nil)
+	req, err := http.NewRequest(method, url.String(), nil)
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "New request.")
-		return nil, pageAfter, err
+		return nil, pageAfter, since, err
 	}
-	req.Header.Add("User-Agent", credA.GetUserAgent())
+	req.Header.Add("User-Agent", userAgent)
 
 	// For control over HTTP client headers,
 	// redirect policy, and other settings,
@@ -137,12 +135,12 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Doing a call to API.")
-		return nil, pageAfter, err
+		return nil, pageAfter, since, err
 	}
 	if resp.StatusCode != 200 {
 		err := fmt.Errorf("Bad Request %v", resp.Status)
 		log.Error(uuid, "api.getFirehoseData", err, "Doing a call to API.")
-		return nil, pageAfter, err
+		return nil, pageAfter, since, err
 	}
 
 	// Callers should close resp.Body
@@ -155,20 +153,26 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	// Use json.Decode for reading streams of JSON data
 	if err = json.NewDecoder(resp.Body).Decode(&d); err != nil {
 		log.Error(uuid, "api.getFirehoseData", err, "Decoding data from API.")
-		return nil, pageAfter, err
+		return nil, pageAfter, since, err
 	}
 
-	recordsField := credA.GetRecordsFieldName()
+	// // Emtpy records means there are no more data to send
+	// if d[recordsField] == nil {
+	// 	return nil, pageAfter, since, err
+	// }
 
-	// Emtpy records means there are no more data to send
-	if d[recordsField] == nil {
-		return nil, pageAfter, err
+	recordsField := cred.GetRecordsFieldName()
+	morePagesField := cred.GetMorePagesAttribute()
+
+	hasMoreChildren, err := strconv.ParseBool(d[morePagesField].(string))
+	if err != nil {
+		log.Error(uuid, "api.getfirehosedata", err, "Parsing if it has more pages.")
 	}
 
 	records, ok := d[recordsField].([]interface{}) //this are all the entries
 	if !ok {
 		log.Error(uuid, "api.getFirehoseData", err, "Asserting type.")
-		return nil, pageAfter, err
+		return nil, pageAfter, since, err
 	}
 
 	var r []map[string]interface{}
@@ -179,12 +183,13 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 	flattenData, err = flattenizeData(r)
 	if err != nil {
 		log.Error(uuid, "api.getfirehosedata", err, "Normalizing data from api to fit into fiddler.")
-		return nil, nextPageAfter, err
+		return nil, pageAfter, since, err
 	}
 
-	nextPageField := credA.GetNextPageField()
+	nextPageField := cred.GetNextPageField()
+	nextSinceField := cred.GetPollingAttribute()
 
-	if d[nextPageField] != nil {
+	if hasMoreChildren {
 		switch pf := d[nextPageField].(type) {
 		case float64:
 			nextPageAfter = strconv.FormatFloat(pf, 'f', 6, 64)
@@ -193,8 +198,19 @@ func (a API) GetFireHoseData(pageAfter string) ([]map[string]interface{}, string
 		default:
 			log.User(uuid, "api.getfirehosedata", "Do not know what is the type asserting for the Next Pagination value.")
 		}
+		nextSince = since
+	} else { // page from zero
+		switch ns := d[nextSinceField].(type) {
+		case float64:
+			nextSince = strconv.FormatFloat(ns, 'f', 6, 64)
+		case string:
+			nextSince = ns
+		default:
+			log.User(uuid, "api.getfirehosedata", "Do not know what is the type asserting for the Next Polling value.")
+		}
+		nextPageAfter = ""
 	}
-	return flattenData, nextPageAfter, err
+	return flattenData, nextPageAfter, nextSince, err
 }
 
 // GetQueryData will return all the data based on a specific list of IDs
@@ -213,7 +229,7 @@ func (a API) IsWebService() bool {
 //////* Not exported functions *//////
 
 // ConnectionMySQL returns the connection string
-func connectionAPI(pageAfter string) *url.URL {
+func connectionAPI(pageAfter string, since string) *url.URL {
 
 	credA, ok := credential.(str.CredentialService)
 	if !ok {
@@ -225,8 +241,10 @@ func connectionAPI(pageAfter string) *url.URL {
 	// Get all the data from credentials we need
 	data.Basicurl = credA.GetEndpoint() //"https://comments-api.ext.nile.works/v1/search"
 	data.Appkey = credA.GetAppKey()
-	data.Next = pageAfter                                        //credA.GetPageAfterField()                        // field that we are going to get the next value from
-	data.Attributes = credA.GetAttributes()                      // Attributes for the query. Eg, for WaPo we have scope and sortOrder
+	data.NextPage = pageAfter //credA.GetPageAfterField()                        // field that we are going to get the next value from
+	data.Next = since
+	data.Attributes = credA.GetAttributes() // Attributes for the query. Eg, for WaPo we have scope and sortOrder
+
 	urltemplate, urltemplatepagination := credA.GetQueryFormat() //format for the query
 	regexToEscape := credA.GetRegexToEscape()
 
@@ -245,30 +263,39 @@ func connectionAPI(pageAfter string) *url.URL {
 	return u
 }
 
-//func doPrintf(format string, a []interface{}) string {
 func formatURL(data QueryData, urltemplate string, urltemplatepagination string, regextoescape string) (string, error) {
-
-	//	"queryformat": "{{basicurl}}?q=(({{attributes}}))&appkey={{appkey}}&nextSince={{next}}",
 
 	var surl string
 	var tmpl *template.Template
 	var err error
 
-	if data.Next != "" {
+	if data.NextPage != "" {
 		tmpl, err = template.New("url").Parse(urltemplatepagination)
 		if err != nil {
 			log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
 			return surl, err
 		}
-
-	} else {
-		// this is the first time when we still do not have a page to query
+	} else { // this is the first time when we still do not have a page to query
 		tmpl, err = template.New("url").Parse(urltemplate)
 		if err != nil {
 			log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
 			return surl, err
 		}
 	}
+
+	// if data.NextPage != "" { // we have since value or pagination
+	// 	tmpl, err = template.New("url").Parse(urltemplatepagination)
+	// 	if err != nil {
+	// 		log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
+	// 		return surl, err
+	// 	}
+	// } else { // this is the first time when we still do not have a page to query
+	// 	tmpl, err = template.New("url").Parse(urltemplate)
+	// 	if err != nil {
+	// 		log.Error(uuid, "formatURL", err, "Failing when parsing the query template.")
+	// 		return surl, err
+	// 	}
+	// }
 	buf := new(bytes.Buffer)
 	err = tmpl.Execute(buf, data)
 	if err != nil {

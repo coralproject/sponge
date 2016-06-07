@@ -162,32 +162,38 @@ func setupPostgreSQL() {
 
 func mockAPI() string {
 
+	log.User("test", "mockAPI", "Setting up the Mock HTTP Server.")
 	// Initialization of stub server
 	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var err error
 		var d map[string]interface{}
 
-		file, err := ioutil.ReadFile("../../tests/response.json")
+		path := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/response.json"
+		file, err := ioutil.ReadFile(path)
 		if err != nil {
-			fmt.Printf("ERROR %v on setting up response in the test.", err)
-			os.Exit(1)
+			log.Error("tests", "mockAPI", err, "Reading response.")
 		}
 
-		json.Unmarshal(file, &d)
+		err = json.Unmarshal(file, &d)
 
 		if err != nil {
+			log.Error("tests", "mockAPI", err, "Unmarshalling response.")
 			w.WriteHeader(http.StatusBadRequest)
 		}
 		if err == nil {
 			w.WriteHeader(http.StatusOK)
+		} else {
+			log.User("tests", "mockAPI", "Status not OK/")
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(file)
 
 		fmt.Fprintln(w, file)
 	}))
 
+	log.User("test", "mockAPI", "Mock HTTP Server was setup in %v.", server.URL)
 	return server.URL
 }
 
@@ -206,6 +212,7 @@ func setupAPI() {
 	}
 	log.Init(os.Stderr, logLevel)
 
+	// get the strategy that is already setup in the environment (if any)
 	oStrategy = os.Getenv("STRATEGY_CONF")
 
 	// MOCK STRATEGY CONF
@@ -216,6 +223,7 @@ func setupAPI() {
 	content, err := ioutil.ReadFile(strategyConf)
 	err = json.Unmarshal(content, &st)
 
+	// this is the mockup server url
 	st.Credentials.Service.Endpoint = serverurl
 
 	bst, err := json.Marshal(st)
@@ -228,6 +236,7 @@ func setupAPI() {
 		fmt.Println("Error when saving back the strategy file with the mock server: ", err)
 	}
 
+	// set the environment with the test strategy configuration file
 	e := os.Setenv("STRATEGY_CONF", strategyConf)
 	if e != nil {
 		fmt.Println("It could not setup the mock strategy conf variable")
@@ -235,6 +244,7 @@ func setupAPI() {
 
 	var ok bool
 
+	// we are using uuid to  send to the source to log through that uuid
 	u := uuidimported.New()
 	s, e := Init(u)
 	if e != nil {
@@ -246,6 +256,7 @@ func setupAPI() {
 		fmt.Printf("Error when calling the function, %v.\n", e)
 	}
 
+	// the api object we are going to test on
 	mapi, ok = m.(API)
 	if !ok {
 		fmt.Println("It should return a type API")
@@ -299,9 +310,9 @@ func TestMongoDBNewSource(t *testing.T) {
 	}
 
 	mdb, ok := m.(MongoDB)
-	// it returns type MySQL
+	// it returns type MongoDB
 	if !ok {
-		t.Fatalf("it should return a type MySQL")
+		t.Fatalf("it should return a type MongoDB")
 	}
 
 	// m should have a valid connection string
@@ -312,5 +323,27 @@ func TestMongoDBNewSource(t *testing.T) {
 	// m should not have a database connection
 	if mdb.Database != nil {
 		t.Error("database should be nil.")
+	}
+}
+
+// NewSource returns a new api struct
+// Signature: New(d string) (Sourcer, error) {
+// It depends on the credentials to get the connection string
+func TestServiceNewSource(t *testing.T) {
+
+	m, e := New("service") // function being tested
+	if e != nil {
+		t.Fatalf("error when calling the function, %v.", e)
+	}
+
+	mdb, ok := m.(API)
+	// it returns type API
+	if !ok {
+		t.Fatalf("it should return a type API")
+	}
+
+	// m should have a valid connection string
+	if mdb.Connection == "" {
+		t.Fatalf("connection string should not be nil")
 	}
 }

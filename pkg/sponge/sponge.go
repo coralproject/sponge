@@ -173,6 +173,7 @@ func importAll() {
 func importFromAPI(collections []string) {
 
 	pageAfter := ""
+	since := "1"
 	log.User(uuid, "sponge.importFromAPI", "### Reading data from API. \n")
 
 	api, ok := dbsource.(source.API)
@@ -184,11 +185,12 @@ func importFromAPI(collections []string) {
 	var err error
 	var data []map[string]interface{}
 	var nextPageAfter string
+	var nextSince string
 
 	timeWaiting := time.Duration(options.TimeWaiting) * time.Second
 
 	for true {
-		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
+		data, nextPageAfter, nextSince, err = api.GetFireHoseData(pageAfter, since)
 		if err != nil {
 			log.Error(uuid, "sponge.importFromAPI", err, "Getting data from API")
 			return
@@ -197,6 +199,7 @@ func importFromAPI(collections []string) {
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
+			since = nextSince
 		}
 
 		if data == nil {
@@ -295,6 +298,8 @@ func process(coralName string, data []map[string]interface{}) {
 				report.Record(coralName, id, "Failing transform data", err)
 			}
 		}
+
+		// TODO: REWRITE TO USE https://github.com/eapache/go-resiliency/tree/master/retrier
 
 		// Usually newRows only will have a document but in the case that we have subcollections
 		// we may get more than one document from a transformation

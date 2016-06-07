@@ -98,10 +98,12 @@ type CredentialService struct {
 	Adapter               string `json:"adapter"`
 	Type                  string `json:"type"`
 	Records               string `json:"records"`
-	QueryFormat           string `json:"queryformat"`
-	QueryFormatPagination string `json:"queryformatpagination"`
-	NextPageField         string `json:"pagination"`
-	RegexToEscape         string `json:"regextoescape"`
+	QueryFormat           string `json:"queryformat"`           // what is the query when not using pagination
+	QueryFormatPagination string `json:"queryformatpagination"` // what query we need to have when using pagination
+	NextPageField         string `json:"pagination"`            // attribute to get from request to know the next page
+	MorePages             string `json:"morepages"`             // attribute to get from request to know if it does have more pages
+	RegexToEscape         string `json:"regextoescape"`         // regex on what needs to be escaped when creating the request
+	Polling               string `json:"polling"`               // polling attribute to get from request
 	UserAgent             string `json:"useragent"`
 	Attributes            string `json:"attributes"`
 }
@@ -111,9 +113,19 @@ func (c CredentialService) GetAppKey() string {
 	return c.AppKey
 }
 
+// GetMorePagesAttribute returns the field that I need to check if there are more pages to pull
+func (c CredentialService) GetMorePagesAttribute() string {
+	return c.MorePages
+}
+
 // GetNextPageField returns the field that I need to send to the API to get the next page
 func (c CredentialService) GetNextPageField() string {
 	return c.NextPageField
+}
+
+// GetPollingAttribute returns the field that I need to get the next polilng from request
+func (c CredentialService) GetPollingAttribute() string {
+	return c.Polling
 }
 
 // GetRegexToEscape returns the regex to match for the query that needs to be escaped
@@ -253,6 +265,22 @@ func (s Strategy) GetCredential(a string, t string) (Credential, error) {
 	log.Error(uuid, "strategy.getCredentials", err, "Getting credential %s for strategy.", a)
 
 	return cred, err
+}
+
+// GetCredentialService returns the credential for connection with the external source adapter a, type t
+func (s Strategy) GetCredentialService(a string, t string) (*CredentialService, error) {
+	var err error
+
+	creda := s.Credentials
+
+	if creda.Service.GetAdapter() == a && creda.Service.GetType() == t {
+		return &creda.Service, err
+	}
+
+	err = fmt.Errorf("Credential %s not found.", a)
+	log.Error(uuid, "strategy.getCredentials", err, "Getting credential %s for strategy.", a)
+
+	return nil, err
 }
 
 // GetMap returns the strategy

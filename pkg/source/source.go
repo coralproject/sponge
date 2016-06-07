@@ -87,7 +87,7 @@ func New(d string) (Sourcer, error) {
 		return PostgreSQL{Connection: connectionPostgreSQL(), Database: nil}, nil
 	case "service":
 		// Get API connection url
-		u := connectionAPI("")
+		u := connectionAPI("", "")
 		return API{Connection: u.String()}, nil
 	}
 

@@ -282,16 +282,22 @@
     }
   },
   "Credentials": {
-    "service":
-      {
-        "appkey": "",
-        "endpoint": "",
-        "adapter": "service",
-        "type": "foreign",
-        "records": "",
-        "pagination": "",
-        "useragent": "Test Coral v 0.2",
-        "attributes": ""
-      }
+  "service":
+    {
+      "appkey": "",
+      "endpoint": "",
+      "adapter": "service",
+      "type": "foreign",
+      "records": "entries",
+      "queryformatpagination": "{{.Basicurl}}?q=(({{.Attributes}} pageAfter:{{.NextPage}}))&appkey={{.Appkey}}&since={{.Next}}",
+      "queryformat": "{{.Basicurl}}?q=(({{.Attributes}}))&appkey={{.Appkey}}&since=1",
+      "pagination": "nextPageAfter",
+      "morepages": "hasMoreChildren",
+      "regextoescape": "\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)",
+      "polling": "nextSince",
+      "useragent": "Test Coral v 0.3",
+      "attributes": ""
+    }
+}
   }
 }

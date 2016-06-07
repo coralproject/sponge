@@ -31,7 +31,7 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel )
+	log.Init(os.Stderr, logLevel)
 
 	// MOCK STRATEGY CONF
 	strategyConf := "../../tests/strategy_test.json"
@@ -77,8 +77,9 @@ func TestProcess(t *testing.T) {
 	modelName := "comment"
 	var data []map[string]interface{}
 	reportOnFailedRecords := false
+	timeWaiting := 5
 
-	AddOptions(999, 0, "", "", "", false, reportOnFailedRecords, "")
+	AddOptions(999, 0, "", "", "", false, reportOnFailedRecords, "", timeWaiting)
 
 	process(modelName, data)
 
