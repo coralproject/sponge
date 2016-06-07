@@ -41,9 +41,10 @@ func TestGetAPIData(t *testing.T) {
 	setupAPI()
 
 	pageAfter := "1.399743732"
+	since := "1"
 
 	// no error
-	data, pageAfter1, err := mapi.GetFireHoseData(pageAfter)
+	data, pageAfter1, _, err := mapi.GetFireHoseData(pageAfter, since)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
@@ -63,7 +64,7 @@ func TestGetAPIData(t *testing.T) {
 		t.Fatalf("expected different pages %s and %s", pageAfter1, pageAfter)
 	}
 
-	data, _, err = mapi.GetFireHoseData(pageAfter1)
+	data, _, _, err = mapi.GetFireHoseData(pageAfter1, since)
 	if err != nil {
 		t.Fatalf("expected no error, got '%s'.", err)
 	}
