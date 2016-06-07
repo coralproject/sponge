@@ -3,6 +3,8 @@ package sponge
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -184,8 +186,13 @@ func importFromAPI(collections []string) {
 	var err error
 	var data []map[string]interface{}
 	var nextPageAfter string
+	var pollingInterval time.Duration
 
-	timeWaiting := time.Duration(options.TimeWaiting) * time.Second
+	if pollEnvVar, err := strconv.Atoi(os.Getenv("POLLING_INTERVAL")); err != nil || pollEnvVar == 0 {
+		pollingInterval = time.Duration(options.TimeWaiting) * time.Second
+	} else {
+		pollingInterval = time.Duration(pollEnvVar) * time.Second
+	}
 
 	for true {
 		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
@@ -200,8 +207,8 @@ func importFromAPI(collections []string) {
 		}
 
 		if data == nil {
-			log.User(uuid, "sponge.importFromAPI", "Waiting %s seconds for more data.", timeWaiting)
-			time.Sleep(timeWaiting) // sleep timeWaiting seconds
+			log.User(uuid, "sponge.importFromAPI", "Waiting %s seconds for more data.", pollingInterval)
+			time.Sleep(pollingInterval) // sleep timeWaiting seconds
 		}
 	}
 
