@@ -195,8 +195,7 @@ func importFromAPI(collections []string) {
 	}
 
 	for true {
-		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
-		if err != nil {
+		if data, nextPageAfter, err = api.GetFireHoseData(pageAfter); err != nil {
 			log.Error(uuid, "sponge.importFromAPI", err, "Getting data from API")
 			return
 		}
@@ -204,14 +203,12 @@ func importFromAPI(collections []string) {
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
-		}
-
-		if data == nil {
+		} else {
 			log.User(uuid, "sponge.importFromAPI", "Waiting %s seconds for more data.", pollingInterval)
 			time.Sleep(pollingInterval) // sleep timeWaiting seconds
 		}
-	}
 
+	}
 }
 
 func importFromDB(collections []string) {
@@ -368,7 +365,6 @@ func processAPI(collections []string, data []map[string]interface{}) {
 			// Usually newRows only will have a document but in the case that we have subcollections
 			// we may get more than one document from a transformation
 			for _, newRow := range newRows {
-
 				log.Dev(uuid, "sponge.process", "Transforming: %v into %v.", row, newRow)
 
 				// send the row to pillar

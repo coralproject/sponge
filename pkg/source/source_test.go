@@ -1,316 +1,184 @@
-package source
+package source_test
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"os"
-	"testing"
 
-	"github.com/ardanlabs/kit/cfg"
-	"github.com/ardanlabs/kit/log"
-	uuidimported "github.com/pborman/uuid"
+	"github.com/coralproject/sponge/pkg/source"
+	"github.com/pborman/uuid"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-const (
-	cfgLoggingLevel = "LOGGING_LEVEL"
-)
+//***************** MONGODB *****************//
 
-var (
-	m    Sourcer
-	mm   MySQL
-	mdb  MongoDB
-	mp   PostgreSQL
-	mapi API
-)
+var _ = Describe("Source MongoDB", func() {
 
-// we save the strategy env to recover it on teardown
-var oStrategy string
+	var (
+		mdb source.MongoDB
+	)
 
-func init() {
-	logLevel := func() int {
-		ll, err := cfg.Int("LOGGING_LEVEL")
-		if err != nil {
-			return log.DEV
-		}
-		return ll
-	}
+	BeforeEach(func() {
 
-	log.Init(os.Stderr, logLevel)
-}
-
-func setupMysql() {
-	// Initialize logging
-	logLevel := func() int {
-		ll, err := cfg.Int(cfgLoggingLevel)
-		if err != nil {
-			return log.USER
-		}
-		return ll
-	}
-	log.Init(os.Stderr, logLevel)
-
-	oStrategy = os.Getenv("STRATEGY_CONF")
-
-	// MOCK STRATEGY CONF
-	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_nyt_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	var ok bool
-
-	u := uuidimported.New()
-
-	s, e := Init(u)
-	if e != nil {
-		fmt.Printf("Error when initializing strategy, %v.\n", e)
-	}
-	m, e := New(s) // setting up new source
-	if e != nil {
-		fmt.Printf("Error when calling the function, %v.\n", e)
-	}
-
-	mm, ok = m.(MySQL)
-	if !ok {
-		fmt.Println("It should return a type MySQL")
-	}
-}
-
-func setupMongo() {
-
-	// Initialize logging
-	logLevel := func() int {
-		ll, err := cfg.Int(cfgLoggingLevel)
-		if err != nil {
-			return log.USER
-		}
-		return ll
-	}
-	log.Init(os.Stderr, logLevel)
-
-	oStrategy = os.Getenv("STRATEGY_CONF")
-
-	// MOCK STRATEGY CONF
-	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_wapo_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf)
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	var ok bool
-
-	u := uuidimported.New()
-	s, e := Init(u)
-	if e != nil {
-		fmt.Printf("Error when initializing strategy, %v.\n", e)
-	}
-
-	m, e := New(s) // setting up new source
-	if e != nil {
-		fmt.Printf("Error when calling the function, %v.\n", e)
-	}
-
-	mdb, ok = m.(MongoDB)
-	if !ok {
-		fmt.Println("It should return a type MontoDB")
-	}
-}
-
-func setupPostgreSQL() {
-
-	// Initialize logging
-	logLevel := func() int {
-		ll, err := cfg.Int(cfgLoggingLevel)
-		if err != nil {
-			return log.USER
-		}
-		return ll
-	}
-	log.Init(os.Stderr, logLevel)
-
-	oStrategy = os.Getenv("STRATEGY_CONF")
-
-	// MOCK STRATEGY CONF
-	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_discourse_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf) // IS NOT REALLY SETTING UP THE VARIABLE environment FOR THE WHOLE PROGRAM :(
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	var ok bool
-
-	u := uuidimported.New()
-
-	s, e := Init(u)
-	if e != nil {
-		fmt.Printf("Error when initializing strategy, %v.\n", e)
-	}
-	m, e := New(s) // setup new source
-	if e != nil {
-		fmt.Printf("Error when calling the function, %v.\n", e)
-	}
-
-	mp, ok = m.(PostgreSQL)
-	if !ok {
-		fmt.Println("It should return a type PostgreSQL")
-	}
-}
-
-func mockAPI() string {
-
-	// Initialization of stub server
-	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		var err error
-		var d map[string]interface{}
-
-		file, err := ioutil.ReadFile("../../tests/response.json")
-		if err != nil {
-			fmt.Printf("ERROR %v on setting up response in the test.", err)
-			os.Exit(1)
+		// MOCK STRATEGY CONF WITH MONGODB CONFIG FILE
+		strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_mongo_test.json"
+		if e := os.Setenv("STRATEGY_CONF", strategyConf); e != nil {
+			Expect(e).NotTo(HaveOccurred())
 		}
 
-		json.Unmarshal(file, &d)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+		u := uuid.New()
+		if _, e := source.Init(u); e != nil {
+			Expect(e).NotTo(HaveOccurred())
 		}
-		if err == nil {
-			w.WriteHeader(http.StatusOK)
+
+		s, e := source.New("mongodb")
+		if e != nil {
+			Expect(e).NotTo(HaveOccurred())
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(file)
-
-		fmt.Fprintln(w, file)
-	}))
-
-	return server.URL
-}
-
-func setupAPI() {
-
-	// Mock the API Server
-	serverurl := mockAPI()
-
-	// Initialize logging
-	logLevel := func() int {
-		ll, err := cfg.Int(cfgLoggingLevel)
-		if err != nil {
-			return log.USER
+		var ok bool
+		mdb, ok = s.(source.MongoDB)
+		if !ok {
+			Expect(ok).To(BeTrue(), "The source's implementation should be MongoDB")
 		}
-		return ll
-	}
-	log.Init(os.Stderr, logLevel)
+	})
 
-	oStrategy = os.Getenv("STRATEGY_CONF")
+	Describe("Creating New MongoDB Source", func() {
+		Context("with a valid connection", func() {
+			It("should not have a nil connection", func() {
+				Expect(&mdb.Connection).NotTo(BeNil())
+			})
+			It("should not have a nil database", func() {
+				Expect(&mdb.Database).NotTo(BeNil())
+			})
+		})
+	})
+})
 
-	// MOCK STRATEGY CONF
-	strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_wapo_api_test.json"
+//***************** MYSQL *****************//
 
-	// write down serverurl into the strategyconf
-	st := strategy
-	content, err := ioutil.ReadFile(strategyConf)
-	err = json.Unmarshal(content, &st)
+var _ = Describe("Source MySQL", func() {
 
-	st.Credentials.Service.Endpoint = serverurl
+	var (
+		mdb source.MySQL
+	)
 
-	bst, err := json.Marshal(st)
-	if err != nil {
-		fmt.Println("Error when trying to marshall back the strategy file with server url of the mock server: ", err)
-	}
-	mode := os.FileMode(0777)
-	err = ioutil.WriteFile(strategyConf, bst, mode)
-	if err != nil {
-		fmt.Println("Error when saving back the strategy file with the mock server: ", err)
-	}
+	BeforeEach(func() {
 
-	e := os.Setenv("STRATEGY_CONF", strategyConf)
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
+		// MOCK STRATEGY CONF WITH MYSQL CONFIG FILE
+		strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_mysql_test.json"
+		if e := os.Setenv("STRATEGY_CONF", strategyConf); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
 
-	var ok bool
+		u := uuid.New()
+		if _, e := source.Init(u); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
 
-	u := uuidimported.New()
-	s, e := Init(u)
-	if e != nil {
-		fmt.Printf("Error when initializing strategy, %v.\n", e)
-	}
+		s, e := source.New("mysql")
+		if e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+		var ok bool
+		mdb, ok = s.(source.MySQL)
+		if !ok {
+			Expect(ok).To(BeTrue(), "The source's implementation should be MySQL")
+		}
+	})
 
-	m, e := New(s)
-	if e != nil {
-		fmt.Printf("Error when calling the function, %v.\n", e)
-	}
+	Describe("Creating New MySQL Source", func() {
+		Context("with a valid connection", func() {
+			It("should not have a nil connection", func() {
+				Expect(&mdb.Connection).NotTo(BeNil())
+			})
+			It("should not have a nil database", func() {
+				Expect(&mdb.Database).NotTo(BeNil())
+			})
+		})
+	})
+})
 
-	mapi, ok = m.(API)
-	if !ok {
-		fmt.Println("It should return a type API")
-	}
-	attributes := "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
-	mapi.Connection = fmt.Sprintf("%s/v1/search?q=((%s))&appkey=dev.washpost.com", serverurl, attributes)
+//***************** PostgreSQL *****************//
 
-}
+var _ = Describe("Source PostgreSQL", func() {
 
-func teardown() {
-	e := os.Setenv("STRATEGY_CONF", oStrategy)
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-}
+	var (
+		mdb source.PostgreSQL
+	)
 
-// NewSource returns a new MySQL struct
-// Signature: New(d string) (Sourcer, error) {
-// It depends on the credentials to get the connection string
-func TestPostgreSQLNewSource(t *testing.T) {
+	BeforeEach(func() {
 
-	m, e := New("postgresql") // function being tested
-	if e != nil {
-		t.Fatalf("error when calling the function, %v.", e)
-	}
+		// MOCK STRATEGY CONF WITH POSTGRESQL CONFIG FILE
+		strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_postgresql_test.json"
+		if e := os.Setenv("STRATEGY_CONF", strategyConf); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
 
-	mp, ok := m.(PostgreSQL)
-	if !ok {
-		t.Fatalf("it should return a type PostgreSQL")
-	}
+		u := uuid.New()
+		if _, e := source.Init(u); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
 
-	// m should have a valid connection string
-	if mp.Connection == "" {
-		t.Fatalf("connection string should not be nil")
-	}
+		s, e := source.New("postgresql")
+		if e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+		var ok bool
+		mdb, ok = s.(source.PostgreSQL)
+		if !ok {
+			Expect(ok).To(BeTrue(), "The source's implementation should be PostgreSQL")
+		}
+	})
 
-	// m should not have a database connection
-	if mp.Database != nil {
-		t.Error("database should be nil.")
-	}
-}
+	Describe("Creating New PostgreSQL Source", func() {
+		Context("with a valid connection", func() {
+			It("should not have a nil connection", func() {
+				Expect(&mdb.Connection).NotTo(BeNil())
+			})
+			It("should not have a nil database", func() {
+				Expect(&mdb.Database).NotTo(BeNil())
+			})
+		})
+	})
+})
 
-// NewSource returns a new mongodb struct
-// Signature: New(d string) (Sourcer, error) {
-// It depends on the credentials to get the connection string
-func TestMongoDBNewSource(t *testing.T) {
+//***************** Service *****************//
 
-	m, e := New("mongodb") // function being tested
-	if e != nil {
-		t.Fatalf("error when calling the function, %v.", e)
-	}
+var _ = Describe("Source Service", func() {
 
-	mdb, ok := m.(MongoDB)
-	// it returns type MySQL
-	if !ok {
-		t.Fatalf("it should return a type MySQL")
-	}
+	var (
+		mdb source.API
+	)
 
-	// m should have a valid connection string
-	if mdb.Connection == "" {
-		t.Fatalf("connection string should not be nil")
-	}
+	BeforeEach(func() {
 
-	// m should not have a database connection
-	if mdb.Database != nil {
-		t.Error("database should be nil.")
-	}
-}
+		// MOCK STRATEGY CONF WITH SERVICE CONFIG FILE
+		strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_api_test.json"
+		if e := os.Setenv("STRATEGY_CONF", strategyConf); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+
+		u := uuid.New()
+		if _, e := source.Init(u); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+
+		s, e := source.New("service")
+		if e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+		var ok bool
+		mdb, ok = s.(source.API)
+		if !ok {
+			Expect(ok).To(BeTrue(), "The source's implementation should be Service")
+		}
+	})
+
+	Describe("Creating New Service Source", func() {
+		Context("with a valid connection", func() {
+			It("should not have a nil connection", func() {
+				Expect(&mdb.Connection).NotTo(BeNil())
+			})
+		})
+	})
+})

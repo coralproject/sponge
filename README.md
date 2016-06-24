@@ -10,7 +10,27 @@ Where to get the data and how to translate it is expressed through _strategies_.
 
 ## Install
 
-Clone this repository , install GO and build main.go. More information at the [INSTALL's file](https://github.com/coralproject/sponge/blob/master/docs/INSTALL.md).
+### Build from Source
+
+#### Install Go
+
+To build Sponge you will need [Go 1.6.1+](https://golang.org/dl/).
+
+First download `sponge` without installing:
+
+```
+$ go get -d github.com/coralproject/sponge
+
+$ cd $GOPATH/src/github.com/coralproject/sponge
+```
+
+Then install `sponge` and its dependencies:
+
+```
+$ make install
+```
+
+More information at the [INSTALL's file](https://github.com/coralproject/sponge/blob/master/docs/INSTALL.md).
 
 ## Documentation
 
@@ -30,7 +50,7 @@ Sponge currently only supports importing data from mysql, postgresql, mongodb or
 
 ## Code of conduct
 
-Please be civil when discussing contributions to the Sponge code and the Coral Project. If in doubt, please consult our [Code of Conduct](https://the-coral-project.gitbooks.io/coral-bible/content/codeofconduct.html).
+Please be civil when discussing contributions to the Sponge's code source and the Coral Project. If in doubt, please consult our [Code of Conduct](https://the-coral-project.gitbooks.io/coral-bible/content/codeofconduct.html).
 
 ## License
 
@@ -38,4 +58,4 @@ Copyright 2016, The Coral Project. [MIT License](/LICENSE)
 
 ## Mantainer
 
-Sponge is maintained by The Coral Project. Check the [Contributions File](/CONTRIBUTORS.md) for more information.
+Sponge is maintained by The Coral Project. Check the [Contributions](/CONTRIBUTORS.md) and [Authors](/AUTHORS.md) files for more information.
