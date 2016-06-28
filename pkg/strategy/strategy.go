@@ -9,9 +9,12 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/coralproject/sponge/pkg/util"
+
 	"gopkg.in/mgo.v2"
 
 	"github.com/ardanlabs/kit/log"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
@@ -173,9 +176,15 @@ func New() (Strategy, error) {
 
 	//read STRATEGY_CONF env variable
 	strategyFile := os.Getenv("STRATEGY_CONF")
-	if strategyFile == "" {
+	if util.IsEmpty(strategyFile) {
 		log.Fatal(uuid, "strategy.new", "Enviromental variable STRATEGY_CONF not setup.")
 		return strategy, err
+	}
+
+	// validate Strategy file
+	if !Validate(strategyFile) {
+		log.Fatal(uuid, "strategy.new", "Enviromental variable STRATEGY_CONF not validates.")
+		return strategy, fmt.Errorf("Strategy file is not valid json.")
 	}
 
 	strategy, err = read(strategyFile)
@@ -357,6 +366,36 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 	endpoints["index"] = pillarURL + "/api/import/index"
 
 	return endpoints
+}
+
+// Validate the strategy file that is loaded into STRATEGY_CONF environment variable.
+func Validate(strategyFileName string) bool {
+
+	// strategy's json schema
+	schemaFile := "file://" + os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/pkg/strategy/schema_strategy.json"
+	strategyFile := "file://" + strategyFileName
+
+	schemaLoader := gojsonschema.NewReferenceLoader(schemaFile)
+	documentLoader := gojsonschema.NewReferenceLoader(strategyFile)
+
+	schema, err := gojsonschema.NewSchema(schemaLoader)
+	if err != nil {
+		log.Fatal(uuid, "strategy.validate", "Strategy schema failed to load. ", err.Error())
+		return false
+	}
+	result, err := schema.Validate(documentLoader)
+	if err != nil {
+		log.Fatal(uuid, "strategy.validate", "Strategy file validation failed. ", err.Error())
+		return false
+	}
+
+	if !result.Valid() {
+		for _, err := range result.Errors() {
+			log.User(uuid, "strategy.validate", "%s, Details: %v.", err.Description(), err.Details())
+		}
+		return false
+	}
+	return true
 }
 
 /* Not Exported Functions */
