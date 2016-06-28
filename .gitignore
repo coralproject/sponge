@@ -12,3 +12,4 @@ tests/strategy_wapo_test.json
 cmd/sponge/sponge
 dev.cfg
 examples/*.json
+config/*.json
