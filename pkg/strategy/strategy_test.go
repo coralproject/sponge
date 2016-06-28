@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ardanlabs/kit/cfg"
+	"github.com/ardanlabs/kit/log"
 	uuidimported "github.com/pborman/uuid"
 )
 
@@ -324,4 +326,33 @@ func TestGetEntityForeignName(t *testing.T) {
 	if foreigName != expectedForeigName {
 		t.Errorf("Expected %s, got %s", expectedForeigName, foreigName)
 	}
+}
+
+func TestValidation(t *testing.T) {
+
+	// Initialize logging
+	logLevel := func() int {
+		ll, err := cfg.Int("LOGGING_LEVEL")
+		if err != nil {
+			return log.NONE
+		}
+		return ll
+	}
+
+	log.Init(os.Stderr, logLevel)
+
+	u := uuidimported.New()
+	Init(u)
+
+	validstrategyfile := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/test/strategy_api_test.json"
+	notvalidstrategyfile := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/test/not_valid_Strategy_test.json"
+
+	if !Validate(validstrategyfile) {
+		t.Errorf("Expected validation, did not validated")
+	}
+
+	if Validate(notvalidstrategyfile) {
+		t.Errorf("Expected not validation, it validated")
+	}
+
 }

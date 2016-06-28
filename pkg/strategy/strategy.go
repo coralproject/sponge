@@ -24,7 +24,6 @@ var (
 
 // Init initialize log and get pillar url env variable
 func Init(u string) {
-
 	uuid = u
 	pillarURL = os.Getenv("PILLAR_URL")
 }
@@ -391,7 +390,7 @@ func Validate(strategyFileName string) bool {
 
 	if !result.Valid() {
 		for _, err := range result.Errors() {
-			log.User(uuid, "strategy.validate", "%s, Details: %v.", err.Description(), err.Details())
+			log.Error(uuid, "strategy.validate", fmt.Errorf("%v", err.Details()), "%s.", err.Description())
 		}
 		return false
 	}

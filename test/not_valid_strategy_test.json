@@ -1,22 +1,7 @@
 {
-  "credentials": {
-    "service": {
-      "adapter": "service",
-      "appkey": "dev.key",
-      "attributes": "childrenof:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-how-do-you-remedy-your-own-passive-aggressive-behavior/2016/05/30/daae2f04-212b-11e6-9e7f-57890b612299_story.html source:washpost.com itemsPerPage:100 sortOrder:chronological children:3 childrenItemsPerPage:100",
-      "endpoint": "http://127.0.0.1:60639",
-      "pagination": "nextSince",
-      "queryformat": "{{.Basicurl}}?q=(({{.Attributes}}))&appkey={{.Appkey}}",
-      "queryformatpagination": "{{.Basicurl}}?q=(({{.Attributes}}))&appkey={{.Appkey}}&since={{.Next}}",
-      "records": "entries",
-      "regextoescape": "\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)",
-      "type": "foreign",
-      "useragent": "Test Coral v 0.3"
-    }
-  },
   "map": {
-    "datetimeformat": "2006-01-02 15:04:05",
-    "entities": {
+    "DateTimeFormat": "2006-01-02 15:04:05",
+    "Entities": {
       "actionsFlags": {
         "Fields": [
           {
@@ -293,7 +278,7 @@
         "endpoint": "/api/import/comment"
       }
     },
-    "foreign": "service"
+    "Foreign": "service"
   },
   "name": "Washington Post"
 }
