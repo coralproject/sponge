@@ -159,6 +159,11 @@
 			"revisionTime": "2014-01-24T11:41:52-07:00"
 		},
 		{
+			"path": "github.com/xeipuuv/gojsonschema",
+			"revision": "c539bca196be50ccdd1f0bcd9076de95f9081831",
+			"revisionTime": "2016-06-23T21:58:12+08:00"
+		},
+		{
 			"origin": "github.com/coralproject/shelf/vendor/gopkg.in/bluesuncorp/validator.v6",
 			"path": "gopkg.in/bluesuncorp/validator.v6",
 			"revision": "af123ac5365a9384febf1f537046aa3b470e31b3",
