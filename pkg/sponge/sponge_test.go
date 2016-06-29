@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	oStrategy  string
-	oPillarURL string
+	oStrategy        string
+	oPillarURL       string
+	oPollingInterval string
 )
 
 func setup() {
@@ -22,6 +23,7 @@ func setup() {
 	// Save original enviroment variables
 	oStrategy = os.Getenv("STRATEGY_CONF")
 	oPillarURL = os.Getenv("PILLAR_URL")
+	oPollingInterval = os.Getenv("POLLING_INTERVAL")
 
 	logLevel := func() int {
 		ll, err := cfg.Int("LOGGING_LEVEL")
@@ -31,7 +33,7 @@ func setup() {
 		return ll
 	}
 
-	log.Init(os.Stderr, logLevel )
+	log.Init(os.Stderr, logLevel)
 
 	// MOCK STRATEGY CONF
 	strategyConf := "../../tests/strategy_test.json"
@@ -54,6 +56,11 @@ func teardown() {
 	e = os.Setenv("PILLAR_URL", oPillarURL)
 	if e != nil {
 		fmt.Println("It could not setup the mock pillar url variable")
+	}
+
+	e = os.Setenv("POLLING_INTERVAL", oPollingInterval)
+	if e != nil {
+		fmt.Println("It could not setup the mock polling interval variable")
 	}
 }
 
@@ -78,7 +85,7 @@ func TestProcess(t *testing.T) {
 	var data []map[string]interface{}
 	reportOnFailedRecords := false
 
-	AddOptions(999, 0, "", "", "", false, reportOnFailedRecords, "")
+	AddOptions(999, 0, "", "", "", false, reportOnFailedRecords, "", 5)
 
 	process(modelName, data)
 

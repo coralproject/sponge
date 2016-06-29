@@ -15,6 +15,7 @@ const (
 	cfgLoggingLevel = "LOGGING_LEVEL"
 	cfgStrategyFile = "STRATEGY_FILE"
 	cfgPILLARURL    = "PILLAR_URL"
+	cfgTIMEWAITING  = "POLLING_INTERVAL"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 		}
 		return ll
 	}
-	log.Init(os.Stderr, logLevel )
+	log.Init(os.Stderr, logLevel)
 
 	// Generate UUID to use with the logs
 	uid := uuid.New()

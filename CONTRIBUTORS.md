@@ -11,10 +11,11 @@ Sponge is maintained by:
 3. Commit your changes
 4. Push to the branch
 5. Create a new Pull Request
+6. Thanks!
 
 ## Contact
 
-Please, ways to contact the maintainer:
+Ways to contact the maintainer:
 
 - @gaba at twitter.com
 - @gaba at irc.mozilla.org

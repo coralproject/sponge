@@ -76,7 +76,7 @@ func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]inte
 
 	log.User(uuid, "mongodb.getdata", "### Flattening documents to be able to translate them. \n")
 
-	flattenData, err := normalizeData(data)
+	flattenData, err := flattenizeData(data)
 	if err != nil {
 		log.Error(uuid, "mongodb.getdata", err, "Normalizing data from mongo to fit into fiddler.")
 		return nil, err

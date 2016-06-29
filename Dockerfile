@@ -10,7 +10,7 @@ LABEL Name="Sponge" \
       Version="0.1" \
       Vendor="The Coral Project" \
       Description="ETL utility to extract, transform and load data into the Coral's schema." \
-      Usage="docker run --env-file ./env.list -d sponge" \
+      Usage="docker run -v ./strategy.json:/usr/local/strategy.json --env-file ./env.list" \
       License="MIT"\
       Repository="Sponge" \
       Tag="Coral"
@@ -20,9 +20,9 @@ COPY . /go/src/github.com/coralproject/sponge
 
 # Build & Install
 RUN cd /go/src/github.com/coralproject/sponge/cmd/sponge && go install
-#go build github.com/coralproject/sponge/cmd/sponge/main.go
 
 ENV PATH /go/bin:$PATH
 
-# Run the app
-CMD ["sponge", "import"]
+ENTRYPOINT ["sponge"]
+
+CMD ["import"]

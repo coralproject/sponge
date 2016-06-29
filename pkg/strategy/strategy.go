@@ -93,19 +93,37 @@ func (c CredentialDatabase) GetType() string {
 
 // CredentialService has the information to connect to an external web service source.
 type CredentialService struct {
-	AppKey     string `json:"appkey"`
-	Endpoint   string `json:"endpoint"`
-	Adapter    string `json:"adapter"`
-	Type       string `json:"type"`
-	Records    string `json:"records"`
-	Pagination string `json:"pagination"`
-	UserAgent  string `json:"useragent"`
-	Attributes string `json:"attributes"`
+	AppKey                string `json:"appkey"`
+	Endpoint              string `json:"endpoint"`
+	Adapter               string `json:"adapter"`
+	Type                  string `json:"type"`
+	Records               string `json:"records"`
+	QueryFormat           string `json:"queryformat"`
+	QueryFormatPagination string `json:"queryformatpagination"`
+	NextPageField         string `json:"pagination"`
+	RegexToEscape         string `json:"regextoescape"`
+	UserAgent             string `json:"useragent"`
+	Attributes            string `json:"attributes"`
 }
 
 // GetAppKey gets the app key to access the api
 func (c CredentialService) GetAppKey() string {
 	return c.AppKey
+}
+
+// GetNextPageField returns the field that I need to send to the API to get the next page
+func (c CredentialService) GetNextPageField() string {
+	return c.NextPageField
+}
+
+// GetRegexToEscape returns the regex to match for the query that needs to be escaped
+func (c CredentialService) GetRegexToEscape() string {
+	return c.RegexToEscape
+}
+
+// GetQueryFormat returns the URL format for the request to get data
+func (c CredentialService) GetQueryFormat() (string, string) {
+	return c.QueryFormat, c.QueryFormatPagination
 }
 
 // GetAdapter returns the adapter
@@ -128,10 +146,10 @@ func (c CredentialService) GetRecordsFieldName() string {
 	return c.Records
 }
 
-// GetPaginationFieldName returns the name of the field where to look for pagination
-func (c CredentialService) GetPaginationFieldName() string {
-	return c.Pagination
-}
+// // GetPaginationFieldName returns the name of the field where to look for pagination
+// func (c CredentialService) GetPaginationFieldName() string {
+// 	return c.Pagination
+// }
 
 // GetUserAgent returns the name of the field that holds the user agent
 func (c CredentialService) GetUserAgent() string {
@@ -205,12 +223,12 @@ func (s Strategy) setCredential() error {
 		WSattributes := os.Getenv("WS_ATTRIBUTES")
 
 		s.Credentials.Service = CredentialService{
-			AppKey:     WSappkey,
-			Endpoint:   WSendpoint,
-			Records:    WSrecords,
-			Pagination: WSpagination,
-			UserAgent:  WSuseragent,
-			Attributes: WSattributes,
+			AppKey:        WSappkey,
+			Endpoint:      WSendpoint,
+			Records:       WSrecords,
+			NextPageField: WSpagination,
+			UserAgent:     WSuseragent,
+			Attributes:    WSattributes,
 		}
 	}
 	return err
@@ -232,7 +250,7 @@ func (s Strategy) GetCredential(a string, t string) (Credential, error) {
 	}
 
 	err = fmt.Errorf("Credential %s not found.", a)
-	log.Error(uuid, "strategy.getCredentiawls", err, "Getting credential %s for strategy.", a)
+	log.Error(uuid, "strategy.getCredentials", err, "Getting credential %s for strategy.", a)
 
 	return cred, err
 }
@@ -331,8 +349,8 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 	endpoints := map[string]string{}
 
 	entities := s.GetEntities()
-	for _, entity := range entities {
-		endpoints[entity.Local] = pillarURL + entity.PillarEndpoint
+	for name, entity := range entities {
+		endpoints[name] = pillarURL + entity.PillarEndpoint //entity.Local
 	}
 
 	// adds CREATE_INDEX endpoints

@@ -1,27 +1,50 @@
-# Local Development Help Reference
+# Fiddler
 
-## MongoDB
+import "github.com/coralproject/sponge/pkg/fiddler"
 
-To manage mongodb we are using the shell and creating db, roles and user manually.
-
-### To create a role
-
-db.createRole(
-  {
-     role: "MyAdmin",
-     privileges: [
-       { resource: { db: "coral", collection: "" }, actions: [ "find", "update", "insert", "remove" ] }
-     ],
-     roles: []
-  }
-)
+Package fiddler does the translation from external database schema into the Coral's one, through a translation's file called Strategy.
 
 
-### To create a user
+## Variables
 
-db.createUser({user:"username",pwd:"password",roles:[{role: "MyAdmin", db:"coral"}]})
+	var (
+		strategy   str.Strategy
+	)
+
+Holds the translation to apply to the data.
+
+	var (
+		dateLayout string
+	)
+
+Date Layout as specified in the translation's file.
+
+	var (
+		uuid       string
+	)
+
+Universally Unique Identifier used for the logs.
 
 
-#### Reference
+## func GetID
 
-* createRole: https://docs.mongodb.org/manual/reference/command/createRole/
+	``func GetID(modelName string) string``
+
+	Returns the field that is the identifier for that model
+
+## func GetCollections
+
+	``func GetCollections() []string``
+
+	Returns the names of all the collections in the strategy file.
+
+
+## func TransformRow
+
+	``func TransformRow(row map[string]interface{}, coralName string) (interface{}, []map[string]interface{}, error)``
+
+ 	Applies the coral schema to a row of data from the external source.
+
+## Examples
+
+	`To Do`

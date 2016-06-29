@@ -3,6 +3,8 @@ package sponge
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,7 +51,7 @@ func Init(u string) error {
 }
 
 // AddOptions adds flags to the sponge
-func AddOptions(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string) {
+func AddOptions(limit int, offset int, orderby string, query string, types string, importonlyfailed bool, reportOnFailedRecords bool, reportdbfile string, timeWaiting int) {
 	options = source.Options{
 		Limit:                 limit,
 		Offset:                offset,
@@ -59,6 +61,7 @@ func AddOptions(limit int, offset int, orderby string, query string, types strin
 		Importonlyfailed:      importonlyfailed,
 		ReportOnFailedRecords: reportOnFailedRecords,
 		Reportdbfile:          reportdbfile,
+		TimeWaiting:           timeWaiting,
 	}
 }
 
@@ -78,9 +81,7 @@ func Import() {
 
 	// import only the collections from the options
 	if options.Types != "" {
-		fmt.Println("DEBUG 0", options.Types)
 		for _, t := range strings.Split(options.Types, ",") {
-			fmt.Println("DEBUG ", t)
 			importType(strings.Trim(t, " "))
 		}
 		return
@@ -185,6 +186,13 @@ func importFromAPI(collections []string) {
 	var err error
 	var data []map[string]interface{}
 	var nextPageAfter string
+	var pollingInterval time.Duration
+
+	if pollEnvVar, err := strconv.Atoi(os.Getenv("POLLING_INTERVAL")); err != nil || pollEnvVar == 0 {
+		pollingInterval = time.Duration(options.TimeWaiting) * time.Second
+	} else {
+		pollingInterval = time.Duration(pollEnvVar) * time.Second
+	}
 
 	for true {
 		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
@@ -199,7 +207,8 @@ func importFromAPI(collections []string) {
 		}
 
 		if data == nil {
-			time.Sleep(5 * time.Minute) // sleep 5 minutes
+			log.User(uuid, "sponge.importFromAPI", "Waiting %s seconds for more data.", pollingInterval)
+			time.Sleep(pollingInterval) // sleep timeWaiting seconds
 		}
 	}
 
@@ -215,7 +224,7 @@ func importFromDB(collections []string) {
 		log.User(uuid, "sponge.importAll", "### Reading data to import from %s into collection '%s'. \n", foreignEntity, name)
 
 		// Get the data
-		data, err := dbsource.GetData(foreignEntity, &options) //options.offset, options.limit, options.orderby, "")
+		data, err := dbsource.GetData(name, &options) //options.offset, options.limit, options.orderby, "")
 		if err != nil {
 			log.Error(uuid, "sponge.importAll", err, "Get external data for collection %s.", name)
 			//RECORD to report about failing modelName
@@ -248,7 +257,6 @@ func importType(coralEntity string) { //dbsource source.Sourcer, limit int, offs
 		return
 	}
 
-	fmt.Println("DEBUG 3 ", len(data))
 	// Transform and send to pillar
 	process(coralEntity, data)
 
@@ -294,13 +302,6 @@ func process(coralName string, data []map[string]interface{}) {
 				report.Record(coralName, id, "Failing transform data", err)
 			}
 		}
-
-		// To Do: acquire meta-data
-		/*
-		   hit API
-		   sponge.API.GetData(row)
-		   store result in newrow.metadata
-		*/
 
 		// Usually newRows only will have a document but in the case that we have subcollections
 		// we may get more than one document from a transformation
@@ -352,6 +353,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 		documents = documents + 1
 
 		for _, name := range collections { // over the same row I look at the different collections in the strategy file
+
 			// transform the row
 			id, newRows, err := fiddler.TransformRow(row, name)
 			if err != nil {
@@ -373,6 +375,7 @@ func processAPI(collections []string, data []map[string]interface{}) {
 				err = coral.AddRow(newRow, name)
 				if err != nil {
 					log.Error(uuid, "sponge.process", err, "Error when adding a row") // thae row %v to %s.", string(newRow), modelName)
+
 					//RECORD to report about failing adding row to coral db
 					if options.ReportOnFailedRecords {
 						report.Record(name, id, "Failing add row to coral", err)
