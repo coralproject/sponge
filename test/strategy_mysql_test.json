@@ -152,8 +152,7 @@
     }
   },
   "Credentials": {
-    "Database": [
-      {
+    "Database": {
         "database": "coral_test",
         "username": "root",
         "password": "",
@@ -162,6 +161,5 @@
         "adapter": "mysql",
         "type": "foreign"
       }
-    ]
   }
 }

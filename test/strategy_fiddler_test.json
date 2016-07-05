@@ -1,9 +1,9 @@
 {
-  "Name": "New York Times",
-  "Map": {
-    "Foreign": "mysql",
-    "DateTimeFormat": "2006-01-02 15:04:05",
-    "Entities": {
+  "name": "New York Times",
+  "map": {
+    "foreign": "mysql",
+    "datetimeformat": "2006-01-02 15:04:05",
+    "entities": {
       "assets": {
         "Foreign": "crnr_asset",
         "Local": "assets",
@@ -281,7 +281,7 @@
       }
     }
   },
-  "Credentials": {
+  "credentials": {
     "Database":
       {
         "database": "coral_test",

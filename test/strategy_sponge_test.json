@@ -287,9 +287,9 @@
         "database": "coral_test",
         "username": "gaba",
         "password": "gabita",
-        "host": "localhost",
-        "port": "27017",
-        "adapter": "mongodb",
+        "host": "127.0.0.1",
+        "port": "5432",
+        "adapter": "mysql",
         "type": "foreign"
       }
   }

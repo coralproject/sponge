@@ -1,84 +1,12 @@
 {
   "Name": "Washington Post",
   "Map": {
-    "Foreign": "mysql",
+    "Foreign": "mongodb",
     "DateTimeFormat": "2006-01-02 15:04:05",
     "Tables": {
-      "asset": {
-        "Foreign": "asset",
-        "Local": "asset",
-        "Priority": 0,
-        "OrderBy": "assetid",
-        "ID": "assetid",
-        "Index": [
-          {
-            "name": "asset-url",
-            "keys": ["asseturl"],
-            "unique": true,
-            "dropdups": true
-          }
-        ],
-        "Fields": [
-          {
-            "foreign": "assetid",
-            "local": "id",
-            "relation": "Source",
-            "type": "int"
-          },
-          {
-            "foreign": "asseturl",
-            "local": "url",
-            "relation": "Identity",
-            "type": "int"
-          },
-          {
-            "foreign": "updatedate",
-            "local": "date_updated",
-            "relation": "ParseTimeDate",
-            "type": "dateTime"
-          },
-          {
-            "foreign": "createdate",
-            "local": "date_created",
-            "relation": "ParseTimeDate",
-            "type": "dateTime"
-          }
-        ],
-        "Endpoint": "/api/import/asset"
-      },
-      "user": {
-        "Foreign": "user",
-        "Local": "user",
-        "Priority": 1,
-        "OrderBy": "userid",
-        "ID": "userid",
-        "Index": [
-          {
-            "name": "user-name",
-            "keys": ["name"],
-            "unique": true,
-            "dropdups": true
-          }
-        ],
-        "Fields": [
-          {
-            "foreign": "userid",
-            "local": "id",
-            "relation": "Source",
-            "type": "int"
-          },
-          {
-            "foreign": "userdisplayname",
-            "local": "name",
-            "relation": "Identity",
-            "type": "[]byte"
-          }
-        ],
-        "Endpoint": "/api/import/user"
-      },
       "comment": {
-        "Foreign": "comment",
-        "Local": "comment",
+        "Foreign": "comments",
+        "Local": "comments",
         "Priority": 2,
         "OrderBy": "createdate",
         "ID": "commentid",
