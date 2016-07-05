@@ -33,9 +33,7 @@ type Result struct {
 
 // ItemData is what an Item can hold
 //  Should be the intersection of the db and transport protocols supported
-type ItemData struct {
-	Data interface{} `bson:"d" json:"d"`
-}
+type ItemData interface{}
 
 //==============================================================================
 
@@ -46,8 +44,7 @@ type Item struct {
 	Id      bson.ObjectId `bson:"_id" json:"id"`
 	Type    string        `bson:"t" json:"t"` // ItemType.Name
 	Version int           `bson:"v" json:"v"`
-
-	ItemData
+	Data    ItemData      `bson:"d" json:"d"`
 }
 
 func (i *Item) Validate() error {
