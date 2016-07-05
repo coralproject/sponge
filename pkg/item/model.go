@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"gopkg.in/bluesuncorp/validator.v8"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
-	Collection     = "items"
 	DefaultVersion = 1
 )
 
@@ -31,36 +31,59 @@ type Result struct {
 
 //==============================================================================
 
-// Item contains the item itself
+// ItemData is what an Item can hold
+//  Should be the intersection of the db and transport protocols supported
+type ItemData struct {
+	Data interface{} `bson:"d" json:"d"`
+}
+
+//==============================================================================
+
+// An Item is data, properties and behavior wrapped in the thinnest
+//  practical wrapper: Id, Type and Version
 // this will be high volume so db and json field names are truncated
 type Item struct {
-	Id      string              `bson:"_id" json:"id"`
-	Type    string              `bson:"t" json:"t"` // ItemType.Name
-	Version int                 `bson:"v" json:"v"`
-	Data    [string]interface{} `bson:"d" json:"d"`
+	Id      bson.ObjectId `bson:"_id" json:"id"`
+	Type    string        `bson:"t" json:"t"` // ItemType.Name
+	Version int           `bson:"v" json:"v"`
+
+	ItemData
 }
 
 func (i *Item) Validate() error {
-	if err := validate.Struct(q); err != nil {
+	if err := validate.Struct(i); err != nil {
 		return err
 	}
 
-	// set default version if zero value
-	if i.Version == 0 {
-		i.Version = DefaultVersion
-	}
-
-	// validate type
-	typeFound = false
-	for _, t := range Types {
-		if i.Type == t {
-			typeFound = true
-			break
-		}
-	}
-	if typeFound == fale {
-		return errors.New("Type not recognized: " + i.Type)
-	}
-
 	return nil
+}
+
+// =============================================================================
+
+// create an item out of its type, version and data or die trying
+func Create(t string, v int, d ItemData) (Item, error) {
+
+	i := Item{}
+
+	// _initial draft_  Create a mongo id for each new item
+	//   we may want to figure out how to make Item.Id
+	//   reflect ids found in the data one day
+	i.Id = bson.NewObjectId()
+
+	// validate and set type
+	if isRegistered(t) == false {
+		return i, errors.New("Type not recognized: " + t)
+	}
+	i.Type = t
+
+	// set default version if zero value
+	if v == 0 {
+		v = DefaultVersion
+	}
+	i.Version = v
+
+	// set the data into the item
+	i.Data = d
+
+	return i, nil
 }
