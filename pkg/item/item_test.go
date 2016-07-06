@@ -34,6 +34,56 @@ func init() {
 
 //==============================================================================
 
+func TestRels(t *testing.T) {
+	tests.ResetLog()
+	defer tests.DisplayLog()
+
+	// get db connection
+	//  should this be moved to a shared testing package?
+	db, err := db.NewMGO(tests.Context, tests.TestSession)
+	if err != nil {
+		t.Fatalf("\t%s\tShould be able to get a Mongo session : %v", tests.Failed, err)
+	}
+	defer db.CloseMGO(tests.Context)
+
+	// register the item types
+	err = ifix.RegisterTypes("types.json")
+	if err != nil {
+		t.Fatalf("\t%s\tCould not register the types from types.json. %s", err)
+	}
+
+	err = ifix.InsertItemsFromDataFile(tests.Context, db, "coral_asset_data.json", "coral_asset")
+	if err != nil {
+		t.Fatalf("\t%s\tCould not load asset items from coral_asset_data.json : %v", tests.Failed, err)
+	}
+
+	err = ifix.InsertItemsFromDataFile(tests.Context, db, "coral_user_data.json", "coral_user")
+	if err != nil {
+		t.Fatalf("\t%s\tCould not load asset items from coral_asset_data.json : %v", tests.Failed, err)
+	}
+
+	dataSets, err := ifix.Get("coral_comment_data.json")
+	if err != nil {
+		t.Fatalf("\t%s\tShould be able to load item data.json fixture", tests.Failed, err)
+	}
+
+	t.Logf("\t%s\tCreate, items, get relationships and save.", tests.Success)
+	for _, d := range *dataSets {
+
+		i, err := item.Create("coral_comment", 1, d)
+		if err != nil {
+			t.Fatalf("\t%s\tCould not create item from data: %v", tests.Failed, err)
+		}
+
+		rels, err := item.GetRels(tests.Context, db, &i)
+		if err != nil {
+			t.Fatalf("\t%s\tFailed to get an item's relationships: %v", tests.Failed, err)
+		}
+		i.Rels = *rels
+
+	}
+}
+
 func TestCreateAndUpsertItem(t *testing.T) {
 	tests.ResetLog()
 	defer tests.DisplayLog()
@@ -47,9 +97,12 @@ func TestCreateAndUpsertItem(t *testing.T) {
 	defer db.CloseMGO(tests.Context)
 
 	// register the item types
-	ifix.RegisterTypes("types.json")
+	err = ifix.RegisterTypes("types.json")
+	if err != nil {
+		t.Fatalf("\t%s\tShould be able to register the types from types.json. %s", err)
+	}
 
-	dataSets, err := ifix.Get("data.json")
+	dataSets, err := ifix.Get("coral_comment_data.json")
 	if err != nil {
 		t.Fatalf("\t%s\tShould be able to load item data.json fixture", tests.Failed, err)
 	}
@@ -61,6 +114,12 @@ func TestCreateAndUpsertItem(t *testing.T) {
 		if err != nil {
 			t.Fatalf("\t%s\tCould not create item from data: %v", tests.Failed, err)
 		}
+
+		rels, err := item.GetRels(tests.Context, db, &i)
+		if err != nil {
+			t.Fatalf("\t%s\tFailed to get an item's relationships: %v", tests.Failed, err)
+		}
+		i.Rels = *rels
 
 		_, err = item.Create("an_unregistered_type", 1, d)
 		if err == nil {

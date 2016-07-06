@@ -1,15 +1,24 @@
 // Itemtypes describe the properties and relationships of Items
 package item
 
-import (
-//	"github.com/ardanlabs/kit/log"
-)
+//==============================================================================
+
+// RelType holds the config for describing an Item Type's rels
+//  We can find related item(s) by querying for the item type and field
+type RelType struct {
+	Name     string `bson:"name" json:"name"`   // Name of relationship
+	Type     string `bson:"type" json:"type"`   // Item Type of target
+	Field    string `bson:"field" json:"field"` // field containing foreign key
+	Required bool   `bson:"required" json:"required"`
+}
 
 //==============================================================================
 
 // ItemType contains all we need to know in order to handle an Item
 type Type struct {
-	Name string `bson:"name" json:"name"`
+	Name    string    `bson:"name" json:"name"`
+	IdField string    `bson:"id" json:"id"` // the primary key of this item type
+	Rels    []RelType `bson:"rels" json:"rels"`
 }
 
 //==============================================================================
@@ -60,4 +69,15 @@ func isRegistered(n string) bool {
 	}
 
 	return false
+}
+
+//==============================================================================
+
+// getRelsByType gets the rels for a given type
+func getRelsByType(t string) (*[]RelType, error) {
+
+	rts := Types[t].Rels
+
+	return &rts, nil
+
 }

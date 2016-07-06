@@ -45,6 +45,7 @@ type Item struct {
 	Type    string        `bson:"t" json:"t"` // ItemType.Name
 	Version int           `bson:"v" json:"v"`
 	Data    ItemData      `bson:"d" json:"d"`
+	Rels    []Rel         `bson:"rels,omitempty" json:"rels,omitempty"`
 }
 
 func (i *Item) Validate() error {
