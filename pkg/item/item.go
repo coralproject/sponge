@@ -75,6 +75,12 @@ func Upsert(context interface{}, db *db.DB, item *Item) error {
 		// historical code
 	}
 
+	// if the item isn't new it may be in various caches
+	//   flush the whole cache
+	if !new {
+		cache.Flush()
+	}
+
 	return nil
 }
 
@@ -107,7 +113,6 @@ func GetById(context interface{}, db *db.DB, id bson.ObjectId) (*Item, error) {
 		log.Error(context, "GetById", err, "Completed")
 		return nil, err
 	}
-	fmt.Println(item)
 
 	// set the cache: TODO, caching based on type params
 	cache.Set(key, item, gc.DefaultExpiration)
