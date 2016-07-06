@@ -1,11 +1,28 @@
 [
 	{
-		"name": "coral_comment"
+		"name": "coral_comment",
+		"id": "id",
+		"rels": [
+			{
+				"type": "coral_asset",
+				"field": "asset_id",
+				"name": "context",
+				"required": true
+			},
+			{
+				"type": "coral_user",
+				"field": "user_id",
+				"name": "author",
+				"required": true
+			}
+		]
 	},
 	{
-		"name": "coral_user"
+		"name": "coral_user",
+		"id": "id"
 	},
 	{
-		"name": "coral_asset"
+		"name": "coral_asset",
+		"id": "id"
 	}
 ]

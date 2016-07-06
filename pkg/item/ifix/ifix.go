@@ -49,6 +49,7 @@ func RegisterTypes(fileName string) error {
 	// grab the item type fixture file
 	var types []item.Type
 	err = json.NewDecoder(file).Decode(&types)
+
 	if err != nil {
 		return err
 	}
@@ -56,6 +57,39 @@ func RegisterTypes(fileName string) error {
 	// retister the item types
 	for _, t := range types {
 		item.RegisterType(t)
+	}
+
+	return nil
+}
+
+// InserFromDataFile reads a file of data and attempts to
+//  create items of a provided type and insert them
+func InsertItemsFromDataFile(context interface{}, db *db.DB, fileName string, t string) error {
+
+	file, err := os.Open(path + fileName)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// grab the item type fixture file
+	var data []item.ItemData
+	err = json.NewDecoder(file).Decode(&data)
+
+	if err != nil {
+		return err
+	}
+
+	for _, d := range data {
+		i, err := item.Create(t, 1, d)
+		if err != nil {
+			return err
+		}
+		err = item.Upsert(tests.Context, db, &i)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
