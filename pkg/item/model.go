@@ -1,7 +1,6 @@
 package item
 
 import (
-	"errors"
 	"time"
 
 	"gopkg.in/bluesuncorp/validator.v8"
@@ -54,34 +53,4 @@ func (i *Item) Validate() error {
 	}
 
 	return nil
-}
-
-// =============================================================================
-
-// create an item out of its type, version and data or die trying
-func Create(t string, v int, d ItemData) (Item, error) {
-
-	i := Item{}
-
-	// _initial draft_  Create a mongo id for each new item
-	//   we may want to figure out how to make Item.Id
-	//   reflect ids found in the data one day
-	i.Id = bson.NewObjectId()
-
-	// validate and set type
-	if isRegistered(t) == false {
-		return i, errors.New("Type not recognized: " + t)
-	}
-	i.Type = t
-
-	// set default version if zero value
-	if v == 0 {
-		v = DefaultVersion
-	}
-	i.Version = v
-
-	// set the data into the item
-	i.Data = d
-
-	return i, nil
 }

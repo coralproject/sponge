@@ -70,7 +70,7 @@ func TestRels(t *testing.T) {
 	t.Logf("\t%s\tCreate, items, get relationships and save.", tests.Success)
 	for _, d := range *dataSets {
 
-		i, err := item.Create("coral_comment", 1, d)
+		i, err := item.Create(tests.Context, db, "coral_comment", 1, d)
 		if err != nil {
 			t.Fatalf("\t%s\tCould not create item from data: %v", tests.Failed, err)
 		}
@@ -110,7 +110,7 @@ func TestCreateAndUpsertItem(t *testing.T) {
 	t.Logf("\t%s\tCreate, save and update items.", tests.Success)
 	for _, d := range *dataSets {
 
-		i, err := item.Create("coral_comment", 1, d)
+		i, err := item.Create(tests.Context, db, "coral_comment", 1, d)
 		if err != nil {
 			t.Fatalf("\t%s\tCould not create item from data: %v", tests.Failed, err)
 		}
@@ -121,7 +121,7 @@ func TestCreateAndUpsertItem(t *testing.T) {
 		}
 		i.Rels = *rels
 
-		_, err = item.Create("an_unregistered_type", 1, d)
+		_, err = item.Create(tests.Context, db, "an_unregistered_type", 1, d)
 		if err == nil {
 			t.Fatalf("\t%s\tShould not be able to create with unregistered type: %v", tests.Failed, err)
 		}

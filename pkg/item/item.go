@@ -2,6 +2,7 @@ package item
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/ardanlabs/kit/db"
@@ -36,6 +37,65 @@ const (
 )
 
 var cache = gc.New(expiration, cleanup)
+
+// =============================================================================
+
+// create an item out of its type, version and data or die trying
+//  if the item already exists, adopt it's Id but do not presume to update
+func Create(context interface{}, db *db.DB, t string, v int, d ItemData) (Item, error) {
+
+	i := Item{}
+
+	// Check to see if this item already exists in the db
+	//  this is done by checking it's "foreign identity":
+	//  Checking for its type and it's Type.Id fields
+
+	// get this data's IdField value for this type
+	idValue := getDatumByKey(Types[t].IdField, d)
+
+	// if there is not value, generate a new id and continue
+	if idValue == nil {
+		i.Id = bson.NewObjectId()
+	} else { // if there is an id, look it up
+
+		// create the field path for the id field in the d subdoc
+		dbIdField := "d." + Types[t].IdField
+
+		// build a query
+		var q = bson.M{"t": t, dbIdField: idValue}
+
+		// get one by query, assuming data consistency
+		dbItem, err := GetOneByQuery(context, db, q)
+		if err != nil {
+			return Item{}, err
+		}
+
+		// if we found an item, assign the id to the new item
+		if dbItem != nil {
+			i.Id = dbItem.Id
+		} else { // otherwise, new id it is
+			i.Id = bson.NewObjectId()
+		}
+
+	}
+
+	// validate and set type
+	if isRegistered(t) == false {
+		return i, errors.New("Type not recognized: " + t)
+	}
+	i.Type = t
+
+	// set default version if zero value
+	if v == 0 {
+		v = DefaultVersion
+	}
+	i.Version = v
+
+	// set the data into the item
+	i.Data = d
+
+	return i, nil
+}
 
 // Items are trasparently created or updated depending on thier existence
 func Upsert(context interface{}, db *db.DB, item *Item) error {
@@ -170,5 +230,34 @@ func GetByQuery(context interface{}, db *db.DB, q bson.M) (*[]Item, error) {
 
 	log.Dev(context, "GetByQuery", "Completed : Found %+v items", len(items))
 	return &items, nil
+
+}
+
+// GetOneByQuery accepts a bson.M query and runs it against the item collection
+//  returning the first record found
+func GetOneByQuery(context interface{}, db *db.DB, q bson.M) (*Item, error) {
+	log.Dev(context, "GetByQuery", "Started : Looking for %#v", q)
+
+	var item Item
+
+	// query the database for the item
+	f := func(c *mgo.Collection) error {
+		log.Dev(context, "GetByQuery", "MGO : %#v", q)
+		return c.Find(q).One(&item)
+	}
+
+	if err := db.ExecuteMGO(context, Collection, f); err != nil {
+		// it's ok to return an empty query, not all other errors are thrown
+		if err != mgo.ErrNotFound {
+			return nil, err
+		}
+
+		// return nil nil for no results found
+		log.Dev(context, "GetByQuery", "Completed : No Items found")
+		return nil, nil
+	}
+
+	log.Dev(context, "GetByQuery", "Completed : Found %+v", item.Id)
+	return &item, nil
 
 }

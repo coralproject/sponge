@@ -81,7 +81,7 @@ func InsertItemsFromDataFile(context interface{}, db *db.DB, fileName string, t 
 	}
 
 	for _, d := range data {
-		i, err := item.Create(t, 1, d)
+		i, err := item.Create(context, db, t, 1, d)
 		if err != nil {
 			return err
 		}
