@@ -119,3 +119,56 @@ func GetById(context interface{}, db *db.DB, id bson.ObjectId) (*Item, error) {
 	log.Dev(context, "GetById", "Completed : Item[%+v]", &item)
 	return &item, nil
 }
+
+// GetById retrieves items by an array of ids
+func GetByIds(context interface{}, db *db.DB, ids []bson.ObjectId) (*[]Item, error) {
+	log.Dev(context, "GetByIds", "Started : Looking for %s ids", len(ids))
+
+	var items []Item
+
+	// query the database for the item
+	f := func(c *mgo.Collection) error {
+		q := bson.M{"_id": bson.M{"$in": ids}}
+		log.Dev(context, "GetByIds", "MGO : ", c.Name, mongo.Query(q))
+		return c.Find(q).All(&items)
+	}
+
+	if err := db.ExecuteMGO(context, Collection, f); err != nil {
+		if err == mgo.ErrNotFound {
+			err = ErrNotFound
+		}
+
+		log.Error(context, "GetByIds", err, "Completed")
+		return nil, err
+	}
+
+	log.Dev(context, "GetByIds", "Completed : Found %+v items", len(items))
+	return &items, nil
+}
+
+// GetByQuery accepts a bson.M query and runs it against the item collection
+//  caution should be used to only query against indexed fields
+func GetByQuery(context interface{}, db *db.DB, q bson.M) (*[]Item, error) {
+	log.Dev(context, "GetByQuery", "Started : Looking for %#v", q)
+
+	var items []Item
+
+	// query the database for the item
+	f := func(c *mgo.Collection) error {
+		log.Dev(context, "GetByQuery", "MGO : %#v", q)
+		return c.Find(q).All(&items)
+	}
+
+	if err := db.ExecuteMGO(context, Collection, f); err != nil {
+		if err == mgo.ErrNotFound {
+			err = ErrNotFound
+		}
+
+		log.Error(context, "GetByQuery", err, "Completed")
+		return nil, err
+	}
+
+	log.Dev(context, "GetByQuery", "Completed : Found %+v items", len(items))
+	return &items, nil
+
+}
