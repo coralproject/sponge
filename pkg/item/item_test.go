@@ -1,6 +1,7 @@
 package item_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/coralproject/sponge/pkg/item"
@@ -34,7 +35,7 @@ func init() {
 
 //==============================================================================
 
-func TestUpsertCreateItem(t *testing.T) {
+func TestCreateAndUpsertItem(t *testing.T) {
 	tests.ResetLog()
 	defer tests.DisplayLog()
 
@@ -62,7 +63,7 @@ func TestUpsertCreateItem(t *testing.T) {
 			t.Fatalf("\t%s\tCould not create item from data: %v", tests.Failed, err)
 		}
 
-		_, err = item.Create("how many aphorisms do you remember? what do you take from them?", 1, d)
+		_, err = item.Create("an_unregistered_type", 1, d)
 		if err == nil {
 			t.Fatalf("\t%s\tShould not be able to create with unregistered type: %v", tests.Failed, err)
 		}
@@ -73,19 +74,22 @@ func TestUpsertCreateItem(t *testing.T) {
 			t.Fatalf("\t%s\tCould not upsert (insert) item: %v", tests.Failed, err)
 		}
 
+		t.Logf("\t%s\tShould be able to update items and get updated items from the db.", tests.Success)
 		// bump the version
 		i.Version = 2
-		t.Logf("\t%s\tShould be able to update items.", tests.Success)
+		// upsert (update) the item
 		err = item.Upsert(tests.Context, db, &i)
 		if err != nil {
 			t.Fatalf("\t%s\tCould not upsert (update) item: %v", tests.Failed, err)
 		}
 
+		// get the item by id
 		i2, err := item.GetById(tests.Context, db, i.Id)
 		if err != nil {
 			t.Fatalf("\t%s\tCould not GetById item: %v", tests.Failed, err)
 		}
 
+		// verify that the version change has been saved
 		if i.Version != i2.Version {
 			t.Fatalf("\t%s\tDid not see update of version", tests.Failed)
 
