@@ -2,7 +2,6 @@ package item
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/ardanlabs/kit/db"

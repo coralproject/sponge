@@ -1,7 +1,6 @@
 package item_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/coralproject/sponge/pkg/item"
