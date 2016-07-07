@@ -70,16 +70,12 @@ func TestRels(t *testing.T) {
 	t.Logf("\t%s\tCreate, items, get relationships and save.", tests.Success)
 	for _, d := range *dataSets {
 
-		i, err := item.Create(tests.Context, db, "coral_comment", 1, d)
+		_, err := item.Create(tests.Context, db, "coral_comment", 1, d)
 		if err != nil {
 			t.Fatalf("\t%s\tCould not create item from data: %v", tests.Failed, err)
 		}
 
-		rels, err := item.GetRels(tests.Context, db, &i)
-		if err != nil {
-			t.Fatalf("\t%s\tFailed to get an item's relationships: %v", tests.Failed, err)
-		}
-		i.Rels = *rels
+		// relationships are automatically determened as part of item Create()
 
 	}
 }

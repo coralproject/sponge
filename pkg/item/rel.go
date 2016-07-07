@@ -2,7 +2,6 @@ package item
 
 import (
 	"errors"
-	"fmt"
 
 	"gopkg.in/mgo.v2/bson"
 
@@ -19,9 +18,9 @@ var (
 
 // Rel holds an item's relationship to another item
 type Rel struct {
-	Name string        `bson:"n" json:"n"`   // Name of relationship
-	Type string        `bson:"t" json:"t"`   // Item Type of target
-	Id   bson.ObjectId `bson:"id" json:"id"` // Id of target
+	Name string `bson:"n" json:"n"`   // Name of relationship
+	Type string `bson:"t" json:"t"`   // Item Type of target
+	Id   string `bson:"id" json:"id"` // Id of target (consider storing as native bson.Id?)
 }
 
 //==============================================================================
@@ -62,10 +61,25 @@ func GetRels(context interface{}, db *db.DB, item *Item) (*[]Rel, error) {
 
 		items, err := GetByQuery(context, db, q)
 		if err != nil {
-			//
+			// how should we handle not being able to look up related items?
+			//  we probably don't want to prevent the insert without measures to recover the item
+			//  although we would be causing data inconsistencies?  maybe a flag that
+			//  relations need to be re-queried?
 		}
 
-		fmt.Printf("\n\n---->%#v\n\n%#v\n\n", items, q)
+		// for each item
+		for _, i := range *items {
+
+			// create the relationship
+			r := Rel{
+				Name: rt.Name,
+				Type: i.Type,
+				Id:   i.Id.Hex(),
+			}
+
+			// add it to the list
+			rels = append(rels, r)
+		}
 
 	}
 

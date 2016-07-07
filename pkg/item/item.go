@@ -2,7 +2,6 @@ package item
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/ardanlabs/kit/db"
@@ -93,6 +92,13 @@ func Create(context interface{}, db *db.DB, t string, v int, d ItemData) (Item, 
 
 	// set the data into the item
 	i.Data = d
+
+	// get the relationships for this item
+	rels, err := GetRels(context, db, &i)
+	if err != nil {
+		return Item{}, err // todo, clean up empty type return
+	}
+	i.Rels = *rels
 
 	return i, nil
 }
