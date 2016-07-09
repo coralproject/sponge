@@ -34,6 +34,34 @@ func init() {
 
 //==============================================================================
 
+func TestEnsureTypeIndexes(t *testing.T) {
+	// get db connection
+	//  should this be moved to a shared testing package?
+	db, err := db.NewMGO(tests.Context, tests.TestSession)
+	if err != nil {
+		t.Fatalf("\t%s\tShould be able to get a Mongo session : %v", tests.Failed, err)
+	}
+	defer db.CloseMGO(tests.Context)
+
+	// register the item types
+	err = ifix.RegisterTypes("types.json")
+	if err != nil {
+		t.Fatalf("\t%s\tCould not register the types from types.json. %s", err)
+	}
+
+	// create the indexes
+	err = item.EnsureTypeIndexes(tests.Context, db, item.Types)
+	if err != nil {
+		t.Fatalf("\t%s\tUnable to create indices", tests.Failed, err)
+
+	}
+
+	//Todo, how can we test to ensure inexes are created?
+
+}
+
+//==============================================================================
+
 func TestRels(t *testing.T) {
 	tests.ResetLog()
 	defer tests.DisplayLog()
