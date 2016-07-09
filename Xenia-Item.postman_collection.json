@@ -1,0 +1,25 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Xenia - Shelf",
+		"_postman_id": "accd155a-abdc-9a3f-e6e1-ab9f48c9c0e9",
+		"description": "Xenia queries that access data in the Shelf \"item\" style",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Items By Type",
+			"request": {
+				"url": "{{xeniaHost}}/1.0/exec?item_type=coral_comment",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{  \n   \"name\":\"getItemsByType\",\n   \"desc\":\"Get Items by type\",\n   \"enabled\":true,\n   \"params\":[  \n      \n   ],\n   \"queries\":[  \n      {  \n         \"name\":\"getItemsByType\",\n         \"type\":\"pipeline\",\n         \"collection\":\"coral_items\",\n         \"return\":true,\n         \"commands\":[  \n            {  \n               \"$match\":{  \n                  \"t\":\"#string:item_type\"\n               }\n            },\n            {  \n               \"$skip\":0\n            },\n            {  \n               \"$limit\":100\n            }\n         ],\n         \"_pendingJoin\":null\n      }\n   ]\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
