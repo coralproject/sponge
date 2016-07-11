@@ -35,6 +35,7 @@ func DoRequest(uuid string, userAgent string, method string, urlStr string, payl
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Add("User-Agent", userAgent)
+	request.Header.Set("Connection", "close")
 
 	client := &http.Client{}
 	var response *http.Response
@@ -45,12 +46,12 @@ func DoRequest(uuid string, userAgent string, method string, urlStr string, payl
 	for i := 0; i < retryTimes; i++ {
 
 		response, err = client.Do(request)
+		defer response.Body.Close()
 
 		if err != nil {
 			log.Error(uuid, "coral.doRequest", err, "Sending request number %d to Pillar.", i)
 		} else {
 
-			defer response.Body.Close()
 			//resBody, _ := ioutil.ReadAll(response.Body)
 
 			if response.StatusCode != 200 {

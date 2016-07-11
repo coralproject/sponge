@@ -1,5 +1,8 @@
 package source_test
 
+// CHALLENGE
+// HOW TO CREATE AND REMOVE A DATABASE FOR TESTING (or mock mysql)
+
 // import (
 // 	"database/sql"
 // 	"os"

@@ -4,12 +4,15 @@ package strategy_test
 import (
 	"os"
 
+	uuidimported "github.com/pborman/uuid"
+
 	"github.com/ardanlabs/kit/cfg"
 	"github.com/ardanlabs/kit/log"
+
 	. "github.com/coralproject/sponge/pkg/strategy"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	uuidimported "github.com/pborman/uuid"
 )
 
 // Stubing the Strategy Configuration

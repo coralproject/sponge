@@ -1,6 +1,7 @@
 package source_test
 
 import (
+	"net/http/httptest"
 	"os"
 
 	"github.com/ardanlabs/kit/cfg"
@@ -21,14 +22,17 @@ const (
 	DATABASE        = "coral_test"
 )
 
-var oStrategy string
+var (
+	oStrategy string
+	server    *httptest.Server
+)
 
 var _ = BeforeSuite(func() {
 	// Initialize logging
 	logLevel := func() int {
 		ll, err := cfg.Int(cfgLoggingLevel)
 		if err != nil {
-			return log.USER
+			return log.NONE
 		}
 		return ll
 	}
@@ -39,6 +43,8 @@ var _ = BeforeSuite(func() {
 
 	// SPIN UP TEST DATABASES
 	createTestMongoDB()
+
+	server = mockServer()
 })
 
 var _ = AfterSuite(func() {
