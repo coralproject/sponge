@@ -6,6 +6,6 @@
 * Translate the schema into Coral conventions, and
 * POST entities to our service layer for insertion.
 
-All of the [Sponge documentation](http://coral-docs.readthedocs.io/en/latest/sponge/) (including [installation instructions](http://coral-docs.readthedocs.io/en/latest/sponge/install/)) can be found in the [Coral Project Documentation](http://coral-docs.readthedocs.io/en/latest/).
+All of the [Sponge documentation](https://coralprojectdocs.herokuapp.com/sponge/) (including [installation instructions](https://coralprojectdocs.herokuapp.com/sponge/install/)) can be found in the [Coral Project Documentation](https://coralprojectdocs.herokuapp.com/).
 
-The Sponge documentation [lives in Github](https://github.com/coralproject/docs/tree/master/sponge) in the "coralproject/docs/sponge" repository.
+The Sponge documentation [lives in Github](https://github.com/coralproject/docs/tree/master/docs_dir/sponge) in the `coralproject/docs/docs_dir/sponge` repository.
