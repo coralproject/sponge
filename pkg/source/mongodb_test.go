@@ -64,6 +64,8 @@ var _ = Describe("Getting Data", func() {
 		data []map[string]interface{}
 	)
 
+	// ADD WHEN THE MONGODB CONNECTION HAS NO USER AND PASSWORD
+	// ADD A TEST ON GETTING THE RIGHT COLLECTION (FOREIGN ONE) TO GET DATA
 	BeforeEach(func() {
 
 		// MOCK STRATEGY CONF WITH MONGODB CONFIG FILE

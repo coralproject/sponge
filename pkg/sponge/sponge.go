@@ -40,7 +40,7 @@ func Init(u string) error {
 	}
 	dbsource, err = source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
-		log.Error(uuid, "sponge.import", err, "Connect to external Database")
+		log.Error(uuid, "sponge.import", err, "Connect to external database failed.")
 		return err
 	}
 
@@ -214,6 +214,10 @@ func importFromAPI(collections []string) {
 func importFromDB(collections []string) {
 	// var data []map[string]interface{}
 
+	if collections == nil {
+		log.User(uuid, "importFromDB", "It did not found any collection or table.")
+	}
+
 	for _, name := range collections { // Reads through all the collections whose transformations are in the strategy configuration file
 
 		foreignEntity := source.GetForeignEntity(name)
@@ -235,6 +239,7 @@ func importFromDB(collections []string) {
 		//transform and send to pillar the data
 		process(name, data)
 	}
+
 }
 
 // ImportType gets ony data related to table, transform it and send it to pillar

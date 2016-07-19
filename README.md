@@ -1,11 +1,14 @@
 # Sponge
 
-Get your existing community to Coral. This is a command line tool to import comments, authors, assets and other entities into the coral system.
+[Sponge](https://github.com/coralproject/sponge) is Coral's data import layer. It is an Extract, Transform, and Load command line tool designed to:
 
-## Overview
+* Read data from a foreign source,
+* Translate the schema into Coral conventions, and
+* POST entities to our service layer for insertion.
 
-Sponge is Coral's Data Import Layer.  It is designed to read data from a foreign _source_, translate the schema into coral conventions, and POST entities to [our service layer](https://github.com/coralproject/pillar) for inserting.
+All of the [Sponge documentation](https://coralprojectdocs.herokuapp.com/sponge/) (including [installation instructions](https://coralprojectdocs.herokuapp.com/sponge/install/)) can be found in the [Coral Project Documentation](https://coralprojectdocs.herokuapp.com/).
 
+<<<<<<< HEAD
 Where to get the data and how to translate it is expressed through _strategies_.
 
 ## Install
@@ -59,3 +62,6 @@ Copyright 2016, The Coral Project. [MIT License](/LICENSE)
 ## Mantainer
 
 Sponge is maintained by The Coral Project. Check the [Contributions](/CONTRIBUTORS.md) and [Authors](/AUTHORS.md) files for more information.
+=======
+The Sponge documentation [lives in Github](https://github.com/coralproject/docs/tree/master/docs_dir/sponge) in the `coralproject/docs/docs_dir/sponge` repository.
+>>>>>>> 4cb1a797eaa6fc92d9dfe07769dd71e65d0bfbc6

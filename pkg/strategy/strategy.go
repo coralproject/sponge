@@ -5,11 +5,10 @@ package strategy
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"github.com/coralproject/sponge/pkg/util"
 
 	"gopkg.in/mgo.v2"
 
@@ -32,9 +31,9 @@ func Init(u string) {
 
 // Strategy is a structure with all the information for the specitic strategy (how to get the data, from which source)
 type Strategy struct {
-	Name        string
-	Map         Map
-	Credentials Credentials // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
+	Name        string      `json:"name"`
+	Map         Map         `json:"map"`
+	Credentials Credentials `json:"credentials"` // map[string][]Credential // String is "Databases" or "APIs" indicating which kind of credentials are those
 }
 
 // Map explains which entities or data we are getting from the source.
@@ -168,37 +167,36 @@ func (c CredentialService) GetAttributes() string {
 /* Exported Functions */
 
 // New creates a new strategy struct variable from the json file
-func New() (Strategy, error) {
+func New() (*Strategy, error) {
 
-	var strategy Strategy
-	var err error
+	var strategy *Strategy
 
 	//read STRATEGY_CONF env variable
 	strategyFile := os.Getenv("STRATEGY_CONF")
-	if util.IsEmpty(strategyFile) {
-		log.Fatal(uuid, "strategy.new", "Enviromental variable STRATEGY_CONF not setup.")
-		return strategy, err
+	if isEmpty(strategyFile) {
+		err := errors.New("Strategy File is empty.")
+		log.Error(uuid, "strategy.new", err, "Enviromental variable STRATEGY_CONF not setup.")
+		return nil, err
 	}
 
 	// validate Strategy file
-	if !Validate(strategyFile) {
-		log.Fatal(uuid, "strategy.new", "Enviromental variable STRATEGY_CONF not validates.")
-		return strategy, fmt.Errorf("Strategy file is not valid json.")
+	if ok, err := Validate(strategyFile); !ok {
+		log.Error(uuid, "strategy.new", err, "Enviromental variable STRATEGY_CONF not validates.")
+		return nil, err
 	}
 
-	strategy, err = read(strategyFile)
-	if err != nil {
+	var err error
+	if *strategy, err = read(strategyFile); err != nil {
 		log.Error(uuid, "strategy.new", err, "Reading strategy file %s.", strategyFile)
-		return Strategy{}, err
+		return nil, err
 	}
 
-	err = strategy.setCredential()
-	if err != nil {
+	if err := strategy.setCredential(); err != nil {
 		log.Error(uuid, "strategy.new", err, "Setting credentials.")
-		return Strategy{}, err
+		return nil, err
 	}
 
-	return strategy, err
+	return strategy, nil
 }
 
 func (s Strategy) setCredential() error {
@@ -368,33 +366,37 @@ func (s Strategy) GetPillarEndpoints() map[string]string {
 }
 
 // Validate the strategy file that is loaded into STRATEGY_CONF environment variable.
-func Validate(strategyFileName string) bool {
+func Validate(strategyFileName string) (bool, error) {
 
 	// strategy's json schema
-	schemaFile := "file://" + os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/pkg/strategy/schema_strategy.json"
+	schemaFile := os.Getenv("STRATEGY_SCHEMA")
+	if isEmpty(schemaFile) {
+		return false, errors.New("STRATEGY_SCHEMA environmental variable is not set")
+	}
 	strategyFile := "file://" + strategyFileName
-
+	if isEmpty(strategyFile) {
+		return false, errors.New("STRATEGY_CONF is empty")
+	}
 	schemaLoader := gojsonschema.NewReferenceLoader(schemaFile)
 	documentLoader := gojsonschema.NewReferenceLoader(strategyFile)
 
 	schema, err := gojsonschema.NewSchema(schemaLoader)
 	if err != nil {
-		log.Fatal(uuid, "strategy.validate", "Strategy schema failed to load. ", err.Error())
-		return false
+		return false, err
 	}
 	result, err := schema.Validate(documentLoader)
 	if err != nil {
-		log.Fatal(uuid, "strategy.validate", "Strategy file validation failed. ", err.Error())
-		return false
+		return false, err
 	}
 
 	if !result.Valid() {
+		var verror string
 		for _, err := range result.Errors() {
-			log.Error(uuid, "strategy.validate", fmt.Errorf("%v", err.Details()), "%s.", err.Description())
+			verror = verror + fmt.Sprintf("%v - %s \n", err.Details(), err.Description())
 		}
-		return false
+		return false, errors.New(verror)
 	}
-	return true
+	return true, nil
 }
 
 /* Not Exported Functions */
@@ -416,4 +418,9 @@ func read(f string) (Strategy, error) {
 	}
 
 	return strategy, err
+}
+
+// IsEmpty check if the string is empty
+func isEmpty(str string) bool {
+	return (str == "")
 }

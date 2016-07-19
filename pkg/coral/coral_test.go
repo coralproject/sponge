@@ -1,230 +1,159 @@
-package coral
+package coral_test
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"testing"
 
-	"github.com/ardanlabs/kit/cfg"
-	"github.com/ardanlabs/kit/log"
-	"github.com/coralproject/pillar/pkg/model"
-	"github.com/coralproject/sponge/pkg/strategy"
+	"github.com/buth/pillar/pkg/model"
+	"github.com/coralproject/sponge/pkg/coral"
 	. "github.com/onsi/ginkgo"
-	uuidimported "github.com/pborman/uuid"
+	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Testing with Ginkgo", func() {
-	It("mockup server", func() {
+var _ = Describe("When sending data to the coral system", func() {
 
-		method := "POST"
-		urlStr := server.URL + "/api/import/users"
-		row := map[string]interface{}{"juan": 3, "pepe": "what"}
-		juser, err := json.Marshal(row)
-		payload := bytes.NewBuffer(juser)
-		request, err := http.NewRequest(method, urlStr, payload)
-		if err != nil {
-			GinkgoT().Fatalf("expect not error and got one %s.", err)
-		}
-		request.Header.Set("Content-Type", "application/json")
-		client := &http.Client{}
-		response, err := client.Do(request)
-		if err != nil {
-			GinkgoT().Fatalf("expect not error and got one %s.", err)
-		}
-		defer response.Body.Close()
+	var (
+		server *httptest.Server
+	)
+
+	BeforeEach(func() {
+		setupEnvironment()
+
+		// get the test strategy file
+		setupStrategyConfEnv("strategy_coral_test.json")
+
+		// mock server
+		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			var err error
+
+			switch r.RequestURI {
+			case "/api/import/user":
+
+				user := model.User{}
+				err = json.NewDecoder(r.Body).Decode(&user)
+			case "/api/import/asset":
+
+				asset := model.Asset{}
+				err = json.NewDecoder(r.Body).Decode(&asset)
+			case "/api/import/comment":
+
+				comment := model.Comment{}
+				err = json.NewDecoder(r.Body).Decode(&comment)
+			case "/api/import/index":
+
+				index := model.Index{}
+				err = json.NewDecoder(r.Body).Decode(&index)
+			default:
+				err = fmt.Errorf("Bad request") //errors.New("Bad request")
+			}
+
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+			}
+			if err == nil {
+				w.WriteHeader(http.StatusOK)
+			}
+			w.Header().Set("Content-Type", "application/json")
+
+			fmt.Fprintln(w, err)
+		}))
+		os.Setenv("PILLAR_URL", server.URL)
+
+		fmt.Println("DEBUG server url ", server.URL)
+		coral.Init(uuid)
 	})
-	It("add row wrong table", func() {
 
-		var data map[string]interface{}
-
-		tableName := "wrongTable"
-
-		e := AddRow(data, tableName)
-		if e == nil {
-			GinkgoT().Fatal("expecting error and got none.")
-		}
+	AfterEach(func() {
+		recoverEnvironment()
 	})
-	It("add user row", func() {
 
-		newrow, e := GetFixture("users.json")
-		if e != nil {
-			GinkgoT().Fatalf("error with the test data: %s.", e)
-		}
-
-		tableName := "users"
-
-		e = AddRow(newrow, tableName)
-		if e != nil {
-			GinkgoT().Fatalf("expecting not error but got one %v.", e)
-		}
-	})
-	It("add asset row", func() {
-
-		newrow, e := GetFixture("assets.json")
-		if e != nil {
-			GinkgoT().Fatalf("error with the test data: %s.", e)
-		}
-
-		tableName := "assets"
-
-		e = AddRow(newrow, tableName)
-		if e != nil {
-			GinkgoT().Fatalf("expecting not error but got one %v.", e)
-		}
-	})
-	It("add comment row", func() {
-
-		newrow, e := GetFixture("comments.json")
-		if e != nil {
-			GinkgoT().Fatalf("error with the test data: %s.", e)
-		}
-
-		tableName := "comments"
-
-		e = AddRow(newrow, tableName)
-		if e != nil {
-			GinkgoT().Fatalf("expecting not error but got one %v.", e)
-		}
-	})
-	It("create index", func() {
-
-		tableName := "comments"
-
-		e := CreateIndex(tableName)
-		if e != nil {
-			GinkgoT().Fatalf("expecting not error but got one %v.", e)
-		}
-	})
-	It("create index error", func() {
-
-		tableName := "itdoesnotexist"
-
-		e := CreateIndex(tableName)
-		if e == nil {
-			GinkgoT().Fatalf("expecting an error but got none.")
-		}
-	})
-})
-var (
-	server  *httptest.Server
-	path    string
-	fakeStr strategy.Strategy
-
-	oStrategy string
-	oPillar   string
-)
-
-func setup() {
-
-	oStrategy = os.Getenv("STRATEGY_CONF")
-	oPillar = os.Getenv("PILLAR_URL")
-
-	logLevel := func() int {
-		ll, err := cfg.Int("LOGGING_LEVEL")
-		if err != nil {
-			return log.NONE
-		}
-		return ll
-	}
-
-	log.Init(os.Stderr, logLevel)
-
-	strategyConf := os.Getenv("GOPATH") + "/test/strategy_coral_test.json"
-	e := os.Setenv("STRATEGY_CONF", strategyConf)
-	if e != nil {
-		fmt.Println("It could not setup the mock strategy conf variable")
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
+	Context("when using wrong collection or table name", func() {
 		var err error
 
-		switch r.RequestURI {
-		case "/api/import/user":
+		BeforeEach(func() {
+			var data map[string]interface{}
+			tableName := "wrongTable"
 
-			user := model.User{}
-			err = json.NewDecoder(r.Body).Decode(&user)
-		case "/api/import/asset":
+			err = coral.AddRow(data, tableName)
+		})
 
-			asset := model.Asset{}
-			err = json.NewDecoder(r.Body).Decode(&asset)
-		case "/api/import/comment":
+		It("should return an error", func() {
+			Expect(err).ToNot(BeNil())
+		})
+	})
 
-			comment := model.Comment{}
-			err = json.NewDecoder(r.Body).Decode(&comment)
-		case "/api/import/index":
+	Describe("when adding", func() {
+		Context("a user", func() {
 
-			index := model.Index{}
-			err = json.NewDecoder(r.Body).Decode(&index)
-		default:
-			err = errors.New("Bad request")
-		}
+			var err error
 
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-		}
-		if err == nil {
-			w.WriteHeader(http.StatusOK)
-		}
-		w.Header().Set("Content-Type", "application/json")
+			JustBeforeEach(func() {
+				var newrow map[string]interface{}
 
-		fmt.Fprintln(w, err)
-	}))
+				newrow, err = GetFixture("user.json")
+				Expect(err).Should(BeNil(), "when loading fixtures")
 
-	path = os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/test/fixtures/"
+				err = coral.AddRow(newrow, "users")
+			})
+			It("should not return error", func() {
+				Expect(err).Should(BeNil())
+			})
+		})
 
-	os.Setenv("PILLAR_URL", server.URL)
+		// Context("an asset", func() {
+		// 	var err error
+		// 	JustBeforeEach(func() {
+		// 		newrow, e := GetFixture("assets.json")
+		// 		Expect(e).Should(BeNil())
+		// 		tableName := "assets"
+		//
+		// 		err = coral.AddRow(newrow, tableName)
+		// 	})
+		// 	It("should not return error", func() {
+		//
+		// 		Expect(err).Should(BeNil())
+		// 	})
+		// })
 
-	u := uuidimported.New()
+		// Context("comment", func() {
+		// 	var err error
+		// 	JustBeforeEach(func() {
+		// 		newrow, e := GetFixture("comments.json")
+		// 		Expect(e).Should(BeNil())
+		//
+		// 		tableName := "comments"
+		//
+		// 		err = coral.AddRow(newrow, tableName)
+		// 	})
+		// 	It("should not return an error", func() {
+		// 		Expect(err).Should(BeNil())
+		// 	})
+		// })
 
-	Init(u)
-}
+		// Context("an index", func() {
+		// 	var err error
+		// 	JustBeforeEach(func() {
+		// 		tableName := "comments"
+		// 		err = coral.CreateIndex(tableName)
+		// 	})
+		// 	It("should not return an error", func() {
+		// 		Expect(err).Should(BeNil())
+		// 	})
+		// })
 
-func teardown() {
-
-	e := os.Setenv("STRATEGY_CONF", oStrategy)
-	if e != nil {
-		fmt.Println("It could not setup the strategy conf enviroment variable back.")
-	}
-	e = os.Setenv("PILLAR_URL", oPillar)
-	if e != nil {
-		fmt.Println("It could not setup the pillar home environment variable back.")
-	}
-}
-
-func TestMain(m *testing.M) {
-
-	setup()
-	code := m.Run()
-	teardown()
-
-	os.Exit(code)
-}
-
-func GetFixture(fileName string) (map[string]interface{}, error) {
-	file, err := os.Open(path + fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	content, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	var qs map[string]interface{}
-	err = json.Unmarshal(content, &qs)
-	if err != nil {
-		return nil, err
-	}
-
-	return qs, nil
-}
+		// Context("an index for a table that does not exist", func() {
+		// 	var err error
+		// 	JustBeforeEach(func() {
+		// 		tableName := "itdoesnotexist"
+		// 		err = coral.CreateIndex(tableName)
+		// 	})
+		// 	It("should return an error", func() {
+		// 		Expect(err).Should(BeNil())
+		// 	})
+		// })
+	})
+})
