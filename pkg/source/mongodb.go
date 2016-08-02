@@ -44,12 +44,8 @@ func (m MongoDB) GetData(entityname string, options *Options) ([]map[string]inte
 		log.Error(uuid, "mongodb.getdata", err, "Asserting Type CredentialDatabase")
 		return nil, err
 	}
-	cred := mgo.Credential{
-		Username: credentialD.Username,
-		Password: credentialD.Password,
-	}
 
-	err = session.Login(&cred)
+	err = login(credentialD, session)
 	if err != nil {
 		log.Error(uuid, "mongodb.getdata", err, "Login mongo session.")
 		return nil, err
@@ -154,4 +150,19 @@ func (m *MongoDB) initSession() (*mgo.Session, error) {
 // Close closes the db
 func (m MongoDB) closeSession(session *mgo.Session) {
 	session.Close()
+}
+
+func login(credentialD str.CredentialDatabase, session *mgo.Session) error {
+	var err error
+	var cred mgo.Credential
+
+	if credentialD.Username != "" {
+		cred = mgo.Credential{
+			Username: credentialD.Username,
+			Password: credentialD.Password,
+		}
+		err = session.Login(&cred)
+	}
+
+	return err
 }

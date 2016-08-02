@@ -1,17 +1,25 @@
 /* package source_test is doing unit tests for the source package */
-package strategy
+package strategy_test
 
 import (
 	"os"
-	"testing"
 
 	uuidimported "github.com/pborman/uuid"
+
+	"github.com/ardanlabs/kit/cfg"
+	"github.com/ardanlabs/kit/log"
+
+	. "github.com/coralproject/sponge/pkg/strategy"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-// Stubing the Config
+// Stubing the Strategy Configuration
 func fakeStrategy() Strategy {
 
 	var cdatabase CredentialDatabase
+
 	cdatabase = CredentialDatabase{
 		Database: "coral",
 		Username: "user",
@@ -153,175 +161,89 @@ func fakeStrategy() Strategy {
 	return fakeConf
 }
 
-// Signature GetIDField(coralName string) string {
-func TestGetID(t *testing.T) {
-	fakeConf := fakeStrategy()
-	modelName := "comments"
+var _ = Describe("Getting configuration fields from stubbed strategy", func() {
 
-	id := fakeConf.GetIDField(modelName)
+	var (
+		fakeConf Strategy
+	)
 
-	if id != "commentid" {
-		t.Fatalf("Expected commentid, got %v", id)
-	}
+	BeforeEach(func() {
+		fakeConf = fakeStrategy()
+	})
 
-}
+	Describe("from a stub strategy object", func() {
+		Context("with a valid strategy file", func() {
+			It("should get the right id", func() {
+				Expect(fakeConf.GetIDField("comments")).To(Equal("commentid"))
+			})
+			It("should get the right credentials", func() {
+				credential, err := fakeConf.GetCredential("mysql", "source")
+				Expect(err).Should(BeNil())
 
-// GetCredential returns the credentials for connection with the external source
-// Signature  GetCredential(adapter string) Credential
-func TestGetCredential(t *testing.T) {
-	a := "mysql"
-	ty := "source"
-	fakeConf := fakeStrategy()
+				dcredential, ok := credential.(CredentialDatabase)
+				Expect(ok).To(Equal(true))
+				Expect(dcredential.Database).To(Equal("coral"))
+				Expect(dcredential.Username).To(Equal("user"))
+				Expect(dcredential.Password).To(Equal("password"))
+				Expect(dcredential.Host).To(Equal("host"))
+				Expect(dcredential.Port).To(Equal("5432"))
+				Expect(dcredential.Adapter).To(Equal("mysql"))
+				Expect(dcredential.Type).To(Equal("source"))
+			})
+			It("should get the foreign field", func() {
+				strategy := fakeConf.GetMap()
+				Expect(strategy.Foreign).To(Equal("mysql"))
+			})
+			It("should get the right table", func() {
+				tables := fakeConf.GetEntities()
+				Expect(tables["comments"].Foreign).To(Equal("crnr_comment"))
+			})
+			It("should have the format for strategy", func() {
+				Expect(fakeConf.GetDateTimeFormat("comments", "DateUpdated")).To(Equal("2006-01-02 15:04:05"))
+				Expect(fakeConf.GetDateTimeFormat("comments", "DateCreated")).To(Equal("February 1st, 2006"))
+			})
+			It("should have the status", func() {
+				Expect(fakeConf.GetStatus("comments", "ModeratorApproved")).To(Equal("1"))
+			})
+			It("should have an entity", func() {
+				Expect(fakeConf.GetEntityForeignName("comments")).To(Equal("crnr_comment"))
+			})
+		})
+		// Context("with an invalid strategy file", func() {
+		// 	It("should not be valid", func() {
+		// 		Expect().To(Equal())
+		// 	})
+		// })
 
-	credential, err := fakeConf.GetCredential(a, ty)
-	if err != nil {
-		t.Error("Expected not error, got ", err)
-	}
+	})
+})
 
-	dcredential, ok := credential.(CredentialDatabase)
-	if !ok {
-		t.Error("Expected type credentialdtabase.")
-	}
+var _ = Describe("Getting configuration from strategy file", func() {
+	BeforeEach(func() {
+		// Initialize logging
+		logLevel := func() int {
+			ll, err := cfg.Int("LOGGING_LEVEL")
+			if err != nil {
+				return log.NONE
+			}
+			return ll
+		}
 
-	// credential should have fields
-	if dcredential.Database != "coral" {
-		t.Error("Expected coral, got ", dcredential.Database)
-	}
+		log.Init(os.Stderr, logLevel)
 
-	if dcredential.Username != "user" {
-		t.Error("Expected user, got ", dcredential.Username)
-	}
+		Init(uuidimported.New())
+	})
 
-	if dcredential.Password != "password" {
-		t.Error("Expected password, got ", dcredential.Password)
-	}
-
-	if dcredential.Host != "host" {
-		t.Error("Expected host, got ", dcredential.Host)
-	}
-
-	if dcredential.Port != "5432" {
-		t.Error("Expected 5432, got ", dcredential.Port)
-	}
-
-	if dcredential.Adapter != "mysql" {
-		t.Error("Expected mysql, got ", dcredential.Adapter)
-	}
-
-	if dcredential.Type != "source" {
-		t.Error("Expected source, got ", dcredential.Type)
-	}
-}
-
-// GetStrategy returns the strategy
-// Signature GetStrategy() (Strategy, error)
-func TestGetStrategy(t *testing.T) {
-	fakeConf := fakeStrategy()
-
-	strategy := fakeConf.GetMap()
-
-	if strategy.Foreign != "mysql" {
-		t.Error("Expected mysql, got ", strategy.Foreign)
-	}
-}
-
-// GetTables returns a list of tables to be imported
-// Signature GetTables() map[string]string {
-func TestGetTables(t *testing.T) {
-	fakeConf := fakeStrategy()
-
-	var tables map[string]Entity
-	tables = fakeConf.GetEntities()
-
-	if tables["comments"].Foreign != "crnr_comment" {
-		t.Error("Expected crnr_comment, got ", tables["comments"])
-	}
-}
-
-// Signature func (s Strategy) HasArrayField(t Table) bool {
-func TestHasArrayField(t *testing.T) {
-	fakeConf := fakeStrategy()
-
-	var tables map[string]Entity
-	tables = fakeConf.GetEntities()
-
-	if fakeConf.HasArrayField(tables["comments"]) {
-		t.Error("Expected not to have an array field.")
-	}
-}
-
-// Signature GetPillarEndpoints() map[string]string {
-func TestGetPillarEndpoints(t *testing.T) {
-
-	os.Setenv("PILLAR_URL", "http://localhost:8080")
-	fakeConf := fakeStrategy()
-	u := uuidimported.New()
-	Init(u)
-
-	endpoints := fakeConf.GetPillarEndpoints()
-
-	expectedEndpoints := 4
-	if len(endpoints) != expectedEndpoints { // the 3 on strategy plus create index
-		t.Errorf("Expected %d endpoints, got %v", expectedEndpoints, len(endpoints))
-	}
-
-	expectedCommentEndpoint := "http://localhost:8080/api/import/comment"
-	if endpoints["comments"] != expectedCommentEndpoint {
-		t.Errorf("Expected %s, got %s", expectedCommentEndpoint, endpoints["comments"])
-	}
-
-	val, exists := endpoints["index"]
-	if !exists {
-		t.Errorf("Expected to have endpoint 'index'. Got %v.", val)
-	}
-}
-
-func TestGetDatetimeFormat(t *testing.T) {
-	fakeConf := fakeStrategy()
-
-	table := "comments"
-
-	// It should get the format for the strategy
-	field := "DateUpdated"
-	expectedDTformat := "2006-01-02 15:04:05"
-	dtformat := fakeConf.GetDateTimeFormat(table, field)
-
-	if dtformat != expectedDTformat {
-		t.Errorf("Expected %s, got %s", expectedDTformat, dtformat)
-	}
-
-	// // It should get the format for the field
-	field = "DateCreated"
-	expectedDTformat = "February 1st, 2006"
-	dtformat = fakeConf.GetDateTimeFormat(table, field)
-
-	if dtformat != expectedDTformat {
-		t.Errorf("Expected %s, got %s", expectedDTformat, dtformat)
-	}
-
-}
-
-// Signature func (s Strategy) GetStatus(coralName string, foreign string) string {
-func TestGetStatus(t *testing.T) {
-	fakeConf := fakeStrategy()
-
-	table := "comments"
-	value := "ModeratorApproved"
-	expectedsfield := "1"
-
-	sfield := fakeConf.GetStatus(table, value)
-	if sfield != expectedsfield {
-		t.Errorf("Expected %s, got %s", expectedsfield, sfield)
-	}
-}
-
-func TestGetEntityForeignName(t *testing.T) {
-	fakeConf := fakeStrategy()
-	collectionName := "comments"
-	expectedForeigName := "crnr_comment"
-
-	foreigName := fakeConf.GetEntityForeignName(collectionName)
-	if foreigName != expectedForeigName {
-		t.Errorf("Expected %s, got %s", expectedForeigName, foreigName)
-	}
-}
+	Describe("", func() {
+		Context("with a valid strategy file", func() {
+			It("should be valid", func() {
+				validstrategyfile := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/test/strategy_api_test.json"
+				Expect(Validate(validstrategyfile)).To(Equal(true))
+			})
+		})
+		It("should not be valid", func() {
+			notvalidstrategyfile := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/test/not_valid_Strategy_test.json"
+			Expect(Validate(notvalidstrategyfile)).To(Equal(false))
+		})
+	})
+})

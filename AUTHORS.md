@@ -1,5 +1,7 @@
-# Authors
+# This file lists all individuals having contributed content to the repository.
+# For how it is generated, see `docs/generate-authors.sh`.
 
-* [Gaba](https://github.com/gabelula)
-* [MixedMessages](https://github.com/mixedmessages)
-* [David](https://github.com/jde)
+David Erwin <davidjerwin@gmail.com>
+Gabriela Rodríguez Berón <gabelula@gmail.com>
+MixedMessages <angel.santiago4096@gmail.com>
+Sam <samaresh@gmail.com>

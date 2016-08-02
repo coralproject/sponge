@@ -1,3 +1,4 @@
+// Package source API is used to connect to a web service to GET data
 package source
 
 import (
@@ -6,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -33,6 +35,7 @@ type QueryData struct {
 }
 
 // GetData does the request to the webservice once and get back the data based on the parameters
+// This is empty as it is not applicable to web services but it needs to be here to implement the Source interface
 func (a API) GetData(entity string, options *Options) ([]map[string]interface{}, error) { //offset int, limit int, orderby string, q string
 	var data []map[string]interface{}
 	var err error
@@ -215,10 +218,13 @@ func (a API) IsWebService() bool {
 // ConnectionMySQL returns the connection string
 func connectionAPI(pageAfter string) *url.URL {
 
+	var u *url.URL
+
 	credA, ok := credential.(str.CredentialService)
 	if !ok {
-		err := fmt.Errorf("Error when asserting type CredentialService on credential.")
+		err := fmt.Errorf("Error when asserting type CredentialService on credential. It is type %v", reflect.TypeOf(credential))
 		log.Error(uuid, "api.connectionAPI", err, "Asserting type.")
+		return u
 	}
 
 	data := QueryData{}
@@ -235,9 +241,10 @@ func connectionAPI(pageAfter string) *url.URL {
 	surl, err := formatURL(data, urltemplate, urltemplatepagination, regexToEscape)
 	if err != nil {
 		log.Error(uuid, "api.connectionAPI", err, "Parsing url %s", surl)
+		return u
 	}
 
-	u, err := url.Parse(surl)
+	u, err = url.Parse(surl)
 	if err != nil {
 		log.Error(uuid, "api.connectionAPI", err, "Parsing url %s", surl)
 	}

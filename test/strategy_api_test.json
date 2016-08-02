@@ -1,0 +1,299 @@
+{
+  "credentials": {
+    "service": {
+      "adapter": "service",
+      "appkey": "dev.key",
+      "attributes": "childrenof:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-how-do-you-remedy-your-own-passive-aggressive-behavior/2016/05/30/daae2f04-212b-11e6-9e7f-57890b612299_story.html source:washpost.com itemsPerPage:100 sortOrder:chronological children:3 childrenItemsPerPage:100",
+      "endpoint": "http://127.0.0.1:60639",
+      "pagination": "nextSince",
+      "queryformat": "{{.Basicurl}}?q=(({{.Attributes}}))&appkey={{.Appkey}}",
+      "queryformatpagination": "{{.Basicurl}}?q=(({{.Attributes}}))&appkey={{.Appkey}}&since={{.Next}}",
+      "records": "entries",
+      "regextoescape": "\\(\\([A-Za-z0-9-&:/_. ]+\\w+\\)\\)",
+      "type": "foreign",
+      "useragent": "Test Coral v 0.3"
+    }
+  },
+  "map": {
+    "datetimeformat": "2006-01-02 15:04:05",
+    "entities": {
+      "actionsFlags": {
+        "Fields": [
+          {
+            "foreign": "",
+            "local": "type",
+            "relation": "Constant",
+            "type": "string",
+            "value": "flags"
+          },
+          {
+            "foreign": "",
+            "local": "target",
+            "relation": "Constant",
+            "type": "string",
+            "value": "comments"
+          },
+          {
+            "foreign": "object.id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "string"
+          },
+          {
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local": "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
+              }
+            ],
+            "foreign": "object.flags",
+            "relation": "Loop",
+            "type": "Array"
+          }
+        ],
+        "Foreign": "objects",
+        "ID": "",
+        "Local": "actions",
+        "OrderBy": "",
+        "Priority": 3,
+        "endpoint": "/api/import/action"
+      },
+      "actionsLikes": {
+        "Fields": [
+          {
+            "foreign": "",
+            "local": "type",
+            "relation": "Constant",
+            "type": "string",
+            "value": "likes"
+          },
+          {
+            "foreign": "",
+            "local": "target",
+            "relation": "Constant",
+            "type": "string",
+            "value": "comments"
+          },
+          {
+            "foreign": "object.id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "string"
+          },
+          {
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local": "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
+              }
+            ],
+            "foreign": "object.likes",
+            "relation": "Loop",
+            "type": "Array"
+          }
+        ],
+        "Foreign": "objects",
+        "ID": "",
+        "Local": "actions",
+        "OrderBy": "",
+        "Priority": 2,
+        "endpoint": "/api/import/action"
+      },
+      "assets": {
+        "Fields": [
+          {
+            "foreign": "object.context.0.uri",
+            "local": "id",
+            "relation": "Source",
+            "required": "true",
+            "type": "string"
+          },
+          {
+            "foreign": "object.context.0.uri",
+            "local": "url",
+            "relation": "Identity",
+            "required": "true",
+            "type": "string"
+          },
+          {
+            "datetimeformat": "2006-01-02T15:04:05Z",
+            "foreign": "object.published",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          }
+        ],
+        "Foreign": "object",
+        "ID": "object.context.0.uri",
+        "Local": "assets",
+        "OrderBy": "object.context.0.uri",
+        "Priority": 0,
+        "endpoint": "/api/import/asset"
+      },
+      "comments": {
+        "Fields": [
+          {
+            "foreign": "object.id",
+            "local": "id",
+            "relation": "Source",
+            "required": "true",
+            "type": "objectid"
+          },
+          {
+            "foreign": "object.content",
+            "local": "body",
+            "relation": "Identity",
+            "required": "true",
+            "type": "byte[]"
+          },
+          {
+            "foreign": "object.context.0.uri",
+            "local": "asset_id",
+            "relation": "Source",
+            "type": "string"
+          },
+          {
+            "foreign": "object.status",
+            "local": "status",
+            "relation": "Identity",
+            "type": "string"
+          },
+          {
+            "foreign": "targets.0.id",
+            "local": "parent_id",
+            "relation": "Source",
+            "type": "string"
+          },
+          {
+            "datetimeformat": "2006-01-02T15:04:05Z",
+            "foreign": "postedTime",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          },
+          {
+            "datetimeformat": "2006-01-02T15:04:05Z",
+            "foreign": "updated",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          },
+          {
+            "foreign": "object.markers",
+            "local": "tags",
+            "relation": "Identity",
+            "type": "list"
+          },
+          {
+            "foreign": "source.name",
+            "local": "source",
+            "relation": "Metadata",
+            "type": "string"
+          },
+          {
+            "foreign": "object.tags",
+            "local": "tags",
+            "relation": "Metadata",
+            "type": "list"
+          },
+          {
+            "foreign": "actor.roles",
+            "local": "roles",
+            "relation": "Identity",
+            "type": "list"
+          },
+          {
+            "foreign": "actor.id",
+            "local": "id",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.title",
+            "local": "name",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.status",
+            "local": "status",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.avatar",
+            "local": "avatar",
+            "relation": "Source.User",
+            "type": "string"
+          },
+          {
+            "foreign": "actor.markers",
+            "local": "tags",
+            "relation": "Source.User",
+            "type": "list"
+          }
+        ],
+        "Foreign": "object",
+        "ID": "object.id",
+        "Local": "comments",
+        "OrderBy": "postedTime",
+        "Priority": 1,
+        "endpoint": "/api/import/comment"
+      }
+    },
+    "foreign": "service"
+  },
+  "name": "Washington Post"
+}

@@ -65,20 +65,22 @@ var (
 
 var (
 	uuid string
-	str  strategy.Strategy
+	str  *strategy.Strategy
 )
 
 // Init initialization of logs and strategy
 func Init(u string) {
-
 	var err error
 	uuid = u
 
 	strategy.Init(uuid)
+
 	str, err = strategy.New()
 	if err != nil {
-		log.Error(uuid, "coral.init", err, "Reading the streategy file.")
+		log.Fatal(uuid, "coral.init", "Getting the strategy file.", err.Error())
+		return
 	}
+
 	endpoints = str.GetPillarEndpoints()
 }
 
@@ -87,15 +89,19 @@ func AddRow(data map[string]interface{}, tableName string) error {
 
 	var err error
 
+	fmt.Println("DEBUG endpoints ", endpoints)
+	fmt.Println("DEBUG tablename  ", tableName)
 	if _, ok := endpoints[tableName]; ok {
 
-		d, err := json.Marshal(data)
+		var jdata []byte
+
+		jdata, err = json.Marshal(data)
 		if err != nil {
 			log.Error(uuid, "coral.Addrow", err, "Marshalling %v.", data)
 		}
 
-		userAgent := fmt.Sprintf("Sponge Publisher %s.", str.Name)
-		_, err = webservice.DoRequest(uuid, userAgent, methodPost, endpoints[tableName], bytes.NewBuffer(d))
+		userAgent := fmt.Sprintf("Sponge Publisher %s. UUID %s.", str.Name, uuid)
+		_, err = webservice.DoRequest(uuid, userAgent, methodPost, endpoints[tableName], bytes.NewBuffer(jdata))
 		if err != nil {
 			log.Error(uuid, "coral.Addrow", err, "Sending request to PILLAR with %v.", data)
 		}

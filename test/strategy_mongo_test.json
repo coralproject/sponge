@@ -1,0 +1,94 @@
+{
+  "Name": "Washington Post",
+  "Map": {
+    "Foreign": "mongodb",
+    "DateTimeFormat": "2006-01-02 15:04:05",
+    "Tables": {
+      "comment": {
+        "Foreign": "comments",
+        "Local": "comments",
+        "Priority": 2,
+        "OrderBy": "createdate",
+        "ID": "commentid",
+        "Index": [
+          {
+            "name": "commentid",
+            "keys": ["commentid"],
+            "unique": true,
+            "dropdups": true
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "commentid",
+            "local": "id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "commentbody",
+            "local": "body",
+            "relation": "Identity",
+            "type": "[]byte"
+          },
+          {
+            "foreign": "userid",
+            "local": "user_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "assetid",
+            "local": "asset_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "statusid",
+            "local": "status",
+            "relation": "Identity",
+            "type": "int"
+          },
+          {
+            "foreign": "parentid",
+            "local": "parent_id",
+            "relation": "Source",
+            "type": "int"
+          },
+          {
+            "foreign": "createdate",
+            "local": "date_created",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          },
+          {
+            "foreign": "updatedate",
+            "local": "date_updated",
+            "relation": "ParseTimeDate",
+            "type": "timedate",
+            "datetimeformat": "2006-01-02 15:04:05"
+          },
+          {
+            "foreign": "approvedate",
+            "local": "date_approved",
+            "relation": "ParseTimeDate",
+            "type": "timedate"
+          }
+        ],
+        "Endpoint": "/api/import/comment"
+      }
+    }
+  },
+  "Credentials": {
+    "Database":
+      {
+        "database": "coral_test",
+        "username": "gaba",
+        "password": "gabita",
+        "host": "localhost",
+        "port": "27017",
+        "adapter": "mongodb",
+        "type": "foreign"
+      }
+  }
+}

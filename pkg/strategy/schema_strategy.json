@@ -1,0 +1,243 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Strategy schema.",
+  "description": "This is the strategy for doing the mapping between the newsroom's database and the coral one.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name schema.",
+      "description": "Which newsroom or mapping is this strategy for?.",
+      "default": "Newswroom Service 1"
+    },
+    "map": {
+      "type": "object",
+      "title": "Map schema.",
+      "description": "Map that shows wich coral's field correspond to which newsrom's field.",
+      "properties": {
+        "foreign": {
+          "type": "string",
+          "title": "Foreign schema.",
+          "description": "It indicates if it is service or database.",
+          "default": "service"
+        },
+        "datetimeformat": {
+          "type": "string",
+          "title": "DateTimeFormat schema.",
+          "description": "It indicates which format we will consider by default for the date fields.",
+          "default": "2006-01-02 15:04:05"
+        },
+        "entities": {
+          "type": "object",
+          "title": "Entities schema.",
+          "description": "We define here all the entities that we need to map from foreign source into coral database.",
+          "properties": {
+            "atleastone": {
+              "type": "object",
+              "title": "Atleastone schema.",
+              "description": "The mapping for the entity 'atleastone'.",
+              "properties": {
+                "Foreign": {
+                  "type": "string",
+                  "title": "Foreign schema.",
+                  "description": "The entity in the foreign source.",
+                  "default": ""
+                },
+                "Local": {
+                  "type": "string",
+                  "title": "Local schema.",
+                  "description": "The entity in the coral database.",
+                  "default": ""
+                },
+                "OrderBy": {
+                  "type": "string",
+                  "title": "OrderBy schema.",
+                  "description": "How to sort out by default the foreign source.",
+                  "default": ""
+                },
+                "ID": {
+                  "type": "string",
+                  "title": "ID schema.",
+                  "description": "The identifier for the foreign source.",
+                  "default": ""
+                },
+                "Fields": {
+                  "type": "array",
+                  "title": "Fields schema.",
+                  "description": "Fields that we are translating with its mapping.",
+                  "items": {
+                    "type": "object",
+                    "title": "items schema.",
+                    "description": "An explanation about the purpose of this instance.",
+                    "properties": {
+                      "foreign": {
+                        "type": "string",
+                        "title": "Foreign schema.",
+                        "description": ".",
+                        "default": "object.published"
+                      },
+                      "local": {
+                        "type": "string",
+                        "title": "Local schema.",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "date_created"
+                      },
+                      "relation": {
+                        "type": "string",
+                        "title": "Relation schema.",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "ParseTimeDate"
+                      },
+                      "type": {
+                        "type": "string",
+                        "title": "Type schema.",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "timedate"
+                      },
+                      "datetimeformat": {
+                        "type": "string",
+                        "title": "Datetimeformat schema.",
+                        "description": "An explanation about the purpose of this instance.",
+                        "default": "2006-01-02T15:04:05Z"
+                      }
+                    },
+                    "required": [
+                      "foreign",
+                      "local",
+                      "relation",
+                      "type"
+                    ]
+                  }
+                },
+                "endpoint": {
+                  "type": "string",
+                  "title": "Endpoint schema.",
+                  "description": "Which endpoint we use in the Coral API to push data into?",
+                  "default": "/api/import/asset"
+                }
+              },
+              "required": [
+                "Foreign",
+                "Local",
+                "Priority",
+                "OrderBy",
+                "ID",
+                "Fields",
+                "endpoint"
+              ]
+            }
+          }
+        }
+      },
+      "required": [ "foreign", "datetimeformat", "entities"]
+    },
+    "credentials": {
+      "type": "object",
+      "title": "Credentials schema.",
+      "description": "Credentials on how to connect with the newsroom's data sources.",
+      "properties": {
+        "service": {
+          "type": "object",
+          "title": "Service schema.",
+          "description": "Credentials to connect to the newsroom's web service. Optional",
+          "properties": {
+            "appkey": {
+              "type": "string",
+              "title": "Appkey schema.",
+              "description": "The application key used to connect to the service.",
+              "default": ""
+            },
+            "endpoint": {
+              "type": "string",
+              "title": "Endpoint schema.",
+              "description": "The URL to do the request to.",
+              "default": "https://localhost:8080"
+            },
+            "adapter": {
+              "type": "string",
+              "title": "Adapter schema.",
+              "description": "Is this a service's connection or a database's connection?.",
+              "default": "service"
+            },
+            "type": {
+              "type": "string",
+              "title": "Type schema.",
+              "description": "Is this to connect to foreign or local source? Right now the only option is 'foreign'.",
+              "default": "foreign"
+            },
+            "records": {
+              "type": "string",
+              "title": "Records schema.",
+              "description": "Which field do I have to querie to get the records?.",
+              "default": ""
+            },
+            "pagination": {
+              "type": "string",
+              "title": "Pagination schema.",
+              "description": "Which one is the query parameter I have to send the next page into?.",
+              "default": "nextPageAfter"
+            },
+            "useragent": {
+              "type": "string",
+              "title": "User-agent schema.",
+              "description": "What is the user-agent that I'm sending this request with?.",
+              "default": "DEV Coral"
+            },
+            "attributes": {
+              "type": "string",
+              "title": "Attributes schema.",
+              "description": "What parameters do we need to send for the query?.",
+              "default": "childrenof:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:chronological children:3 childrenItemsPerPage:100"
+            }
+          },
+          "required": [
+            "appkey",
+            "endpoint",
+            "adapter",
+            "type",
+            "records",
+            "pagination",
+            "useragent",
+            "attributes"
+          ]
+        },
+        "database": {
+         "type": "object",
+         "properties": {
+           "database": {
+             "type": "string"
+           },
+           "username": {
+             "type": "string"
+           },
+           "password": {
+             "type": "string"
+           },
+           "host": {
+             "type": "string"
+           },
+           "port": {
+             "type": "string"
+           },
+           "adapter": {
+             "type": "string"
+           },
+           "type": {
+             "type": "string"
+           }
+         },
+         "required": [
+           "database",
+           "username",
+           "password",
+           "host",
+           "port",
+           "adapter",
+           "type"
+         ]
+       }
+      }
+    }
+  },
+  "required": ["name", "map", "credentials"]
+}

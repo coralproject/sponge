@@ -40,7 +40,7 @@ func Init(u string) error {
 	}
 	dbsource, err = source.New(foreignSource) // To Do. 1. Needs to ensure maximum rate limit is not reached
 	if err != nil {
-		log.Error(uuid, "sponge.import", err, "Connect to external Database")
+		log.Error(uuid, "sponge.import", err, "Connect to external database failed.")
 		return err
 	}
 
@@ -195,8 +195,7 @@ func importFromAPI(collections []string) {
 	}
 
 	for true {
-		data, nextPageAfter, err = api.GetFireHoseData(pageAfter)
-		if err != nil {
+		if data, nextPageAfter, err = api.GetFireHoseData(pageAfter); err != nil {
 			log.Error(uuid, "sponge.importFromAPI", err, "Getting data from API")
 			return
 		}
@@ -204,18 +203,20 @@ func importFromAPI(collections []string) {
 		if data != nil {
 			processAPI(collections, data)
 			pageAfter = nextPageAfter
-		}
-
-		if data == nil {
+		} else {
 			log.User(uuid, "sponge.importFromAPI", "Waiting %s seconds for more data.", pollingInterval)
 			time.Sleep(pollingInterval) // sleep timeWaiting seconds
 		}
-	}
 
+	}
 }
 
 func importFromDB(collections []string) {
 	// var data []map[string]interface{}
+
+	if collections == nil {
+		log.User(uuid, "importFromDB", "It did not found any collection or table.")
+	}
 
 	for _, name := range collections { // Reads through all the collections whose transformations are in the strategy configuration file
 
@@ -238,6 +239,7 @@ func importFromDB(collections []string) {
 		//transform and send to pillar the data
 		process(name, data)
 	}
+
 }
 
 // ImportType gets ony data related to table, transform it and send it to pillar
@@ -368,7 +370,6 @@ func processAPI(collections []string, data []map[string]interface{}) {
 			// Usually newRows only will have a document but in the case that we have subcollections
 			// we may get more than one document from a transformation
 			for _, newRow := range newRows {
-
 				log.Dev(uuid, "sponge.process", "Transforming: %v into %v.", row, newRow)
 
 				// send the row to pillar

@@ -1,75 +1,110 @@
-/* package source_test is doing unit tests for the source package */
-package source
+package source_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"os"
-	"testing"
 
-	str "github.com/coralproject/sponge/pkg/strategy"
+	"github.com/coralproject/sponge/pkg/source"
+	"github.com/pborman/uuid"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-var (
-	server  *httptest.Server
-	path    string
-	fakeStr str.Strategy
-)
+// CREATE Server for Test
+func mockServer() *httptest.Server {
+	server := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				var d map[string]interface{}
+				file, err := ioutil.ReadFile(os.Getenv("$GOPATH") + "/tests/response.json")
+				if err != nil {
+					fmt.Printf("ERROR %v on setting up response in the test.", err)
+				}
+				if err := json.Unmarshal(file, &d); err != nil {
+					fmt.Printf("ERROR %v on setting up response in the test.", err)
+				}
 
-func TestMain(m *testing.M) {
-
-	setupAPI()
-	code := m.Run()
-	teardown()
-
-	os.Exit(code)
+				w.WriteHeader(200)
+				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprintln(w, d)
+			},
+		),
+	)
+	return server
 }
 
-func TestAPIGetData(t *testing.T) {
+var _ = Describe("Getting Data", func() {
 
-	data, _, err := mapi.GetWebServiceData()
-	if err != nil {
-		t.Fatalf("expected no error, got '%s'.", err)
-	}
+	var (
+		mdb  source.API
+		data []map[string]interface{}
+	)
 
-	if len(data) == 0 {
-		t.Fatalf("expected some entry, got zero.")
-	}
+	BeforeEach(func() {
 
-}
+		// MOCK STRATEGY CONF WITH API CONFIG FILE
+		strategyConf := os.Getenv("GOPATH") + "/src/github.com/coralproject/sponge/tests/strategy_api_test.json"
+		if e := os.Setenv("STRATEGY_CONF", strategyConf); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
 
-func TestGetAPIData(t *testing.T) {
-	setupAPI()
+		u := uuid.New()
+		if _, e := source.Init(u); e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
 
-	pageAfter := "1.399743732"
+		s, e := source.New("service")
+		if e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+		var ok bool
+		if mdb, ok = s.(source.API); !ok {
+			Expect(ok).To(BeTrue(), "The source's implementation should be Service")
+		}
 
-	// no error
-	data, pageAfter1, err := mapi.GetFireHoseData(pageAfter)
-	if err != nil {
-		t.Fatalf("expected no error, got '%s'.", err)
-	}
+		// attributes := "scope:https://www.washingtonpost.com/lifestyle/style/carolyn-hax-stubborn-60-something-parent-refuses-to-see-a-doctor/2015/09/24/299ec776-5e2d-11e5-9757-e49273f05f65_story.html source:washpost.com itemsPerPage:100 sortOrder:reverseChronological"
+		// connection := fmt.Sprintf("%s/v1/search?q=((%s))&appkey=dev.washpost.com", server.URL, attributes)
+		// write down connection into strategyConf
+		var d map[string]interface{}
+		file, e := ioutil.ReadFile(strategyConf)
+		if e != nil {
+			fmt.Printf("ERROR %v on setting up the new strategy conf.", e)
+		}
+		if e = json.Unmarshal(file, &d); e != nil {
+			fmt.Printf("ERROR %v on setting up the new strategy conf.", e)
+		}
+		d["Credentials"].(map[string]interface{})["service"].(map[string]interface{})["endpoint"] = server.URL
+		b, e := json.Marshal(d)
+		if e != nil {
+			fmt.Printf("ERROR %v on setting up the new strategy conf.", e)
+		}
+		e = ioutil.WriteFile(strategyConf, b, 0777)
+		if e != nil {
+			fmt.Printf("ERROR %v on setting up the new strategy conf.", e)
+		}
 
-	// data should be []map[string]interface{}
-	expectedlen := 2
-	if len(data) != expectedlen { // this is a setup for the seed data
-		t.Fatalf("expected %d, got %d", expectedlen, len(data))
-	}
+		data, _, e = mdb.GetFireHoseData("")
+		if e != nil {
+			Expect(e).NotTo(HaveOccurred())
+		}
+	})
 
-	expectedUser := "Duck504"
-	if data[0]["actor.title"] != expectedUser {
-		t.Fatalf("expected %s, got %s", expectedUser, data[0]["actor.title"])
-	}
-
-	if pageAfter1 == pageAfter {
-		t.Fatalf("expected different pages %s and %s", pageAfter1, pageAfter)
-	}
-
-	data, _, err = mapi.GetFireHoseData(pageAfter1)
-	if err != nil {
-		t.Fatalf("expected no error, got '%s'.", err)
-	}
-
-	expectedlen = 2
-	if len(data) != expectedlen { // this is a setup for the seed data
-		t.Fatalf("expected %d, got %d", expectedlen, len(data))
-	}
-}
+	Describe("from external service", func() {
+		Context("with a valid strategy file", func() {
+			It("should get back the count of records we expect", func() {
+				Expect(len(data)).To(Equal(10))
+			})
+			It("should be data we expect related to the comment", func() {
+				Expect(data[0]["object.content"]).To(Equal("Comment1"))
+			})
+			It("should be data we expect related to the comment", func() {
+				Expect(data[0]["actor.title"]).To(Equal("Socks_Friend"))
+			})
+		})
+	})
+})

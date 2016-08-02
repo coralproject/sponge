@@ -1,12 +1,12 @@
 {
-  "Name": "New York Times",
-  "Map": {
-    "Foreign": "mysql",
-    "DateTimeFormat": "2006-01-02 15:04:05",
-    "Tables": {
-      "asset": {
+  "name": "New York Times",
+  "map": {
+    "foreign": "mysql",
+    "datetimeformat": "2006-01-02 15:04:05",
+    "entities": {
+      "assets": {
         "Foreign": "crnr_asset",
-        "Local": "asset",
+        "Local": "assets",
         "Priority": 0,
         "OrderBy": "assetid",
         "ID": "assetid",
@@ -44,11 +44,11 @@
             "type": "dateTime"
           }
         ],
-        "Endpoint": "/api/import/asset"
+        "endpoint": "/api/import/asset"
       },
-      "user": {
+      "users": {
         "Foreign": "crnr_comment",
-        "Local": "user",
+        "Local": "users",
         "Priority": 1,
         "OrderBy": "userid",
         "ID": "userid",
@@ -74,11 +74,11 @@
             "type": "[]byte"
           }
         ],
-        "Endpoint": "/api/import/user"
+        "endpoint": "/api/import/user"
       },
-      "comment": {
+      "comments": {
         "Foreign": "crnr_comment",
-        "Local": "comment",
+        "Local": "comments",
         "Priority": 2,
         "OrderBy": "createdate",
         "ID": "commentid",
@@ -148,10 +148,140 @@
           }
         ],
         "Endpoint": "/api/import/comment"
+      },
+      "actionslikes": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 4,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "likes",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.likes",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "Endpoint": "/api/import/action"
+      },
+      "actionsflags": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 3,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "flags",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.flags",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "user_id",
+                "relation": "Source"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "Endpoint": "/api/import/action"
       }
     }
   },
-  "Credentials": {
+  "credentials": {
     "Database":
       {
         "database": "coral_test",

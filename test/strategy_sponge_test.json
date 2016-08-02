@@ -44,7 +44,7 @@
             "type": "dateTime"
           }
         ],
-        "Endpoint": "/api/import/asset"
+        "endpoint": "/api/import/asset"
       },
       "users": {
         "Foreign": "crnr_comment",
@@ -74,7 +74,7 @@
             "type": "[]byte"
           }
         ],
-        "Endpoint": "/api/import/user"
+        "endpoint": "/api/import/user"
       },
       "comments": {
         "Foreign": "crnr_comment",
@@ -148,20 +148,149 @@
           }
         ],
         "Endpoint": "/api/import/comment"
+      },
+      "actionslikes": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 4,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "likes",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.likes",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "id",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.title",
+                "local": "name",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.status",
+                "local": "status",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.avatar",
+                "local": "avatar",
+                "relation": "Source.User"
+              },
+              {
+                "foreign": "actor.markers",
+                "local": "tags",
+                "relation": "Source.User"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "Endpoint": "/api/import/action"
+      },
+      "actionsflags": {
+        "Foreign": "comments",
+        "Local": "actions",
+        "Priority": 3,
+        "OrderBy": "",
+        "ID": "_id",
+        "Index": [
+          {
+            "name": "",
+            "key": [""],
+            "unique": false,
+            "dropdups": false
+          }
+        ],
+        "Fields": [
+          {
+            "foreign": "",
+            "value": "flags",
+            "local": "type",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "",
+            "value": "comments",
+            "local": "target",
+            "relation": "Constant",
+            "type": "String"
+          },
+          {
+            "foreign": "_id",
+            "local": "target_id",
+            "relation": "Source",
+            "type": "String"
+          },
+          {
+            "foreign": "object.flags",
+            "fields": [
+              {
+                "foreign": "published",
+                "local": "date",
+                "relation": "Identity"
+              },
+              {
+                "foreign": "actor.id",
+                "local" : "user_id",
+                "relation": "Source"
+              }
+            ],
+            "type": "Array",
+            "relation": "Loop"
+          }
+        ],
+        "Endpoint": "/api/import/action"
       }
     }
   },
   "Credentials": {
-    "Database": [
+    "Database":
       {
         "database": "coral_test",
-        "username": "root",
-        "password": "",
+        "username": "gaba",
+        "password": "gabita",
         "host": "127.0.0.1",
         "port": "5432",
         "adapter": "mysql",
         "type": "foreign"
       }
-    ]
   }
 }
